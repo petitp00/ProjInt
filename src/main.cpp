@@ -1,8 +1,10 @@
-#include <iostream>
-using namespace std;
+#include "Game.h"
 
 int main()
 {
-	cout << "Hello World!" << endl;
+	Game game;
+
+	game.Start();
+
 	return 0;
 }
