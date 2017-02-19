@@ -50,9 +50,26 @@ void Game::Start()
 						auto s = state_machine.PopState();
 						ChangeActiveState(state_machine.getActiveState(), s);
 					}
+
 				}
 				else if (event.key.code == sf::Keyboard::Space) {
 					ChangeActiveState(State::Game, state_machine.getActiveState());
+				}
+
+				if (menu_state->getActive()) {
+					menu_state->KeyPressedEvent(event.key.code);
+				}
+			}
+			else if (event.type == sf::Event::MouseButtonPressed) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					if (menu_state->getActive()) {
+						menu_state->MousePressedEvent(sf::Mouse::Left, event.mouseButton.x, event.mouseButton.y);
+					}
+				}
+			}
+			else if (event.type == sf::Event::MouseMoved) {
+				if (menu_state->getActive()) {
+					menu_state->MousePressedEvent(sf::Mouse::Left, event.mouseMove.x, event.mouseMove.y);
 				}
 			}
 		}
@@ -61,7 +78,7 @@ void Game::Start()
 		if (menu_state->getActive()) { menu_state->Update(); }
 		if (game_state->getActive()) { game_state->Update(); }
 
-	
+
 		// Renders
 		window.clear(sf::Color::White);
 
