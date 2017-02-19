@@ -13,9 +13,23 @@ sf::Font& ResourceManager::getFont(std::string name)
 
 	sf::Font f;
 	if (!f.loadFromFile(path + name)) {
-		cerr << "Couldn't load font \"" << name << "\"." << endl;
+		cerr << "Could not load font \"" << name << "\"." << endl;
 	}
 
 	fonts[name] = f;
 	return fonts[name];
+}
+
+map<string, sf::Texture> ResourceManager::textures;
+
+sf::Texture& ResourceManager::getTexture(std::string name)
+{
+	if (textures.count(name)) return textures[name];
+
+	string path = "Resources/Textures/";
+
+	sf::Texture t;
+	if (!t.loadFromFile(path + name)) {
+		cerr << "Could not load texture \"" << name << "\"." << endl;
+	}
 }
