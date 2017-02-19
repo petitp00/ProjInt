@@ -5,6 +5,7 @@
 #include "GameState.h"
 #include "MenuState.h"
 
+#include <iostream>
 using namespace std;
 
 // forward declaration of functions
@@ -15,7 +16,7 @@ Game::Game()
 {
 	CreateWindowWithSettings(window, game_settings);
 
-	menu_state = new MenuState();
+	menu_state = new MenuState(*this);
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
@@ -61,16 +62,18 @@ void Game::Start()
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
-				if (event.mouseButton.button == sf::Mouse::Left) {
-					if (menu_state->getActive()) {
-						menu_state->MousePressedEvent(sf::Mouse::Left, event.mouseButton.x, event.mouseButton.y);
-					}
+				if (menu_state->getActive()) {
+					menu_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
+				}
+				else if (game_state->getActive()) {
+					game_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
 				}
 			}
 			else if (event.type == sf::Event::MouseMoved) {
 				if (menu_state->getActive()) {
-					menu_state->MousePressedEvent(sf::Mouse::Left, event.mouseMove.x, event.mouseMove.y);
+					menu_state->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
 				}
+
 			}
 		}
 

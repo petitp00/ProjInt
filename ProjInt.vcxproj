@@ -151,7 +151,7 @@
     <ClCompile Include="src\MenuState.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\StateMachine.cpp" />
-    <ClCompile Include="src\Text.cpp" />
+    <ClCompile Include="src\GUIObjects.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Game.h" />
@@ -159,7 +159,7 @@
     <ClInclude Include="src\MenuState.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\StateMachine.h" />
-    <ClInclude Include="src\Text.h" />
+    <ClInclude Include="src\GUIObjects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

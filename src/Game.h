@@ -9,6 +9,16 @@ class MenuState;
 static int WINDOW_WIDTH = 1280;
 static int WINDOW_HEIGHT = 720;
 
+static std::string BASE_FONT_NAME = "blue highway rg.ttf";
+
+enum FontSize
+{
+	TINY = 20,
+	SMALL = 30,
+	NORMAL = 40,
+	BIG = 70,
+};
+
 struct GameSettings
 {
 	unsigned int AALevel = 8;

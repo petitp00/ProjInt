@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-#include <SFML\Graphics.hpp>
+#include <SFML/Graphics.hpp>
 
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -21,6 +21,4 @@ public:
 	// Textures
 	static sf::Texture& getTexture(std::string name);
 	static std::map<std::string, sf::Texture> textures;
-
-	//
 };
