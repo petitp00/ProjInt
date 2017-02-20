@@ -276,6 +276,20 @@ void Tooltip::StopTimer()
 void Tooltip::setMousePos(sf::Vector2i mouse_pos)
 {
 	pos = sf::Vector2f(mouse_pos) + sf::Vector2f(0.f, size.y*1.0f) - size/2.f;
+
+	if (pos.x + size.x >= WINDOW_WIDTH - 10.f) {
+		pos.x = WINDOW_WIDTH - size.x - 10.f;
+	}
+	else if (pos.x <= 10.f) {
+		pos.x = 10.f;
+	}
+	if (pos.y <= 10.f) {
+		pos.y = 10.f;
+	}
+	else if (pos.y + size.y >= WINDOW_HEIGHT - 10.f) {
+		pos.y = WINDOW_HEIGHT - size.y - 10.f;
+	}
+
 	rect_shape.setPosition(pos);
 	text_box.setPos(pos + sf::Vector2f(10.f, 5.f));
 }

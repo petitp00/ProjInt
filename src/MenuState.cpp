@@ -27,7 +27,7 @@ MenuPage::MenuPage(Game& game) :
 	title.setCharacterSize(FontSize::BIG);
 	title.move({ 0, 80 });
 
-	auto b = new TextButton("Butt on", { 800, 300 }, 16.f, FontSize::NORMAL);
+	auto b = new TextButton("Butt on", { 800, 350 }, 16.f, FontSize::NORMAL);
 
 	auto t = new Tooltip("Plus d'info. WEEEEEEEEEEEEEEW", sf::seconds(0.75f));
 	b->setTooltip(t);
