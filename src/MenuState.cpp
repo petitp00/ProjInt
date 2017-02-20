@@ -28,6 +28,10 @@ MenuPage::MenuPage(Game& game) :
 	title.move({ 0, 80 });
 
 	auto b = new TextButton("Butt on", { 800, 300 }, 16.f, FontSize::NORMAL);
+
+	auto t = new Tooltip("Plus d'info. WEEEEEEEEEEEEEEW", sf::seconds(0.75f));
+	b->setTooltip(t);
+
 	gui_objects.push_back(b);
 }
 
@@ -69,7 +73,10 @@ void MenuPage::MouseMovedEvent(int mouse_x, int mouse_y)
 	for (auto o : gui_objects) {
 		if (o->isMouseIn(mouse)) {
 			if (!o->getHovered()) {
-				o->onHoverIn();
+				o->onHoverIn(mouse);
+			}
+			else {
+				o->UpdateHoveredMousePos(mouse);
 			}
 		}
 		else if (o->getHovered()) {

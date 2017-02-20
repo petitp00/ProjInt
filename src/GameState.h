@@ -5,6 +5,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
+#include <SFML/Graphics/Text.hpp>
+
 class GameState
 {
 public:
@@ -22,4 +24,7 @@ public:
 
 private:
 	bool active = false;
+
+
+	sf::Text wew;
 };

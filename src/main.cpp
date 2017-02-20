@@ -2,6 +2,8 @@
 
 int main()
 {
+	srand(100);
+
 	Game game;
 
 	game.Start();

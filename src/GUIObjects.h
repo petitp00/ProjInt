@@ -5,6 +5,8 @@
 
 #include "Game.h"
 
+// Forward declaration
+class Tooltip;
 
 class ButtonActionImpl {
 public:
@@ -14,6 +16,7 @@ public:
 
 	Game& game;
 };
+
 
 /*
 	Base GUI Object class
@@ -25,17 +28,20 @@ public:
 	GUIObject(sf::Vector2f pos, sf::Vector2f size);
 	virtual ~GUIObject() = 0;
 
-	virtual void Update() {}
-	virtual void Render(sf::RenderTarget& target) {}
+	virtual void Update();
+	virtual void Render(sf::RenderTarget& target);
 
 	virtual void onClick(ButtonActionImpl& impl) {}
-	virtual void onHoverIn() { hovered=true; }
-	virtual void onHoverOut() { hovered=false; }
+	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
+	virtual void onHoverOut();
+
+	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos); // when mouse has moved on top of object
 
 	bool isMouseIn(sf::Vector2i mouse_pos);
 
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
+	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
 
 	sf::Vector2f getPos() { return pos; }
 	sf::Vector2f getSize() { return size; }
@@ -46,6 +52,8 @@ protected:
 	sf::Vector2f size;
 
 	bool hovered = false;
+
+	Tooltip* tooltip = nullptr;
 
 	// ADD ID? (maybe with static int)
 };
@@ -108,10 +116,12 @@ public:
 			   sf::Color background_color_hover = sf::Color(100, 100, 100),
 			   std::string const& font_name=BASE_FONT_NAME );
 
+
+	void Update() override;
 	void Render(sf::RenderTarget& target) override;
 
 	void onClick(ButtonActionImpl& impl) override;
-	void onHoverIn() override;
+	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
 	void onHoverOut() override;
 
 	void setPos(sf::Vector2f pos) override;
@@ -132,4 +142,25 @@ private:
 	sf::RectangleShape rect_shape;
 };
 
+class Tooltip : public GUIObject {
+public:
+	Tooltip()=default;
+	Tooltip(std::string const& text_string, sf::Time show_after);
+	
 
+	void Update() override;
+	void Render(sf::RenderTarget& target) override;
+
+	void StartTimer(sf::Vector2i mouse_pos);
+	void StopTimer();
+
+	void setMousePos(sf::Vector2i mouse_pos);
+
+private:
+	TextBox text_box;
+	sf::RectangleShape rect_shape;
+
+	bool timer_active = false;
+	sf::Clock clock;
+	sf::Time show_after;
+};
