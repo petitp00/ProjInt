@@ -197,6 +197,7 @@ void TextButton::Render(sf::RenderTarget & target)
 
 void TextButton::onClick(ButtonActionImpl& impl)
 {
+	onHoverOut();
 	impl.test();
 }
 
