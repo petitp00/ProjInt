@@ -32,14 +32,14 @@ bool GUIObject::isMouseIn(sf::Vector2i mouse_pos)
 	return false;
 }
 
-TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, sf::Vector2f size, sf::Font * font, sf::Color color, unsigned int character_size):
-	GUIObject(pos,size), font(font), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string)
+TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font * font, sf::Color color, unsigned int character_size) :
+	GUIObject(pos, sf::Vector2f(width, 0)), font(font), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string)
 {
 	UpdateTextBox();
 }
 
-TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, sf::Vector2f size, std::string const& font_name, sf::Color color, unsigned int character_size):
-	GUIObject(pos, size), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string)
+TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, std::string const& font_name, sf::Color color, unsigned int character_size) :
+	GUIObject(pos, sf::Vector2f(width, 0)), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string)
 {
 	UpdateTextBox();
 }
@@ -55,9 +55,9 @@ void TextBox::setPos(sf::Vector2f pos, bool update)
 	if (update) UpdateTextBox();
 }
 
-void TextBox::setSize(sf::Vector2f size, bool update)
+void TextBox::setWidth(float width, bool update)
 {
-	this->size = size;
+	size.x = width;
 	if (update) UpdateTextBox();
 }
 
@@ -102,7 +102,10 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index)
 
 	text_obj.setString(text_string);
 
-	if (text_obj.getLocalBounds().width <= size.x) { return; }
+	if (text_obj.getLocalBounds().width <= size.x) {
+		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
+		return;
+	}
 
 	int last_space = -1;
 	bool changed = false;
@@ -120,8 +123,11 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index)
 			break;
 		}
 	}
-	
+
 	if (changed) UpdateTextBox(false, i);
+	else {
+		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
+	}
 }
 
 TextButton::TextButton(std::string const & text_string,
@@ -184,10 +190,10 @@ void TextButton::UpdateTextButton(bool set_params)
 
 	auto text_rect = text_obj.getLocalBounds();
 	text_obj.setOrigin(text_rect.width / 2.f, text_rect.height);
-	text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width/2.f + margin, pos.y + margin*2.f));
+	text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width / 2.f + margin, pos.y + margin*2.f));
 
 	rect_shape.setPosition(pos);
-	rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, text_rect.height+margin*2.f));
+	rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, text_rect.height + margin*2.f));
 	rect_shape.setFillColor(background_color);
 
 	setSize(rect_shape.getSize());

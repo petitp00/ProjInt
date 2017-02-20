@@ -25,6 +25,7 @@ public:
 	GUIObject(sf::Vector2f pos, sf::Vector2f size);
 	virtual ~GUIObject() = 0;
 
+	virtual void Update() {}
 	virtual void Render(sf::RenderTarget& target) {}
 
 	virtual void onClick(ButtonActionImpl& impl) {}
@@ -57,12 +58,12 @@ class TextBox : public GUIObject
 public:
 	TextBox() = default;
 	TextBox(std::string const& text_string,
-			sf::Vector2f pos, sf::Vector2f size,
+			sf::Vector2f pos, float width,
 			sf::Font* font, sf::Color color,
 			unsigned int character_size);
 
 	TextBox(std::string const& text_string,
-			sf::Vector2f pos, sf::Vector2f size,
+			sf::Vector2f pos, float width,
 			std::string const& font_name, sf::Color color,
 			unsigned int character_size);
 
@@ -71,7 +72,7 @@ public:
 
 	void setPos(sf::Vector2f pos) override { setPos(pos, true); }
 	void setPos(sf::Vector2f pos, bool update);
-	void setSize(sf::Vector2f size, bool update=true);
+	void setWidth(float width, bool update=true);
 	void setFont(sf::Font* font, bool update=true);
 	void setFont(std::string const& font_name, bool update=true);
 	void setColor(sf::Color color, bool update=true);
