@@ -1,5 +1,6 @@
 #include "GameState.h"
 
+#include "rng.h"
 #include "ResourceManager.h"
 
 #include <iostream>
@@ -21,15 +22,9 @@ GameState::~GameState()
 
 void GameState::Update()
 {
-	auto p = wew.getPosition();
-	float rx, ry;
-
-	rx = (rand() % 15 - 7.5f);
-	ry = (rand() % 15 - 7.5f);
-
-	if (active) {
-		wew.setPosition(wew.getPosition().x + rx, wew.getPosition().y + ry);
-	}
+	float rx = rng::rand_float(-15.f, 15.f);
+	float ry = rng::rand_float(-15.f, 15.f);
+	wew.setPosition(wew.getPosition().x + rx, wew.getPosition().y + ry);
 }
 
 void GameState::Render(sf::RenderTarget & target)

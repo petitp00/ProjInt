@@ -158,6 +158,7 @@
     <ClInclude Include="src\GameState.h" />
     <ClInclude Include="src\MenuState.h" />
     <ClInclude Include="src\ResourceManager.h" />
+    <ClInclude Include="src\rng.h" />
     <ClInclude Include="src\StateMachine.h" />
     <ClInclude Include="src\GUIObjects.h" />
   </ItemGroup>
