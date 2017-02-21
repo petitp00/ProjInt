@@ -3,6 +3,8 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 
+#include <functional>
+
 #include "Game.h"
 
 // Forward declaration
@@ -11,8 +13,6 @@ class Tooltip;
 class ButtonActionImpl {
 public:
 	ButtonActionImpl(Game& game);
-
-	void test();
 
 	Game& game;
 };
@@ -31,17 +31,22 @@ public:
 	virtual void Update();
 	virtual void Render(sf::RenderTarget& target);
 
-	virtual void onClick(ButtonActionImpl& impl) {}
+	virtual void onClick() {}
 	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
 	virtual void onHoverOut();
 
-	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos); // when mouse has moved on top of object
+	// when mouse has moved on top of object
+	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
 
 	bool isMouseIn(sf::Vector2i mouse_pos);
 
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
 	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
+	virtual void setOnClickAction(std::function<void(ButtonActionImpl*)>* action,
+								  ButtonActionImpl* impl) {
+		this->button_action_impl = impl; this->action = action;
+	}
 
 	sf::Vector2f getPos() { return pos; }
 	sf::Vector2f getSize() { return size; }
@@ -54,6 +59,8 @@ protected:
 	bool hovered = false;
 
 	Tooltip* tooltip = nullptr;
+	ButtonActionImpl* button_action_impl = nullptr;
+	std::function<void(ButtonActionImpl*)>* action = nullptr;
 
 	// ADD ID? (maybe with static int)
 };
@@ -114,13 +121,13 @@ public:
 			   sf::Color text_color = sf::Color::Black,
 			   sf::Color background_color = sf::Color(160, 160, 160),
 			   sf::Color background_color_hover = sf::Color(100, 100, 100),
-			   std::string const& font_name=BASE_FONT_NAME );
+			   std::string const& font_name=BASE_FONT_NAME);
 
 
 	void Update() override;
 	void Render(sf::RenderTarget& target) override;
 
-	void onClick(ButtonActionImpl& impl) override;
+	void onClick() override;
 	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
 	void onHoverOut() override;
 
@@ -128,6 +135,7 @@ public:
 
 private:
 	void UpdateTextButton(bool set_params = true);
+
 
 	sf::Font* font;
 	unsigned int character_size;
@@ -146,7 +154,7 @@ class Tooltip : public GUIObject {
 public:
 	Tooltip()=default;
 	Tooltip(std::string const& text_string, sf::Time show_after);
-	
+
 
 	void Update() override;
 	void Render(sf::RenderTarget& target) override;

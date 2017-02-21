@@ -5,6 +5,11 @@
 #include <iostream>
 using namespace std;
 
+
+static void test(ButtonActionImpl* impl) {
+	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+}
+
 // MENU PAGE
 MenuPage::MenuPage(Game& game) :
 	button_action_impl(game)
@@ -28,6 +33,7 @@ MenuPage::MenuPage(Game& game) :
 	title.move({ 0, 80 });
 
 	auto b = new TextButton("Butt on", { 800, 350 }, 16.f, FontSize::NORMAL);
+	b->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
 
 	auto t = new Tooltip("Plus d'info. WEEEEEEEEEEEEEEW", sf::seconds(0.75f));
 	b->setTooltip(t);
@@ -62,7 +68,7 @@ void MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
 {
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			o->onClick(button_action_impl);
+			o->onClick();
 		}
 	}
 }
