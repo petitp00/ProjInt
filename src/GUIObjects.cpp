@@ -194,7 +194,7 @@ void TextButton::Render(sf::RenderTarget & target)
 void TextButton::onClick()
 {
 	onHoverOut();
-	if (action) 
+	if (action)
 		(*action)(button_action_impl);
 	else { cout << "w" << endl; }
 }
@@ -254,6 +254,12 @@ void Tooltip::Update()
 void Tooltip::Render(sf::RenderTarget & target)
 {
 	if (timer_active && clock.getElapsedTime() >= show_after) {
+		if (!alpha_tweener_started) {
+			alpha_tweener_started = true;
+			alpha_tweener.Reset(TweenType::QuartInOut, 0, 255, sf::milliseconds(200));
+		}
+		rect_shape.setFillColor(sf::Color(255, 255, 255, alpha_tweener.Tween()));
+		text_box.setColor(sf::Color(0, 0, 0, alpha_tweener.Tween()));
 		target.draw(rect_shape);
 		text_box.Render(target);
 	}
@@ -265,21 +271,23 @@ void Tooltip::StartTimer(sf::Vector2i mouse_pos)
 	clock.restart();
 
 	setMousePos(mouse_pos);
+
 }
 
 void Tooltip::StopTimer()
 {
 	timer_active = false;
+	alpha_tweener_started = false;
 }
 
 void Tooltip::setMousePos(sf::Vector2i mouse_pos)
 {
-	pos = sf::Vector2f(mouse_pos) + sf::Vector2f(0.f, size.y*1.0f) - size/2.f;
+	pos = sf::Vector2f(mouse_pos) + sf::Vector2f(0.f, size.y*1.0f) - size / 2.f;
 
 	if (pos.x + size.x >= WINDOW_WIDTH - 10.f) pos.x = WINDOW_WIDTH - size.x - 10.f;
 	else if (pos.x <= 10.f) pos.x = 10.f;
 	if (pos.y <= 10.f) pos.y = 10.f;
-	else if (pos.y + size.y >= WINDOW_HEIGHT - 10.f) pos.y = WINDOW_HEIGHT - size.y - 10.f; 
+	else if (pos.y + size.y >= WINDOW_HEIGHT - 10.f) pos.y = WINDOW_HEIGHT - size.y - 10.f;
 
 	rect_shape.setPosition(pos);
 	text_box.setPos(pos + sf::Vector2f(10.f, 5.f));

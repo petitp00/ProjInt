@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "Game.h"
+#include "Tweener.h"
 
 // Forward declaration
 class Tooltip;
@@ -43,8 +44,9 @@ public:
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
 	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
-	virtual void setOnClickAction(std::function<void(ButtonActionImpl*)>* action,
-								  ButtonActionImpl* impl) {
+	virtual void setOnClickAction(
+		std::function<void(ButtonActionImpl*)>* action,
+		ButtonActionImpl* impl) {
 		this->button_action_impl = impl; this->action = action;
 	}
 
@@ -171,4 +173,7 @@ private:
 	bool timer_active = false;
 	sf::Clock clock;
 	sf::Time show_after;
+
+	bool alpha_tweener_started = false;
+	Tweener alpha_tweener;
 };

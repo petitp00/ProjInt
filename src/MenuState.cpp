@@ -35,7 +35,7 @@ MenuPage::MenuPage(Game& game) :
 	auto b = new TextButton("Butt on", { 800, 350 }, 16.f, FontSize::NORMAL);
 	b->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
 
-	auto t = new Tooltip("Plus d'info. WEEEEEEEEEEEEEEW", sf::seconds(0.75f));
+	auto t = new Tooltip("Plus d'info. WEEEEEEEEEEEEEEW", sf::seconds(0.55f));
 	b->setTooltip(t);
 
 	gui_objects.push_back(b);
