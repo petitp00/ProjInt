@@ -30,7 +30,7 @@ public:
 	virtual ~GUIObject() = 0;
 
 	virtual void Update();
-	virtual void Render(sf::RenderTarget& target);
+	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false);
 
 	virtual void onClick() {}
 	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
@@ -84,7 +84,7 @@ public:
 			std::string const& font_name, sf::Color color,
 			unsigned int character_size);
 
-	void Render(sf::RenderTarget& target) override;
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
 
 
 	void setPos(sf::Vector2f pos) override { setPos(pos, true); }
@@ -118,7 +118,7 @@ class TextButton : public GUIObject {
 public:
 	TextButton()=default;
 	TextButton(std::string const& text_string,
-			   sf::Vector2f pos, float margin,
+			   sf::Vector2f pos, float width,
 			   unsigned int character_size = FontSize::NORMAL,
 			   sf::Color text_color = sf::Color::Black,
 			   sf::Color background_color = sf::Color(139, 146, 158),
@@ -127,7 +127,7 @@ public:
 	
 
 	void Update() override;
-	void Render(sf::RenderTarget& target) override;
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
 	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
@@ -141,7 +141,8 @@ private:
 
 	sf::Font* font;
 	unsigned int character_size;
-	float margin;
+	float width = 0; // 0 for automatic
+	float margin = 16;
 
 	sf::Color text_color;
 	sf::Color background_color;
@@ -161,7 +162,7 @@ public:
 
 
 	void Update() override;
-	void Render(sf::RenderTarget& target) override;
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=true) override;
 
 	void StartTimer(sf::Vector2i mouse_pos);
 	void StopTimer();

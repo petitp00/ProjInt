@@ -6,12 +6,16 @@
 
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 
 class MenuPage
 {
 public:
 	MenuPage(Game& game);
 	~MenuPage();
+
+	void Init();
 
 	void Update();
 	void Render(sf::RenderTarget& target);
@@ -20,14 +24,14 @@ public:
 	void MouseMovedEvent(int mouse_x, int mouse_y);
 
 private:
-	sf::Text title;
-	sf::Text tiny;
-	sf::Text small;
-	sf::Text normal;
+	ButtonActionImpl button_action_impl;
+
+	sf::RenderTexture tooltip_render_target; // on top
+	sf::Sprite tooltip_render_target_sprite;
 
 	std::vector<GUIObject*> gui_objects;
-
-	ButtonActionImpl button_action_impl;
+	
+	sf::Text title;
 };
 
 class MenuState

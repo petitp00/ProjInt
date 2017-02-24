@@ -25,9 +25,9 @@ void GUIObject::Update()
 	if (tooltip) tooltip->Update();
 }
 
-void GUIObject::Render(sf::RenderTarget & target)
+void GUIObject::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target)
 {
-	if (tooltip) tooltip->Render(target);
+	if (tooltip) tooltip->Render(target, tooltip_render_target);
 }
 
 void GUIObject::onHoverIn(sf::Vector2i mouse_pos)
@@ -69,10 +69,13 @@ TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, 
 	UpdateTextBox();
 }
 
-void TextBox::Render(sf::RenderTarget & target)
+void TextBox::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target)
 {
-	target.draw(text_obj);
-	GUIObject::Render(target);
+	if (!draw_on_tooltip_render_target)
+		target.draw(text_obj);
+	else
+		tooltip_render_target.draw(text_obj);
+	GUIObject::Render(target, tooltip_render_target);
 }
 
 void TextBox::setPos(sf::Vector2f pos, bool update)
@@ -159,7 +162,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index)
 
 TextButton::TextButton(std::string const & text_string,
 					   sf::Vector2f pos,
-					   float margin,
+					   float width,
 					   unsigned int character_size,
 					   sf::Color text_color,
 					   sf::Color background_color,
@@ -168,7 +171,7 @@ TextButton::TextButton(std::string const & text_string,
 	GUIObject(pos, { 0,0 }),
 	text_string(text_string),
 	character_size(character_size),
-	margin(margin),
+	width(width),
 	text_color(text_color),
 	background_color(background_color),
 	background_color_hover(background_color_hover),
@@ -185,12 +188,12 @@ void TextButton::Update()
 	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
 }
 
-void TextButton::Render(sf::RenderTarget & target)
+void TextButton::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target)
 {
 	target.draw(rect_shape);
 	target.draw(text_obj);
 
-	GUIObject::Render(target);
+	GUIObject::Render(target, tooltip_render_target);
 }
 
 void TextButton::onClick()
@@ -204,14 +207,12 @@ void TextButton::onHoverIn(sf::Vector2i mouse_pos)
 {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
-	//rect_shape.setFillColor(background_color_hover);
 }
 
 void TextButton::onHoverOut()
 {
 	GUIObject::onHoverOut();
 	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
-	//rect_shape.setFillColor(background_color);
 }
 
 void TextButton::setPos(sf::Vector2f pos)
@@ -223,25 +224,42 @@ void TextButton::setPos(sf::Vector2f pos)
 void TextButton::UpdateTextButton(bool set_params)
 {
 	if (set_params) {
-		text_obj.setString(text_string);
+		std::string upper_string;
+		for (auto c : text_string) {
+			if (c == 'Q' || c == 'q') c = 'o';
+			upper_string += toupper(c);
+		}
+		text_obj.setString(upper_string);
+
 		text_obj.setFont(*font);
 		text_obj.setCharacterSize(character_size);
 		text_obj.setFillColor(text_color);
 	}
 
 	auto text_rect = text_obj.getLocalBounds();
-	text_obj.setOrigin(text_rect.width / 2.f, text_rect.height);
-	text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width / 2.f + margin, pos.y + margin*2.f));
+
+	if (width == 0.f) {
+		rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, text_rect.height + margin*2.f));
+
+		text_obj.setOrigin(text_rect.width / 2.f, text_rect.height);
+		text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width / 2.f + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
+	}
+	else {
+		rect_shape.setSize(sf::Vector2f(width, text_rect.height + margin*2.f));
+		
+		text_obj.setOrigin(0, text_rect.height);
+		text_obj.setPosition(sf::Vector2f(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));	
+	}
+
+	text_obj.setString(text_string);
 
 	rect_shape.setPosition(pos);
-	rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, text_rect.height + margin*2.f));
 	rect_shape.setFillColor(background_color);
-
 	setSize(rect_shape.getSize());
 }
 
 Tooltip::Tooltip(std::string const & text_string, sf::Time show_after) :
-	text_box(text_string, sf::Vector2f(0, 0), 200, BASE_FONT_NAME, sf::Color::Black, FontSize::TINY),
+	text_box(text_string, sf::Vector2f(0, 0), 300, BASE_FONT_NAME, sf::Color::Black, FontSize::TINY),
 	show_after(show_after)
 {
 	rect_shape.setSize(text_box.getSize() + sf::Vector2f(20.f, 20.f));
@@ -254,7 +272,7 @@ void Tooltip::Update()
 {
 }
 
-void Tooltip::Render(sf::RenderTarget & target)
+void Tooltip::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target)
 {
 	if (timer_active && clock.getElapsedTime() >= show_after) {
 		if (!alpha_tweener_started) {
@@ -263,8 +281,8 @@ void Tooltip::Render(sf::RenderTarget & target)
 		}
 		rect_shape.setFillColor(sf::Color(255, 255, 255, int(alpha_tweener.Tween())));
 		text_box.setColor(sf::Color(0, 0, 0, int(alpha_tweener.Tween())));
-		target.draw(rect_shape);
-		text_box.Render(target);
+		tooltip_render_target.draw(rect_shape);
+		text_box.Render(target, tooltip_render_target, true);
 	}
 }
 

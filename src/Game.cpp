@@ -40,12 +40,12 @@ void Game::Start()
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) {
-				window.close();
+				Quit();
 			}
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) {
-						window.close();
+						Quit();
 					}
 					else {
 						auto s = state_machine.PopState();
@@ -90,6 +90,11 @@ void Game::Start()
 
 		window.display();
 	}
+}
+
+void Game::Quit()
+{
+	window.close();
 }
 
 void Game::ChangeActiveState(State new_state, State old_state)

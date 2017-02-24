@@ -9,7 +9,8 @@ class MenuState;
 static int WINDOW_WIDTH = 1280;
 static int WINDOW_HEIGHT = 720;
 
-static std::string BASE_FONT_NAME = "blue highway rg.ttf";
+//static std::string BASE_FONT_NAME = "blue highway rg.ttf";
+static std::string BASE_FONT_NAME = "Cousine-Regular.ttf";
 
 enum FontSize
 {
@@ -44,6 +45,7 @@ public:
 	~Game();
 
 	void Start();
+	void Quit();
 
 	void ChangeActiveState(State new_state, State old_state);
 
