@@ -42,7 +42,7 @@ void Game::Start()
 	fps_counter_text.setCharacterSize(15);
 	fps_counter_text.setFillColor(sf::Color::Black);
 	fps_counter_text.setPosition(10, 10);
-	fps_counter_text.setString("fps"); 
+	fps_counter_text.setString("fps");
 
 	int frames = 0;
 	int refresh = 30;
@@ -53,7 +53,7 @@ void Game::Start()
 	while (window.isOpen()) {
 		if (frames == refresh) {
 			float t = clock.restart().asMicroseconds() / 1000.f;
-			fps_counter_text.setString(to_string(int(1000 / (t/refresh))));
+			fps_counter_text.setString(to_string(int(1000 / (t / refresh))));
 			frames = 0;
 		}
 
@@ -70,7 +70,6 @@ void Game::Start()
 
 				}
 				else if (event.key.code == sf::Keyboard::Space) {
-					ChangeActiveState(State::Game, state_machine.getActiveState());
 				}
 
 				if (menu_state->getActive()) {
@@ -110,7 +109,8 @@ void Game::Start()
 		if (game_state->getActive()) { game_state->Render(window); }
 
 		window.setView(window.getDefaultView());
-		window.draw(fps_counter_text);
+		if (show_fps_counter)
+			window.draw(fps_counter_text);
 		window.display();
 
 		++frames;
@@ -141,6 +141,11 @@ void Game::ChangeActiveState(State new_state, State old_state)
 		menu_state->setActive(true);
 		menu_state->setActiveState(new_state);
 	}
+}
+
+void Game::ToggleFpsCounter()
+{
+	show_fps_counter = !show_fps_counter;
 }
 
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings)

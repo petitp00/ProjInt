@@ -30,8 +30,12 @@ static void return_to_last_state(ButtonActionImpl* impl) {
 	impl->game.ReturnToLastState();
 }
 
-static void toggle_mute_check_box(ButtonActionImpl* impl) { }
+static void toggle_mute_checkbox(ButtonActionImpl* impl) { }
 static void change_volume(ButtonActionImpl* impl) { }
+
+static void toggle_fps_checkbox(ButtonActionImpl* impl) {
+	impl->game.ToggleFpsCounter();
+}
 
 // MENU PAGE
 MenuPage::MenuPage()
@@ -195,6 +199,14 @@ void MenuState::InitOptionsMenu()
 	audio_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_audio_menu), &button_action_impl);
 	options_menu.AddGUIObject(audio_button);
 
+	auto fps_label = new TextBox("Compteur de FPS:", { 100, 350 }, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
+	options_menu.AddGUIObject(fps_label);
+
+	auto fps_checkbox = new Checkbox(true, { 804, 355 });
+	fps_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_fps_checkbox), &button_action_impl);
+	fps_checkbox->setTooltip(new Tooltip("Affiche le nombre d'images par secondes. (Coin supérieur gauche)", sf::seconds(0.55f)));
+	options_menu.AddGUIObject(fps_checkbox);
+
 	auto return_button = new TextButton("Retour", { float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100) }, 0);
 	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
 	options_menu.AddGUIObject(return_button);
@@ -209,7 +221,7 @@ void MenuState::InitAudioMenu()
 	audio_menu.AddGUIObject(mute_label);
 
 	auto mute_checkbox = new Checkbox(false, { 375, 255 });
-	mute_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_mute_check_box), &button_action_impl);
+	mute_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_mute_checkbox), &button_action_impl);
 	button_action_impl.mute_active_ref = mute_checkbox->getActiveRef();
 	audio_menu.AddGUIObject(mute_checkbox);
 

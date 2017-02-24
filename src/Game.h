@@ -53,6 +53,8 @@ public:
 	}
 	void ChangeActiveState(State new_state, State old_state);
 
+	void ToggleFpsCounter();
+
 private:
 	GameSettings game_settings;
 	sf::RenderWindow window;
@@ -60,4 +62,6 @@ private:
 	StateMachine state_machine;
 	GameState* game_state;
 	MenuState* menu_state;
+
+	bool show_fps_counter = true;
 };
