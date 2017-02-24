@@ -25,7 +25,7 @@ public:
 		this->tween_type = tween_type;
 		b = start_value;
 		c = end_value - b;
-		d = time.asMilliseconds();
+		d = float(time.asMilliseconds());
 		clock.restart();
 	}
 	float Tween()
@@ -62,14 +62,14 @@ public:
 			t -= 2;
 			return c / 2 * (t*t*t*t*t + 2) + b;
 		case TweenType::ExpoIn:
-			return c * std::pow(2, 10 * (t / d - 1)) + b;
+			return c * float(std::pow(2, 10 * (t / d - 1))) + b;
 		case TweenType::ExpoOut:
-			return c * (-std::pow(2, -10 * t / d) + 1) + b;
+			return c * float(-std::pow(2, -10 * t / d) + 1) + b;
 		case TweenType::ExpoInOut:
 			t /= d / 2;
-			if (t < 1) return c / 2 * std::pow(2, 10 * (t - 1)) + b;
+			if (t < 1) return c / 2 * float(std::pow(2, 10 * (t - 1))) + b;
 			t--;
-			return c / 2 * (-std::pow(2, -10 * t) + 2) + b;
+			return c / 2 * float(-std::pow(2, -10 * t) + 2) + b;
 		case TweenType::BackIn:
 			s = 1.70158f;
 			postFix = t /= d;
@@ -84,7 +84,7 @@ public:
 			postFix = t-=2;
 			return c / 2 * ((postFix)*t*(((s*=(1.525f)) + 1)*t + s) + 2) + b;
 		case TweenType::ElasticOut:
-			return (t == d) ? b + c : c * (-pow(2, -10 * t / d) + 1) + b;
+			return (t == d) ? b + c : c * float(-pow(2, -10 * t / d) + 1) + b;
 		case TweenType::BounceOut:
 			if ((t/=d) < (1 / 2.75f)) {
 				return c*(7.5625f*t*t) + b;
@@ -101,6 +101,8 @@ public:
 				postFix = t-=(2.625f / 2.75f);
 				return c*(7.5625f*(postFix)*t + .984375f) + b;
 			}
+		default:
+			return 0.f;
 		}
 	}
 	bool getEnded() { return clock.getElapsedTime().asMilliseconds() >= d; }

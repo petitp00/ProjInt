@@ -32,4 +32,7 @@ sf::Texture& ResourceManager::getTexture(std::string name)
 	if (!t.loadFromFile(path + name)) {
 		cerr << "Could not load texture \"" << name << "\"." << endl;
 	}
+
+	textures[name] = t;
+	return textures[name];
 }

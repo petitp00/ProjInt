@@ -19,6 +19,17 @@ enum FontSize
 	BIG = 70,
 };
 
+// t is between 0 and 1
+inline sf::Color const& LerpColor(sf::Color col1, sf::Color col2, float t)
+{
+	return sf::Color(
+		int(col1.r + (col2.r - col1.r) * t),
+		int(col1.g + (col2.g - col1.g) * t),
+		int(col1.b + (col2.b - col1.b) * t),
+		int(col1.a + (col2.a - col1.a) * t)
+	);
+}
+
 struct GameSettings
 {
 	unsigned int AALevel = 8;

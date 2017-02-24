@@ -258,8 +258,8 @@ void Tooltip::Render(sf::RenderTarget & target)
 			alpha_tweener_started = true;
 			alpha_tweener.Reset(TweenType::QuartInOut, 0, 255, sf::milliseconds(200));
 		}
-		rect_shape.setFillColor(sf::Color(255, 255, 255, alpha_tweener.Tween()));
-		text_box.setColor(sf::Color(0, 0, 0, alpha_tweener.Tween()));
+		rect_shape.setFillColor(sf::Color(255, 255, 255, int(alpha_tweener.Tween())));
+		text_box.setColor(sf::Color(0, 0, 0, int(alpha_tweener.Tween())));
 		target.draw(rect_shape);
 		text_box.Render(target);
 	}
