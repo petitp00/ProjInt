@@ -6,7 +6,7 @@
 using namespace std;
 
 
-static void test(ButtonActionImpl* impl) {
+static void start_game(ButtonActionImpl* impl) {
 	impl->game.ChangeActiveState(State::Game, State::MainMenu);
 }
 
@@ -43,22 +43,22 @@ void MenuPage::Init()
 	float button_width = title.getLocalBounds().width;
 
 	auto play_button = new TextButton("Jouer", { 100, 250 }, button_width);
-	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
+	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(start_game), &button_action_impl);
 	play_button->setTooltip(new Tooltip("Commencer une partie", sf::seconds(0.55f)));
 	gui_objects.push_back(play_button);
 
 	auto load_button = new TextButton("Charger une partie", { 100, 350 }, button_width);
-	load_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
+	//load_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
 	load_button->setTooltip(new Tooltip("Charger une partie sauvegardée", sf::seconds(0.55f)));
 	gui_objects.push_back(load_button);
 
 	auto options_button = new TextButton("Options", { 100, 450 }, button_width/2.f - 20.f);
-	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
+	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(start_game), &button_action_impl);
 	options_button->setTooltip(new Tooltip("Accéder aux options", sf::seconds(0.55f)));
 	gui_objects.push_back(options_button);
 
 	auto info_button = new TextButton("Informations", { 100 + button_width/2.f + 20.f, 450 }, button_width/2.f - 20.f);
-	info_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(test), &button_action_impl);
+	info_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(start_game), &button_action_impl);
 	info_button->setTooltip(new Tooltip("Informations sur le projet et ses créateurs", sf::seconds(0.55f)));
 	gui_objects.push_back(info_button);
 

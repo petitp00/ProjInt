@@ -5,6 +5,8 @@
 #include "GameState.h"
 #include "MenuState.h"
 
+#include "ResourceManager.h"
+
 #include <iostream>
 using namespace std;
 
@@ -34,19 +36,34 @@ Game::~Game()
 */
 void Game::Start()
 {
+	sf::Clock clock;
+	sf::Text fps_counter_text;
+	fps_counter_text.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	fps_counter_text.setCharacterSize(15);
+	fps_counter_text.setFillColor(sf::Color::Black);
+	fps_counter_text.setPosition(10, 10);
+	fps_counter_text.setString("fps"); 
+
+	int frames = 0;
+	int refresh = 30;
+
+	sf::Clock dt_clock;
+	float dt = 0;
+
 	while (window.isOpen()) {
+		if (frames == refresh) {
+			float t = clock.restart().asMicroseconds() / 1000.f;
+			fps_counter_text.setString(to_string(int(1000 / (t/refresh))));
+			frames = 0;
+		}
 
 		// Events
 		sf::Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) {
-				Quit();
-			}
+			if (event.type == sf::Event::Closed) { Quit(); }
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
-					if (state_machine.getActiveState() == State::MainMenu) {
-						Quit();
-					}
+					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
 					else {
 						auto s = state_machine.PopState();
 						ChangeActiveState(state_machine.getActiveState(), s);
@@ -79,7 +96,7 @@ void Game::Start()
 
 		// Updates
 		if (menu_state->getActive()) { menu_state->Update(); }
-		if (game_state->getActive()) { game_state->Update(); }
+		if (game_state->getActive()) { game_state->Update(dt); }
 
 
 		// Renders
@@ -88,7 +105,12 @@ void Game::Start()
 		if (menu_state->getActive()) { menu_state->Render(window); }
 		if (game_state->getActive()) { game_state->Render(window); }
 
+		window.setView(window.getDefaultView());
+		window.draw(fps_counter_text);
 		window.display();
+
+		++frames;
+		dt = dt_clock.restart().asMicroseconds() / 1000.f;
 	}
 }
 
@@ -135,5 +157,5 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 
 	window.create(video_mode, "Projet Intégrateur", style, ctx_settings);
 
-	window.setVerticalSyncEnabled(settings.VSync);
+	//window.setVerticalSyncEnabled(settings.VSync);
 }

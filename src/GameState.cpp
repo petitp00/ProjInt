@@ -20,10 +20,10 @@ GameState::~GameState()
 {
 }
 
-void GameState::Update()
+void GameState::Update(float dt)
 {
-	float rx = rng::rand_float(-15.f, 15.f);
-	float ry = rng::rand_float(-15.f, 15.f);
+	float rx = rng::rand_float(-15.f*dt, 15.f*dt);
+	float ry = rng::rand_float(-15.f*dt, 15.f*dt);
 	wew.setPosition(wew.getPosition().x + rx, wew.getPosition().y + ry);
 }
 

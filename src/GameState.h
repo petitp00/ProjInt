@@ -13,7 +13,7 @@ public:
 	GameState();
 	~GameState();
 
-	void Update();
+	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
 	void KeyPressedEvent(sf::Keyboard::Key key);
