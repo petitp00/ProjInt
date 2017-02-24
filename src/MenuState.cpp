@@ -50,6 +50,9 @@ MenuPage::~MenuPage()
 
 void MenuPage::Update()
 {
+	for (auto o : gui_objects) {
+		o->Update();
+	}
 }
 
 void MenuPage::Render(sf::RenderTarget& target)

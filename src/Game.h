@@ -20,7 +20,7 @@ enum FontSize
 };
 
 // t is between 0 and 1
-inline sf::Color const& LerpColor(sf::Color col1, sf::Color col2, float t)
+inline sf::Color LerpColor(sf::Color col1, sf::Color col2, float t)
 {
 	return sf::Color(
 		int(col1.r + (col2.r - col1.r) * t),

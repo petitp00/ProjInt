@@ -174,13 +174,15 @@ TextButton::TextButton(std::string const & text_string,
 	background_color_hover(background_color_hover),
 	font(&ResourceManager::getFont(font_name))
 {
+	color_tw.Reset(TweenType::QuartInOut, 0, 0, sf::milliseconds(50));
 	UpdateTextButton();
-
 }
 
 void TextButton::Update()
 {
 	GUIObject::Update();
+
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
 }
 
 void TextButton::Render(sf::RenderTarget & target)
@@ -196,19 +198,20 @@ void TextButton::onClick()
 	onHoverOut();
 	if (action)
 		(*action)(button_action_impl);
-	else { cout << "w" << endl; }
 }
 
 void TextButton::onHoverIn(sf::Vector2i mouse_pos)
 {
 	GUIObject::onHoverIn(mouse_pos);
-	rect_shape.setFillColor(background_color_hover);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+	//rect_shape.setFillColor(background_color_hover);
 }
 
 void TextButton::onHoverOut()
 {
 	GUIObject::onHoverOut();
-	rect_shape.setFillColor(background_color);
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+	//rect_shape.setFillColor(background_color);
 }
 
 void TextButton::setPos(sf::Vector2f pos)

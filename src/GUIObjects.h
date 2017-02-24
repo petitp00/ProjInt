@@ -121,10 +121,10 @@ public:
 			   sf::Vector2f pos, float margin,
 			   unsigned int character_size = FontSize::NORMAL,
 			   sf::Color text_color = sf::Color::Black,
-			   sf::Color background_color = sf::Color(160, 160, 160),
-			   sf::Color background_color_hover = sf::Color(100, 100, 100),
+			   sf::Color background_color = sf::Color(139, 146, 158),
+			   sf::Color background_color_hover = sf::Color(41, 48, 61),
 			   std::string const& font_name=BASE_FONT_NAME);
-
+	
 
 	void Update() override;
 	void Render(sf::RenderTarget& target) override;
@@ -146,6 +146,8 @@ private:
 	sf::Color text_color;
 	sf::Color background_color;
 	sf::Color background_color_hover;
+
+	Tweener color_tw;
 
 	std::string text_string;
 	sf::Text text_obj;
