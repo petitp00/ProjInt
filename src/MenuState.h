@@ -19,6 +19,7 @@ public:
 	virtual void Render(sf::RenderTarget& target);
 
 	void MousePressedEvent(int mouse_x, int mouse_y);
+	void MouseReleasedEvent(int mouse_x, int mouse_y);
 	void MouseMovedEvent(int mouse_x, int mouse_y);
 
 	void AddGUIObject(GUIObject* obj) { gui_objects.push_back(obj); }
@@ -43,23 +44,36 @@ public:
 
 	void KeyPressedEvent(sf::Keyboard::Key key);
 	void MousePressedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y);
+	void MouseReleasedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y);
 	void MouseMovedEvent(int mouse_x, int mouse_y);
 
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
 
-	void setActiveState(State active_state) { this->active_state = active_state; }
+	void setActiveState(State active_state) {
+		this->active_state = active_state;
+		if (active_state == State::MainMenu) active_page = &main_menu;
+		else if (active_state == State::InfoMenu) active_page = &info_menu;
+		else if (active_state == State::OptionsMenu) active_page = &options_menu;
+		else if (active_state == State::AudioOptionsMenu) active_page = &audio_menu;
+	}
 
 private:
 	ButtonActionImpl button_action_impl;
 
 	bool active = false;
 	State active_state = State::MainMenu;
+	MenuPage* active_page = nullptr;
 
 	void InitMainMenu();
 	MenuPage main_menu;
 
 	void InitInfoMenu();
 	MenuPage info_menu;
-};
 
+	void InitOptionsMenu();
+	MenuPage options_menu;
+
+	void InitAudioMenu();
+	MenuPage audio_menu;
+};

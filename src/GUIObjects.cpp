@@ -313,3 +313,130 @@ void Tooltip::setMousePos(sf::Vector2i mouse_pos)
 	rect_shape.setPosition(pos);
 	text_box.setPos(pos + sf::Vector2f(10.f, 5.f));
 }
+
+Checkbox::Checkbox(bool active, sf::Vector2f pos, sf::Vector2f size, sf::Color background_color, sf::Color background_color_hover) :
+	GUIObject(pos, size),
+	active(active),
+	background_color(background_color),
+	background_color_hover(background_color_hover)
+{
+	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	text_obj.setCharacterSize(FontSize::SMALL);
+	text_obj.setFillColor(sf::Color::Black);
+	text_obj.setString("X");
+	text_obj.setOrigin(text_obj.getLocalBounds().width / 2.f, text_obj.getLocalBounds().height);
+	text_obj.setPosition(pos + size/2.f);
+
+	if (!active) text_obj.setString("");
+
+	color_tw.Reset(TweenType::QuartInOut, 0, 0, sf::milliseconds(50));
+	UpdateCheckbox();
+}
+
+void Checkbox::Update()
+{
+	GUIObject::Update();
+
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
+}
+
+void Checkbox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	GUIObject::Render(target, tooltip_render_target, draw_on_tooltip_render_target);
+
+	target.draw(rect_shape);
+	target.draw(text_obj);
+}
+
+void Checkbox::onClick()
+{
+	//onHoverOut();
+	active = !active;
+	if (!active) text_obj.setString("");
+	else text_obj.setString("X");
+	if (action)
+		(*action)(button_action_impl);
+}
+
+void Checkbox::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+}
+
+void Checkbox::onHoverOut()
+{
+	GUIObject::onHoverOut();
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+}
+
+void Checkbox::UpdateCheckbox()
+{
+	rect_shape.setPosition(pos);
+	rect_shape.setSize(size);
+}
+
+Slider::Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover):
+	GUIObject(pos, { 40,40 }),
+	bar_width(width),
+	bar_pos(pos - sf::Vector2f(0, 15/2.f - 20)),
+	value(start_value),
+	min_value(min_value),
+	max_value(max_value),
+	background_color(background_color),
+	background_color_hover(background_color_hover)
+{
+	pos.x = pos.x + ((start_value - min_value) / max_value) * width;
+	color_tw.Reset(TweenType::QuartInOut, 0, 0, sf::milliseconds(50));
+	UpdateSlider();
+}
+
+void Slider::Update()
+{
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
+}
+
+void Slider::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(bar_shape);
+	target.draw(rect_shape);
+}
+
+void Slider::onClick()
+{
+	GUIObject::onClick();
+}
+
+void Slider::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+}
+
+void Slider::onHoverOut()
+{
+	GUIObject::onHoverOut();
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+}
+
+void Slider::UpdateClickDrag(sf::Vector2i mouse_pos)
+{
+	float mx = float(mouse_pos.x);
+	pos.x = min(max(bar_pos.x, mx - 20), bar_pos.x + bar_width - 40.f );
+	value = min_value + (pos.x - bar_pos.x) / (bar_width - 40) * max_value;
+	rect_shape.setPosition(pos);
+	if (action) (*action)(button_action_impl);
+}
+
+void Slider::UpdateSlider()
+{
+	bar_shape.setSize({ bar_width, 15 });
+	bar_shape.setPosition(bar_pos);
+	bar_shape.setFillColor(sf::Color::Black);
+
+	pos.x = bar_pos.x + (value-min_value)/max_value * (bar_width-40);
+
+	rect_shape.setSize(sf::Vector2f(40, 40));
+	rect_shape.setPosition(pos);
+
+}

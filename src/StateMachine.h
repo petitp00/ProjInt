@@ -7,6 +7,7 @@ enum class State
 	MainMenu,
 	InfoMenu,
 	OptionsMenu,
+	AudioOptionsMenu,
 	PausedMenu,
 	Game
 };

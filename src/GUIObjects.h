@@ -16,6 +16,8 @@ public:
 	ButtonActionImpl(Game& game);
 
 	Game& game;
+	bool* mute_active_ref;
+	float* volume_slider_ref;
 };
 
 
@@ -32,14 +34,18 @@ public:
 	virtual void Update();
 	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false);
 
-	virtual void onClick() {}
+	virtual void onClick() { clicked = true; }
+	virtual void onClickRelease() { clicked = false; }
 	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
 	virtual void onHoverOut();
 
 	// when mouse has moved on top of object
 	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
 
+	virtual void UpdateClickDrag(sf::Vector2i mouse_pos) {}
+
 	bool isMouseIn(sf::Vector2i mouse_pos);
+	bool isClicked() { return clicked; }
 
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
@@ -58,6 +64,7 @@ protected:
 	sf::Vector2f pos;
 	sf::Vector2f size;
 
+	bool clicked = false;
 	bool hovered = false;
 
 	Tooltip* tooltip = nullptr;
@@ -124,7 +131,7 @@ public:
 			   sf::Color background_color = sf::Color(139, 146, 158),
 			   sf::Color background_color_hover = sf::Color(41, 48, 61),
 			   std::string const& font_name=BASE_FONT_NAME);
-	
+
 
 	void Update() override;
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
@@ -179,4 +186,77 @@ private:
 
 	bool alpha_tweener_started = false;
 	Tweener alpha_tweener;
+};
+
+class Checkbox : public GUIObject {
+public:
+	Checkbox() = default;
+	Checkbox(bool active, sf::Vector2f pos,
+			 sf::Vector2f size ={ 40, 40 },
+			 sf::Color background_color = sf::Color(139, 146, 158),
+			 sf::Color background_color_hover = sf::Color(41, 48, 61)
+	);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+
+	void onClick() override;
+	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverOut() override;
+
+	bool* getActiveRef() { return &active; }
+
+private:
+	void UpdateCheckbox();
+
+	sf::Text text_obj;
+	sf::RectangleShape rect_shape;
+
+	bool active = false;
+
+	sf::Color background_color;
+	sf::Color background_color_hover;
+
+	Tweener color_tw;
+};
+
+class Slider : public GUIObject {
+public:
+	Slider()=default;
+	Slider(sf::Vector2f pos,
+		   float width,
+		   float start_value,
+		   float min_value,
+		   float max_value,
+		   sf::Color background_color = sf::Color(139, 146, 158),
+		   sf::Color background_color_hover = sf::Color(41, 48, 61)
+	);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+
+	void onClick() override;
+	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverOut() override;
+	void UpdateClickDrag(sf::Vector2i mouse_pos);
+
+	float* getValueRef() { return &value; }
+
+private:
+	void UpdateSlider();
+
+	sf::RectangleShape bar_shape;
+	sf::RectangleShape rect_shape;
+
+	sf::Vector2f bar_pos;
+	float bar_width;
+
+	float value;
+	float min_value;
+	float max_value;
+
+	sf::Color background_color;
+	sf::Color background_color_hover;
+
+	Tweener color_tw;
 };

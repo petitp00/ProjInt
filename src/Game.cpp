@@ -85,6 +85,11 @@ void Game::Start()
 					game_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
 				}
 			}
+			else if (event.type == sf::Event::MouseButtonReleased) {
+				if (menu_state->getActive()) {
+					menu_state->MouseReleasedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
+				}
+			}
 			else if (event.type == sf::Event::MouseMoved) {
 				if (menu_state->getActive()) {
 					menu_state->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
