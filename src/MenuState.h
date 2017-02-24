@@ -12,27 +12,25 @@
 class MenuPage
 {
 public:
-	MenuPage(Game& game);
-	~MenuPage();
+	MenuPage();
+	virtual ~MenuPage();
 
-	void Init();
-
-	void Update();
-	void Render(sf::RenderTarget& target);
+	virtual void Update();
+	virtual void Render(sf::RenderTarget& target);
 
 	void MousePressedEvent(int mouse_x, int mouse_y);
 	void MouseMovedEvent(int mouse_x, int mouse_y);
 
-private:
-	ButtonActionImpl button_action_impl;
+	void AddGUIObject(GUIObject* obj) { gui_objects.push_back(obj); }
+
+protected:
 
 	sf::RenderTexture tooltip_render_target; // on top
 	sf::Sprite tooltip_render_target_sprite;
 
 	std::vector<GUIObject*> gui_objects;
-	
-	sf::Text title;
 };
+
 
 class MenuState
 {
@@ -50,9 +48,18 @@ public:
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
 
-private:
-	bool active = false;
+	void setActiveState(State active_state) { this->active_state = active_state; }
 
+private:
+	ButtonActionImpl button_action_impl;
+
+	bool active = false;
+	State active_state = State::MainMenu;
+
+	void InitMainMenu();
 	MenuPage main_menu;
+
+	void InitInfoMenu();
+	MenuPage info_menu;
 };
 

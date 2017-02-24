@@ -65,8 +65,7 @@ void Game::Start()
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
 					else {
-						auto s = state_machine.PopState();
-						ChangeActiveState(state_machine.getActiveState(), s);
+						ReturnToLastState();
 					}
 
 				}
@@ -135,6 +134,7 @@ void Game::ChangeActiveState(State new_state, State old_state)
 	else {
 		game_state->setActive(false);
 		menu_state->setActive(true);
+		menu_state->setActiveState(new_state);
 	}
 }
 

@@ -47,6 +47,10 @@ public:
 	void Start();
 	void Quit();
 
+	void ReturnToLastState() {
+		auto s = state_machine.PopState();
+		ChangeActiveState(state_machine.getActiveState(), s);
+	}
 	void ChangeActiveState(State new_state, State old_state);
 
 private:

@@ -5,6 +5,7 @@
 enum class State
 {
 	MainMenu,
+	InfoMenu,
 	OptionsMenu,
 	PausedMenu,
 	Game
