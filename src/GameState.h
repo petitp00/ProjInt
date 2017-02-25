@@ -7,6 +7,8 @@
 
 #include <SFML/Graphics/Text.hpp>
 
+#include "World.h"
+
 class GameState
 {
 public:
@@ -16,8 +18,7 @@ public:
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
-	void KeyPressedEvent(sf::Keyboard::Key key);
-	void MousePressedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y);
+	void HandleEvent(sf::Event const& event);
 	
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
@@ -25,6 +26,6 @@ public:
 private:
 	bool active = false;
 
+	World world;
 
-	sf::Text wew;
 };

@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameState.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -152,8 +153,10 @@
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\StateMachine.cpp" />
     <ClCompile Include="src\GUIObjects.cpp" />
+    <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\GameState.h" />
     <ClInclude Include="src\MenuState.h" />
@@ -162,6 +165,7 @@
     <ClInclude Include="src\StateMachine.h" />
     <ClInclude Include="src\GUIObjects.h" />
     <ClInclude Include="src\Tweener.h" />
+    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

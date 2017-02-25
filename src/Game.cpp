@@ -44,16 +44,18 @@ void Game::Start()
 	fps_counter_text.setPosition(10, 10);
 	fps_counter_text.setString("fps");
 
+	sf::Clock refresh_clock;
+	sf::Time refresh(sf::seconds(0.25f));
 	int frames = 0;
-	int refresh = 30;
 
 	sf::Clock dt_clock;
 	float dt = 0;
 
 	while (window.isOpen()) {
-		if (frames == refresh) {
+		if (refresh_clock.getElapsedTime() >= refresh) {
+			refresh_clock.restart();
 			float t = clock.restart().asMicroseconds() / 1000.f;
-			fps_counter_text.setString(to_string(int(1000 / (t / refresh))));
+			fps_counter_text.setString(to_string(int(1000 / (t / frames))));
 			frames = 0;
 		}
 
@@ -64,24 +66,16 @@ void Game::Start()
 			else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
-					else {
-						ReturnToLastState();
-					}
-
+					else { ReturnToLastState(); }
 				}
-				else if (event.key.code == sf::Keyboard::Space) {
-				}
-
 				if (menu_state->getActive()) {
 					menu_state->KeyPressedEvent(event.key.code);
 				}
+
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
 				if (menu_state->getActive()) {
 					menu_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
-				}
-				else if (game_state->getActive()) {
-					game_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonReleased) {
@@ -94,6 +88,10 @@ void Game::Start()
 					menu_state->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
 				}
 
+			}
+
+			if (game_state->getActive()) {
+				game_state->HandleEvent(event);
 			}
 		}
 
@@ -113,8 +111,8 @@ void Game::Start()
 			window.draw(fps_counter_text);
 		window.display();
 
-		++frames;
 		dt = dt_clock.restart().asMicroseconds() / 1000.f;
+		++frames;
 	}
 }
 
@@ -166,6 +164,8 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 	}
 
 	window.create(video_mode, "Projet Intégrateur", style, ctx_settings);
+
+	window.setKeyRepeatEnabled(false);
 
 	//window.setVerticalSyncEnabled(settings.VSync);
 }
