@@ -14,6 +14,8 @@ class ResourceManager
 {
 public:
 
+	static void ClearAll();
+
 	// Fonts
 	static sf::Font& getFont(std::string name);
 	static std::map<std::string, sf::Font> fonts;

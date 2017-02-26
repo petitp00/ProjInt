@@ -5,6 +5,12 @@ using namespace std;
 
 map<string, sf::Font> ResourceManager::fonts;
 
+void ResourceManager::ClearAll()
+{
+	ResourceManager::fonts.clear();
+	ResourceManager::textures.clear();
+}
+
 sf::Font& ResourceManager::getFont(std::string name)
 {
 	if (fonts.count(name)) return fonts[name];
