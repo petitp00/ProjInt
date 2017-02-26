@@ -23,8 +23,11 @@ World::~World()
 
 void World::LoadWorld()
 {
-	entities.push_back(new GameObject({ 100, 100 }, "bee.png"));
-	entities.push_back(new GameObject({ 300, 100 }, "egg.png", { 64,64 }));
+	player = new Player();
+
+	entities.push_back(new GameObject({ 700, 400 }, "box.png", { 0,0 }, SOLID));
+	//entities.push_back(new GameObject({ 300, 300 }, "box2.png", { 150,150 }, SOLID));
+	entities.push_back(player);
 }
 
 void World::Update(float dt)
@@ -42,6 +45,9 @@ void World::Update(float dt)
 		}
 		++i;
 	}
+
+	player->DoCollisions(entities);
+	player->DoMovement(dt);
 }
 
 void World::Render(sf::RenderTarget & target)

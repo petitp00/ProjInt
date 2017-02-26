@@ -29,5 +29,6 @@ private:
 
 	sf::View game_view;
 
+	Player* player;
 	std::vector<Entity*> entities;
 };

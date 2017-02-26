@@ -5,12 +5,13 @@
 #include <SFML/Graphics/Sprite.hpp>
 
 #include <string>
+#include <vector>
 
 // FLAGS
 #define NO_FLAG 0
-#define SOLID 1 // can't walk through (has collisions)
-#define	STATIC 2 // does not move
-#define IMMORTAL 4 // never dies (should be sorted at head of vector)
+#define IMMORTAL 1 // never dies (should be sorted at head of vector)
+#define	SOLID 2 // can't walk through (has collisions)
+#define PICKUP 4 // can be picked up
 
 class Entity
 {
@@ -31,6 +32,8 @@ public:
 	sf::Vector2f const& getPos() { return pos; }
 	sf::Vector2f const& getSize() { return size; }
 	bool getDead() { return dead; }
+
+	void AddFlag(unsigned long flag) { flags |= flag; }
 	bool HasFlag(unsigned long flag) { return (flags & flag) == flag; }
 
 protected:
@@ -44,10 +47,33 @@ class GameObject : public Entity
 {
 public:
 	GameObject()=default;
-	GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f size={ 0,0 }, unsigned long flags=NO_FLAG);
+	GameObject(sf::Vector2f pos,
+			   std::string texture_name,
+			   sf::Vector2f size={ 0,0 },
+			   unsigned long flags=NO_FLAG);
 
 	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
 
 private:
 	sf::Sprite sprite;
+};
+
+class Player : public Entity
+{
+public:
+	Player();
+
+	void Init();
+	
+	void Update(float dt) override;
+	void Render(sf::RenderTarget& target) override;
+
+	void DoCollisions(std::vector<Entity*>& entities);
+	void DoMovement(float dt);
+
+private:
+	sf::Sprite sprite; // replace with animation component
+
+	sf::Vector2f movement;
+	float walk_speed = 0.3f;
 };

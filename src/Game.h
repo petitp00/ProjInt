@@ -31,6 +31,22 @@ inline sf::Color LerpColor(sf::Color col1, sf::Color col2, float t)
 	);
 }
 
+inline sf::Vector2f normalize(sf::Vector2f const& vec) {
+	float norm = sqrt(vec.x*vec.x + vec.y*vec.y);
+	auto v = sf::Vector2f(vec.x / norm, vec.y / norm);
+	return v;
+}
+
+inline float dist(sf::Vector2f const& a, sf::Vector2f const& b) {
+	float dist = sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+	return dist;
+}
+
+inline std::ostream& operator<<(std::ostream& os, sf::Vector2f const& vec) {
+	os << "{" << vec.x << ", " << vec.y << "}";
+	return os;
+}
+
 struct GameSettings
 {
 	unsigned int AALevel = 8;
