@@ -1,4 +1,4 @@
-#include "Game.h"
+﻿#include "Game.h"
 
 #include <SFML/Window/Event.hpp>
 
@@ -7,6 +7,8 @@
 
 #include "ResourceManager.h"
 
+#include <fstream>
+
 #include <iostream>
 using namespace std;
 
@@ -14,9 +16,27 @@ using namespace std;
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings);
 
 
+void Controls::LoadDefault()
+{
+	std::ifstream s("Resources/Data/default_controls.txt");
+
+	std::string w,w2;
+
+	while (s >> w) {
+		if (w[0] == '"') {
+			s >> w2;
+			std::string w3 = w.substr(1, w.length()-2);
+			keys.push_back({w3, sf::Keyboard::Key(stoi(w2))});
+		}
+	}
+
+}
+
 Game::Game()
 {
 	CreateWindowWithSettings(window, game_settings);
+
+	game_settings.controls.LoadDefault();
 
 	menu_state = new MenuState(*this);
 	menu_state->setActive(true);
@@ -64,6 +84,7 @@ void Game::Start()
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { Quit(); }
 			else if (event.type == sf::Event::KeyPressed) {
+
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
 					else { ReturnToLastState(); }
@@ -90,6 +111,9 @@ void Game::Start()
 
 			}
 
+			if (menu_state->getActive()) {
+				menu_state->HandleEvents(event);
+			}
 			if (game_state->getActive()) {
 				game_state->HandleEvent(event);
 			}
@@ -163,9 +187,99 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 		video_mode = sf::VideoMode::getDesktopMode();
 	}
 
-	window.create(video_mode, "Projet Int�grateur", style, ctx_settings);
+	window.create(video_mode, "Projet Intégrateur", style, ctx_settings);
 
 	window.setKeyRepeatEnabled(false);
 
 	//window.setVerticalSyncEnabled(settings.VSync);
+}
+
+std::string getKeyString(sf::Keyboard::Key key)
+{
+	if (key >= 0 && key <= 25) {
+		return string(1, char(65+int(key)));
+	}
+	if (key >= 26 && key <= 35) {
+		return string(1, char(48+int(key)));
+	}
+
+	switch (key)
+	{
+	case sf::Keyboard::Unknown: return "???";
+	case sf::Keyboard::Escape: return "Escape";
+	case sf::Keyboard::LControl: return "LCtrl";
+	case sf::Keyboard::LShift: return "LShift";
+	case sf::Keyboard::LAlt: return "LAlt";
+	case sf::Keyboard::RControl: return "RCtrl";
+	case sf::Keyboard::RShift: return "RShift";
+	case sf::Keyboard::RAlt: return "RAlt";
+	case sf::Keyboard::SemiColon: return ";";
+	case sf::Keyboard::Comma: return ",";
+	case sf::Keyboard::Period: return ".";
+	case sf::Keyboard::Quote: return "'";
+	case sf::Keyboard::Slash: return "/";
+	case sf::Keyboard::BackSlash: return "\\"; 
+	case sf::Keyboard::Tilde:
+		break;
+	case sf::Keyboard::Equal:
+		break;
+	case sf::Keyboard::Dash:
+		break;
+	case sf::Keyboard::Space: return "Espace";
+	case sf::Keyboard::Return: return "Entrée";
+	case sf::Keyboard::BackSpace: return "Backspace";
+	case sf::Keyboard::Tab:
+		break;
+	case sf::Keyboard::PageUp:
+		break;
+	case sf::Keyboard::PageDown:
+		break;
+	case sf::Keyboard::End:
+		break;
+	case sf::Keyboard::Home:
+		break;
+	case sf::Keyboard::Insert:
+		break;
+	case sf::Keyboard::Delete:
+		break;
+	case sf::Keyboard::Add:
+		break;
+	case sf::Keyboard::Subtract:
+		break;
+	case sf::Keyboard::Multiply:
+		break;
+	case sf::Keyboard::Divide:
+		break;
+	case sf::Keyboard::Left: return to_string('\u2190');
+	case sf::Keyboard::Right: return to_string('\u2192');
+	case sf::Keyboard::Up: return to_string('\u2191');
+	case sf::Keyboard::Down: return to_string('\u2193');
+
+	case sf::Keyboard::Numpad0: break;
+	case sf::Keyboard::Numpad1: break;
+	case sf::Keyboard::Numpad2: break;
+	case sf::Keyboard::Numpad3: break;
+	case sf::Keyboard::Numpad4: break;
+	case sf::Keyboard::Numpad5: break;
+	case sf::Keyboard::Numpad6: break;
+	case sf::Keyboard::Numpad7: break;
+	case sf::Keyboard::Numpad8: break;
+	case sf::Keyboard::Numpad9: break;
+
+	case sf::Keyboard::F1: return "F1";
+	case sf::Keyboard::F2: return "F2";
+	case sf::Keyboard::F3: return "F3";
+	case sf::Keyboard::F4: return "F4";
+	case sf::Keyboard::F5: return "F5";
+	case sf::Keyboard::F6: return "F6";
+	case sf::Keyboard::F7: return "F7";
+	case sf::Keyboard::F8: return "F8";
+	case sf::Keyboard::F9: return "F9";
+	case sf::Keyboard::F10:return "F10";
+	case sf::Keyboard::F11:return "F11";
+	case sf::Keyboard::F12:return "F12";
+	default:
+		return "??";
+	}
+	return std::string("????");
 }

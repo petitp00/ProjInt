@@ -1,7 +1,10 @@
 #pragma once
 
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/View.hpp>
 
 #include <functional>
 
@@ -32,12 +35,15 @@ public:
 	virtual ~GUIObject() = 0;
 
 	virtual void Update();
-	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false);
+	virtual void Render(sf::RenderTarget& target,
+						sf::RenderTarget& tooltip_render_target,
+						bool draw_on_tooltip_render_target=false);
 
 	virtual void onClick() { clicked = true; }
 	virtual void onClickRelease() { clicked = false; }
 	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
 	virtual void onHoverOut();
+	virtual void onMouseWheel(float delta) {}
 
 	// when mouse has moved on top of object
 	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
@@ -91,7 +97,9 @@ public:
 			std::string const& font_name, sf::Color color,
 			unsigned int character_size);
 
-	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
 
 
 	void setPos(sf::Vector2f pos) override { setPos(pos, true); }
@@ -134,7 +142,9 @@ public:
 
 
 	void Update() override;
-	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
 	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
@@ -169,7 +179,9 @@ public:
 
 
 	void Update() override;
-	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=true) override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=true) override;
 
 	void StartTimer(sf::Vector2i mouse_pos);
 	void StopTimer();
@@ -198,7 +210,9 @@ public:
 	);
 
 	void Update() override;
-	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
 	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
@@ -233,7 +247,9 @@ public:
 	);
 
 	void Update() override;
-	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target, bool draw_on_tooltip_render_target=false) override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
 	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
@@ -260,3 +276,37 @@ private:
 
 	Tweener color_tw;
 };
+
+class ObjContainer : public GUIObject {
+public:
+	ObjContainer()=default;
+	ObjContainer(sf::Vector2f pos,
+				 sf::Vector2f size);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	void AddObject(GUIObject* obj);
+
+	void onClick() override;
+	void onClickRelease() override;
+	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverOut() override;
+	void onMouseWheel(float delta) override;
+	void UpdateClickDrag(sf::Vector2i mouse_pos) override;
+	void UpdateHoveredMousePos(sf::Vector2i mouse_pos) override;
+
+private:
+	void UpdateObjContainer(bool set_params = true);
+
+	std::vector<GUIObject*> gui_objects;
+
+	float y_offset = 0.f;
+	sf::View view;
+	sf::RenderTexture render_texture;
+	sf::Sprite render_sprite;
+
+	sf::RectangleShape rect_shape;
+}; 

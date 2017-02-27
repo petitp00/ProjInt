@@ -1,8 +1,12 @@
 #pragma once
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Keyboard.hpp>
 
 #include "StateMachine.h"
+
+#include <map>
+
 class GameState;
 class MenuState;
 
@@ -17,6 +21,7 @@ enum FontSize
 	TINY = 20,
 	SMALL = 30,
 	NORMAL = 40,
+	LARGE = 50,
 	BIG = 70,
 };
 
@@ -47,11 +52,30 @@ inline std::ostream& operator<<(std::ostream& os, sf::Vector2f const& vec) {
 	return os;
 }
 
+std::string getKeyString(sf::Keyboard::Key key);
+
+struct Controls
+{
+	void LoadDefault();
+
+	sf::Keyboard::Key get(std::string s) {
+		for (auto k : keys) {
+			if (k.first == s) {
+				return k.second;
+			}
+		}
+		return sf::Keyboard::Unknown;
+	}
+
+	std::vector<std::pair<std::string, sf::Keyboard::Key>> keys;
+};
+
 struct GameSettings
 {
 	unsigned int AALevel = 8;
 	bool VSync = true;
 	bool Fullscreen = false;
+	Controls controls;
 };
 
 class Game
@@ -70,6 +94,8 @@ public:
 	void ChangeActiveState(State new_state, State old_state);
 
 	void ToggleFpsCounter();
+
+	Controls& getControls() { return game_settings.controls; }
 
 private:
 	GameSettings game_settings;

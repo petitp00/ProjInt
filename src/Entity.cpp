@@ -43,10 +43,6 @@ void Player::Update(float dt)
 	if (movement != sf::Vector2f(0, 0)) {
 		movement = normalize(movement);
 	}
-
-/*	pos += movement * walk_speed * dt;
-	sprite.setPosition(pos);
-	*/
 }
 
 void Player::Render(sf::RenderTarget & target)

@@ -1,0 +1,7 @@
+"Haut" 22		;W
+"Bas" 18		;S
+"Gauche" 0		;A
+"Droite" 3		;D
+"Retour/Pause" 36	;Escape
+"Inventaire" 16		;Q
+"Infos" 85		;F1

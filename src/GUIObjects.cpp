@@ -227,6 +227,12 @@ void TextButton::UpdateTextButton(bool set_params)
 		std::string upper_string;
 		for (auto c : text_string) {
 			if (c == 'Q' || c == 'q') c = 'o';
+			if (c == 'É' || c == 'é') c = 'e';
+			if (c == 'È' || c == 'è') c = 'e';
+			if (c == 'Ê' || c == 'ê') c = 'e';
+			if (c == 'À' || c == 'à') c = 'a';
+			if (c == 'Â' || c == 'â') c = 'a';
+			if (c == 'Ô' || c == 'ô') c = 'o';
 			upper_string += toupper(c);
 		}
 		text_obj.setString(upper_string);
@@ -439,4 +445,122 @@ void Slider::UpdateSlider()
 	rect_shape.setSize(sf::Vector2f(40, 40));
 	rect_shape.setPosition(pos);
 
+}
+
+ObjContainer::ObjContainer(sf::Vector2f pos, sf::Vector2f size) :
+	GUIObject(pos, size)
+{
+	UpdateObjContainer();
+}
+
+void ObjContainer::Update()
+{
+	for (auto o : gui_objects) {
+		o->Update();
+	}
+}
+
+void ObjContainer::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	render_texture.clear();
+	render_texture.draw(rect_shape);
+
+	for (auto o : gui_objects) {
+		o->Render(render_texture, tooltip_render_target, draw_on_tooltip_render_target);
+	}
+
+	render_texture.display();
+	target.draw(render_sprite);
+}
+
+void ObjContainer::AddObject(GUIObject * obj)
+{
+	gui_objects.push_back(obj);
+}
+
+void ObjContainer::onClick()
+{
+	GUIObject::onClick();
+	for (auto o : gui_objects) {
+		if (o->getHovered()) {
+			o->onClick();
+		}
+	}
+}
+
+void ObjContainer::onClickRelease()
+{
+	GUIObject::onClickRelease();
+	for (auto o : gui_objects) {
+		if (o->isClicked()) {
+			o->onClickRelease();
+		}
+	}
+}
+
+void ObjContainer::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+}
+
+void ObjContainer::onHoverOut()
+{
+	GUIObject::onHoverOut();
+}
+
+void ObjContainer::onMouseWheel(float delta)
+{
+	float scroll_speed = 20;
+	GUIObject::onMouseWheel(delta);
+	y_offset -= delta * scroll_speed;
+	view.setCenter(sf::Vector2f(size.x/2.f, size.y/2.f + y_offset));
+	rect_shape.move(0, -delta*scroll_speed);
+	render_texture.setView(view);
+}
+
+void ObjContainer::UpdateClickDrag(sf::Vector2i mouse_pos)
+{
+}
+
+void ObjContainer::UpdateHoveredMousePos(sf::Vector2i mouse_pos)
+{
+	sf::Vector2i mouse = sf::Vector2i(mouse_pos)- sf::Vector2i(pos) + sf::Vector2i(0, y_offset);
+
+	for (auto o : gui_objects) {
+		if (o->isClicked()) {
+			o->UpdateClickDrag(mouse);
+		}
+		if (o->isMouseIn(mouse)) {
+			if (!o->getHovered()) {
+				o->onHoverIn(mouse);
+			}
+			else {
+				o->UpdateHoveredMousePos(mouse);
+			}
+		}
+		else if (o->getHovered()) {
+			o->onHoverOut();
+		}
+	}
+}
+
+void ObjContainer::UpdateObjContainer(bool set_params)
+{
+	view.reset({0,0,size.x, size.y});
+
+	render_texture.create(int(size.x), int(size.y));
+	render_texture.setView(view);
+	render_sprite.setTexture(render_texture.getTexture());
+	render_sprite.setPosition(pos);
+
+
+	if (set_params) {
+		float thicc = 2;
+		rect_shape.setPosition({thicc, thicc});
+		rect_shape.setSize(size - sf::Vector2f{thicc*2, thicc*2});
+		rect_shape.setOutlineColor(sf::Color::Black);
+		rect_shape.setOutlineThickness(thicc);
+		//rect_shape.setFillColor(sf::Color(183, 241, 244));
+		rect_shape.setFillColor(sf::Color(151, 196, 198));
+	}
 }

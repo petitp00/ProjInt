@@ -21,6 +21,7 @@ public:
 	void MousePressedEvent(int mouse_x, int mouse_y);
 	void MouseReleasedEvent(int mouse_x, int mouse_y);
 	void MouseMovedEvent(int mouse_x, int mouse_y);
+	void MouseWheelScrolledEvent(float delta);
 
 	void AddGUIObject(GUIObject* obj) { gui_objects.push_back(obj); }
 
@@ -42,6 +43,8 @@ public:
 	void Update();
 	void Render(sf::RenderTarget& target);
 
+	void HandleEvents(sf::Event const& event);
+
 	void KeyPressedEvent(sf::Keyboard::Key key);
 	void MousePressedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y);
 	void MouseReleasedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y);
@@ -56,6 +59,7 @@ public:
 		else if (active_state == State::InfoMenu) active_page = &info_menu;
 		else if (active_state == State::OptionsMenu) active_page = &options_menu;
 		else if (active_state == State::AudioOptionsMenu) active_page = &audio_menu;
+		else if (active_state == State::ControlsOptionsMenu) active_page = &controls_menu;
 	}
 
 private:
@@ -76,4 +80,7 @@ private:
 
 	void InitAudioMenu();
 	MenuPage audio_menu;
+
+	void InitControlsMenu(Controls& controls);
+	MenuPage controls_menu;
 };
