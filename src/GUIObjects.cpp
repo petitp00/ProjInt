@@ -168,7 +168,7 @@ TextButton::TextButton(std::string const & text_string,
 					   sf::Color background_color,
 					   sf::Color background_color_hover,
 					   std::string const & font_name) :
-	GUIObject(pos, { 0,0 }),
+	GUIObject(pos, {0,0}),
 	text_string(text_string),
 	character_size(character_size),
 	width(width),
@@ -252,9 +252,9 @@ void TextButton::UpdateTextButton(bool set_params)
 	}
 	else {
 		rect_shape.setSize(sf::Vector2f(width, text_rect.height + margin*2.f));
-		
+
 		text_obj.setOrigin(0, text_rect.height);
-		text_obj.setPosition(sf::Vector2f(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));	
+		text_obj.setPosition(sf::Vector2f(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
 	}
 
 	text_obj.setString(text_string);
@@ -382,8 +382,8 @@ void Checkbox::UpdateCheckbox()
 	rect_shape.setSize(size);
 }
 
-Slider::Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover):
-	GUIObject(pos, { 40,40 }),
+Slider::Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
+	GUIObject(pos, {40,40}),
 	bar_width(width),
 	bar_pos(pos - sf::Vector2f(0, 15/2.f - 20)),
 	value(start_value),
@@ -428,7 +428,7 @@ void Slider::onHoverOut()
 void Slider::UpdateClickDrag(sf::Vector2i mouse_pos)
 {
 	float mx = float(mouse_pos.x);
-	pos.x = min(max(bar_pos.x, mx - 20), bar_pos.x + bar_width - 40.f );
+	pos.x = min(max(bar_pos.x, mx - 20), bar_pos.x + bar_width - 40.f);
 	value = min_value + (pos.x - bar_pos.x) / (bar_width - 40) * max_value;
 	rect_shape.setPosition(pos);
 	if (action) (*action)(button_action_impl);
@@ -436,7 +436,7 @@ void Slider::UpdateClickDrag(sf::Vector2i mouse_pos)
 
 void Slider::UpdateSlider()
 {
-	bar_shape.setSize({ bar_width, 15 });
+	bar_shape.setSize({bar_width, 15});
 	bar_shape.setPosition(bar_pos);
 	bar_shape.setFillColor(sf::Color::Black);
 
@@ -447,10 +447,81 @@ void Slider::UpdateSlider()
 
 }
 
+Scrollbar::Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover):
+	GUIObject(pos, {15, 30}),
+	bar_pos(pos),
+	bar_height(height),
+	value(start_val),
+	min_value(min_value),
+	max_value(max_value),
+	background_color(background_color),
+	background_color_hover(background_color_hover)
+
+{
+	pos.x = pos.x + ((start_val - min_value) / max_value) * height;
+	color_tw.Reset(TweenType::QuartInOut, 0, 0, sf::milliseconds(50));
+
+	bar_shape.setPosition(pos);
+	bar_shape.setSize(sf::Vector2f(15, bar_height));
+	bar_shape.setFillColor(sf::Color::Black);
+
+	UpdateScrollbar(value);
+}
+
+void Scrollbar::Update()
+{
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
+}
+
+void Scrollbar::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(bar_shape);
+	target.draw(rect_shape);
+}
+
+void Scrollbar::onClick()
+{
+	GUIObject::onClick();
+}
+
+void Scrollbar::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+}
+
+void Scrollbar::onHoverOut()
+{
+	GUIObject::onHoverOut();
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+}
+
+void Scrollbar::UpdateClickDrag(sf::Vector2i mouse_pos)
+{
+	float my = float(mouse_pos.y);
+	pos.y = min(max(bar_pos.y, my - 15), bar_pos.y + bar_height - 30.f);
+	value = min_value + (pos.y - bar_pos.y) / (bar_height - 30) * max_value;
+	rect_shape.setPosition(pos);
+	if (action) (*action)(button_action_impl);
+}
+
+void Scrollbar::UpdateScrollbar(float val)
+{
+	value = val;
+	pos.y = bar_pos.y + (value-min_value)/max_value * (bar_height-30);
+	rect_shape.setPosition(pos);
+	rect_shape.setSize(size);
+}
+
+/*
+	OBJCONTAINER
+*/
+
 ObjContainer::ObjContainer(sf::Vector2f pos, sf::Vector2f size) :
 	GUIObject(pos, size)
 {
 	UpdateObjContainer();
+	scrollbar = new Scrollbar(pos+sf::Vector2f(size.x, 10) - sf::Vector2f{40, 0}, size.y-30, 0, 0, max_offset);
 }
 
 void ObjContainer::Update()
@@ -458,6 +529,8 @@ void ObjContainer::Update()
 	for (auto o : gui_objects) {
 		o->Update();
 	}
+
+	scrollbar->Update();
 }
 
 void ObjContainer::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
@@ -471,11 +544,18 @@ void ObjContainer::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_
 
 	render_texture.display();
 	target.draw(render_sprite);
+
+	scrollbar->Render(target, tooltip_render_target, draw_on_tooltip_render_target);
 }
 
 void ObjContainer::AddObject(GUIObject * obj)
 {
 	gui_objects.push_back(obj);
+
+	if (obj->getPos().y + obj->getSize().y + 20 > max_offset +size.y - 20) {
+		max_offset = obj->getPos().y + obj->getSize().y - size.y + 40.f;
+		scrollbar->setMaxValue(max_offset);
+	}
 }
 
 void ObjContainer::onClick()
@@ -486,6 +566,10 @@ void ObjContainer::onClick()
 			o->onClick();
 		}
 	}
+
+	if (scrollbar->getHovered()) {
+		scrollbar->onClick();
+	}
 }
 
 void ObjContainer::onClickRelease()
@@ -495,6 +579,9 @@ void ObjContainer::onClickRelease()
 		if (o->isClicked()) {
 			o->onClickRelease();
 		}
+	}
+	if (scrollbar->isClicked()) {
+		scrollbar->onClickRelease();
 	}
 }
 
@@ -508,13 +595,22 @@ void ObjContainer::onHoverOut()
 	GUIObject::onHoverOut();
 }
 
+float thicc = 2;
+
 void ObjContainer::onMouseWheel(float delta)
 {
 	float scroll_speed = 20;
 	GUIObject::onMouseWheel(delta);
+
 	y_offset -= delta * scroll_speed;
+
+	if (y_offset > max_offset) { y_offset = max_offset; }
+	if (y_offset < min_offset) { y_offset = min_offset; }
+
+	scrollbar->UpdateScrollbar(y_offset);
+
 	view.setCenter(sf::Vector2f(size.x/2.f, size.y/2.f + y_offset));
-	rect_shape.move(0, -delta*scroll_speed);
+	rect_shape.setPosition(view.getCenter() - view.getSize()/2.f + sf::Vector2f{thicc, thicc});
 	render_texture.setView(view);
 }
 
@@ -524,7 +620,7 @@ void ObjContainer::UpdateClickDrag(sf::Vector2i mouse_pos)
 
 void ObjContainer::UpdateHoveredMousePos(sf::Vector2i mouse_pos)
 {
-	sf::Vector2i mouse = sf::Vector2i(mouse_pos)- sf::Vector2i(pos) + sf::Vector2i(0, y_offset);
+	sf::Vector2i mouse = sf::Vector2i(mouse_pos)- sf::Vector2i(pos) + sf::Vector2i(0, int(y_offset));
 
 	for (auto o : gui_objects) {
 		if (o->isClicked()) {
@@ -542,6 +638,23 @@ void ObjContainer::UpdateHoveredMousePos(sf::Vector2i mouse_pos)
 			o->onHoverOut();
 		}
 	}
+
+	if (scrollbar->isClicked()) {
+		scrollbar->UpdateClickDrag(mouse_pos);
+		y_offset = scrollbar->getValue();
+		onMouseWheel(0);
+	}
+	if (scrollbar->isMouseIn(mouse_pos)) {
+		if (!scrollbar->getHovered()) {
+			scrollbar->onHoverIn(mouse_pos);
+		}
+		else {
+			scrollbar->UpdateHoveredMousePos(mouse_pos);
+		}
+	}
+	else if (scrollbar->getHovered()) {
+		scrollbar->onHoverOut();
+	}
 }
 
 void ObjContainer::UpdateObjContainer(bool set_params)
@@ -555,7 +668,6 @@ void ObjContainer::UpdateObjContainer(bool set_params)
 
 
 	if (set_params) {
-		float thicc = 2;
 		rect_shape.setPosition({thicc, thicc});
 		rect_shape.setSize(size - sf::Vector2f{thicc*2, thicc*2});
 		rect_shape.setOutlineColor(sf::Color::Black);
@@ -564,3 +676,4 @@ void ObjContainer::UpdateObjContainer(bool set_params)
 		rect_shape.setFillColor(sf::Color(151, 196, 198));
 	}
 }
+

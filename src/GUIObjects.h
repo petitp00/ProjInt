@@ -41,7 +41,7 @@ public:
 
 	virtual void onClick() { clicked = true; }
 	virtual void onClickRelease() { clicked = false; }
-	virtual void onHoverIn(sf::Vector2i mouse_pos={ 0,0 });
+	virtual void onHoverIn(sf::Vector2i mouse_pos={0,0});
 	virtual void onHoverOut();
 	virtual void onMouseWheel(float delta) {}
 
@@ -147,7 +147,7 @@ public:
 				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	void onHoverOut() override;
 
 	void setPos(sf::Vector2f pos) override;
@@ -204,7 +204,7 @@ class Checkbox : public GUIObject {
 public:
 	Checkbox() = default;
 	Checkbox(bool active, sf::Vector2f pos,
-			 sf::Vector2f size ={ 40, 40 },
+			 sf::Vector2f size ={40, 40},
 			 sf::Color background_color = sf::Color(139, 146, 158),
 			 sf::Color background_color_hover = sf::Color(41, 48, 61)
 	);
@@ -215,7 +215,7 @@ public:
 				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	void onHoverOut() override;
 
 	bool* getActiveRef() { return &active; }
@@ -252,7 +252,7 @@ public:
 				bool draw_on_tooltip_render_target=false) override;
 
 	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	void onHoverOut() override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos);
 
@@ -277,11 +277,60 @@ private:
 	Tweener color_tw;
 };
 
+class Scrollbar : public GUIObject {
+public:
+	Scrollbar()=default;
+	Scrollbar(sf::Vector2f pos,
+			  float height,
+			  float start_val,
+			  float min_value,
+			  float max_value,
+			  sf::Color background_color = sf::Color(139, 146, 158),
+			  sf::Color background_color_hover = sf::Color(41, 48, 61)
+	);
+	
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	void onClick() override;
+	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	void onHoverOut() override;
+	void UpdateClickDrag(sf::Vector2i mouse_pos);
+
+	float getValue() { return value; }
+	float* getValueRef() { return &value; }
+
+	void setMaxValue(float max_value) { this->max_value = max_value; }
+
+	void UpdateScrollbar(float val);
+private:
+
+	sf::RectangleShape bar_shape;
+	sf::RectangleShape rect_shape;
+
+	sf::Vector2f bar_pos;
+	float bar_height;
+
+	float value;
+	float min_value;
+	float max_value;
+
+	sf::Color background_color;
+	sf::Color background_color_hover;
+
+	Tweener color_tw;
+
+};
+
 class ObjContainer : public GUIObject {
 public:
 	ObjContainer()=default;
 	ObjContainer(sf::Vector2f pos,
 				 sf::Vector2f size);
+
+	~ObjContainer() { delete scrollbar; }
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
@@ -292,7 +341,7 @@ public:
 
 	void onClick() override;
 	void onClickRelease() override;
-	void onHoverIn(sf::Vector2i mouse_pos={ 0,0 }) override;
+	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	void onHoverOut() override;
 	void onMouseWheel(float delta) override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos) override;
@@ -302,11 +351,14 @@ private:
 	void UpdateObjContainer(bool set_params = true);
 
 	std::vector<GUIObject*> gui_objects;
+	Scrollbar* scrollbar;
 
 	float y_offset = 0.f;
+	float min_offset = 0.0f;
+	float max_offset = 1.f;
 	sf::View view;
 	sf::RenderTexture render_texture;
 	sf::Sprite render_sprite;
 
 	sf::RectangleShape rect_shape;
-}; 
+};
