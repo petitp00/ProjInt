@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+struct Controls;
+
 // FLAGS
 #define NO_FLAG 0
 #define IMMORTAL 1 // never dies (should be sorted at head of vector)
@@ -64,14 +66,18 @@ public:
 	Player();
 
 	void Init();
-	
+
 	void Update(float dt) override;
 	void Render(sf::RenderTarget& target) override;
 
 	void DoCollisions(std::vector<Entity*>& entities);
 	void DoMovement(float dt);
 
+	void setControls(Controls* controls) { this->controls = controls; }
+
 private:
+	Controls* controls = nullptr;
+
 	sf::Sprite sprite; // replace with animation component
 
 	sf::Vector2f movement;

@@ -6,8 +6,8 @@
 #include <iostream>
 using namespace std;
 
-GameState::GameState() :
-	world(*this)
+GameState::GameState(Controls* controls) :
+	world(*this, controls)
 {
 }
 

@@ -32,12 +32,12 @@ void Player::Init()
 
 void Player::Update(float dt)
 {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) movement.y = -1;
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) movement.y = 1;
+	if (sf::Keyboard::isKeyPressed(controls->get("Haut"))) movement.y = -1;
+	else if (sf::Keyboard::isKeyPressed(controls->get("Bas"))) movement.y = 1;
 	else movement.y = 0;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) movement.x = -1;
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) movement.x = 1;
+	if (sf::Keyboard::isKeyPressed(controls->get("Gauche"))) movement.x = -1;
+	else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) movement.x = 1;
 	else movement.x = 0;
 
 	if (movement != sf::Vector2f(0, 0)) {
@@ -58,7 +58,7 @@ void Player::DoCollisions(std::vector<Entity*>& entities)
 			auto esize = e->getSize();
 
 			float tolerance = 10;
-			
+
 			if (movement.x != 0
 			 && pos.y + size.y > epos.y
 			 && pos.y < epos.y + esize.y) {

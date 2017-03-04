@@ -12,14 +12,14 @@
 class GameState
 {
 public:
-	GameState();
+	GameState(Controls* controls);
 	~GameState();
 
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
 	bool HandleEvent(sf::Event const& event);
-	
+
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
 

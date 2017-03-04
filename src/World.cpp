@@ -5,12 +5,13 @@
 #include <iostream>
 using namespace std;
 
-World::World(GameState & game_state) :
+World::World(GameState & game_state, Controls* controls) :
 	game_state(game_state),
 	game_view(sf::FloatRect({ 0,0 }, { float(WINDOW_WIDTH), float(WINDOW_HEIGHT) }))
 
 {
 	LoadWorld();
+	player->setControls(controls);
 }
 
 World::~World()

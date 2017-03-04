@@ -66,7 +66,7 @@ Game::Game()
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
-	game_state = new GameState();
+	game_state = new GameState(&game_settings.controls);
 }
 
 Game::~Game()
@@ -223,37 +223,23 @@ std::string getKeyString(sf::Keyboard::Key key)
 	case sf::Keyboard::Quote: return "'";
 	case sf::Keyboard::Slash: return "/";
 	case sf::Keyboard::BackSlash: return "\\";
-	case sf::Keyboard::Tilde:
-		break;
-	case sf::Keyboard::Equal:
-		break;
-	case sf::Keyboard::Dash:
-		break;
+	case sf::Keyboard::Tilde: break;
+	case sf::Keyboard::Equal: break;
+	case sf::Keyboard::Dash: break;
 	case sf::Keyboard::Space: return "Espace";
 	case sf::Keyboard::Return: return "Entrée";
 	case sf::Keyboard::BackSpace: return "Backspace";
-	case sf::Keyboard::Tab:
-		break;
-	case sf::Keyboard::PageUp:
-		break;
-	case sf::Keyboard::PageDown:
-		break;
-	case sf::Keyboard::End:
-		break;
-	case sf::Keyboard::Home:
-		break;
-	case sf::Keyboard::Insert:
-		break;
-	case sf::Keyboard::Delete:
-		break;
-	case sf::Keyboard::Add:
-		break;
-	case sf::Keyboard::Subtract:
-		break;
-	case sf::Keyboard::Multiply:
-		break;
-	case sf::Keyboard::Divide:
-		break;
+	case sf::Keyboard::Tab: break;
+	case sf::Keyboard::PageUp: break;
+	case sf::Keyboard::PageDown: break;
+	case sf::Keyboard::End: break;
+	case sf::Keyboard::Home: break;
+	case sf::Keyboard::Insert: break;
+	case sf::Keyboard::Delete: break;
+	case sf::Keyboard::Add: break;
+	case sf::Keyboard::Subtract: break;
+	case sf::Keyboard::Multiply: break;
+	case sf::Keyboard::Divide: break;
 	case sf::Keyboard::Left: return "Flèche gauche";
 	case sf::Keyboard::Right: return "Flèche droite";
 	case sf::Keyboard::Up: return "Flèche haute";

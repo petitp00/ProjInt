@@ -14,7 +14,7 @@ class GameState;
 class World
 {
 public:
-	World(GameState& game_state);
+	World(GameState& game_state, Controls* controls);
 	~World();
 
 	void LoadWorld();
