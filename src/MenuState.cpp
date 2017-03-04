@@ -43,6 +43,17 @@ static void change_volume(ButtonActionImpl* impl) { }
 static void reset_default_controls(ButtonActionImpl* impl) {
 	impl->game.getControls().LoadDefault();
 	impl->menu_state.ResetControls(impl->game.getControls());
+	impl->game.getControls().SaveUserControls();
+}
+
+static void set_new_controls(ButtonActionImpl* impl) {
+	auto& c = impl->game.getControls();
+
+	for (int i = 0; i != impl->controls_values.size(); ++i) {
+		c.keys[i].second = *impl->controls_values[i];
+	}
+
+	c.SaveUserControls();
 }
 
 // GENERAL STUFF //
@@ -295,6 +306,8 @@ void MenuState::InitAudioMenu()
 
 void MenuState::InitControlsMenu(Controls& controls)
 {
+	button_action_impl.controls_values.clear();
+
 	auto title = new TextBox("Options > Contrôles", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
 	controls_menu.AddGUIObject(title);
 
@@ -312,6 +325,10 @@ void MenuState::InitControlsMenu(Controls& controls)
 		container->AddObject(label);
 
 		auto butt = new ControlsTextButton(getKeyString(k.second), {40 + w/2.f, float(20+100*i)}, w/2.f - 160.f, 40);
+		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(set_new_controls), &button_action_impl);
+		butt->setKey(k.second);
+		button_action_impl.controls_values.push_back(butt->getKeyRef());
+
 		container->AddObject(butt);
 
 		++i;

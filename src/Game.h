@@ -57,6 +57,8 @@ std::string getKeyString(sf::Keyboard::Key key);
 struct Controls
 {
 	void LoadDefault();
+	void LoadUserControls();
+	void SaveUserControls();
 
 	sf::Keyboard::Key get(std::string s) {
 		for (auto k : keys) {

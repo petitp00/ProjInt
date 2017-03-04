@@ -1,0 +1,7 @@
+"Haut" 22
+"Bas" 18
+"Gauche" 0
+"Droite" 3
+"Retour/Pause" 36
+"Inventaire" 16
+"Infos" 85

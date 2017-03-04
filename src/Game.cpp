@@ -19,10 +19,8 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 void Controls::LoadDefault()
 {
 	keys.clear();
-
 	std::ifstream s("Resources/Data/default_controls.txt");
-
-	std::string w,w2;
+	std::string w, w2;
 
 	while (s >> w) {
 		if (w[0] == '"') {
@@ -34,11 +32,35 @@ void Controls::LoadDefault()
 
 }
 
+void Controls::LoadUserControls()
+{
+	keys.clear();
+	std::ifstream s("Resources/Data/user_controls.txt");
+	std::string w, w2;
+
+	while (s >> w) {
+		if (w[0] == '"') {
+			s >> w2;
+			std::string w3 = w.substr(1, w.length()-2);
+			keys.push_back({w3, sf::Keyboard::Key(stoi(w2))});
+		}
+	}
+}
+
+void Controls::SaveUserControls()
+{
+	std::ofstream s("Resources/Data/user_controls.txt");
+	for (auto k : keys) {
+		s << '"' << k.first << '"' << ' ' << int(k.second) << endl;
+	}
+	cout << "Saved Controls" << endl;
+}
+
 Game::Game()
 {
 	CreateWindowWithSettings(window, game_settings);
 
-	game_settings.controls.LoadDefault();
+	game_settings.controls.LoadUserControls();
 
 	menu_state = new MenuState(*this);
 	menu_state->setActive(true);
@@ -90,7 +112,7 @@ void Game::Start()
 				if (menu_state->HandleEvents(event)) continue;
 			}
 			if (game_state->getActive()) {
-				if (game_state->HandleEvent(event)) continue; 
+				if (game_state->HandleEvent(event)) continue;
 			}
 
 			if (event.type == sf::Event::KeyPressed) {
@@ -200,7 +222,7 @@ std::string getKeyString(sf::Keyboard::Key key)
 	case sf::Keyboard::Period: return ".";
 	case sf::Keyboard::Quote: return "'";
 	case sf::Keyboard::Slash: return "/";
-	case sf::Keyboard::BackSlash: return "\\"; 
+	case sf::Keyboard::BackSlash: return "\\";
 	case sf::Keyboard::Tilde:
 		break;
 	case sf::Keyboard::Equal:

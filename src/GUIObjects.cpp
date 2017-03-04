@@ -248,14 +248,9 @@ void TextButton::UpdateTextButton(bool set_params) {
 }
 
 // CONTROLS TEXT BUTTON
-ControlsTextButton::ControlsTextButton(std::string const & text_string,
-									   sf::Vector2f pos,
-									   float width,
-									   unsigned int character_size,
-									   sf::Color text_color,
-									   sf::Color background_color,
-									   sf::Color background_color_hover,
-									   std::string const & font_name) :
+ControlsTextButton::ControlsTextButton( std::string const & text_string, sf::Vector2f pos, float width,
+									   unsigned int character_size, sf::Color text_color, sf::Color background_color,
+									   sf::Color background_color_hover, std::string const & font_name) :
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name) {
 	UpdateControlsTextButton();
 }
@@ -282,7 +277,9 @@ bool ControlsTextButton::onHoverOut() {
 
 bool ControlsTextButton::onKeyPressed(sf::Keyboard::Key key) {
 	text_string = getKeyString(key);
+	this->key = key;
 	setActive(false);
+	if (action) (*action)(button_action_impl);
 	if (UpdateControlsTextButton()) {
 		return true;
 	}
@@ -698,7 +695,6 @@ void ObjContainer::UpdateObjContainer(bool set_params) {
 		rect_shape.setSize(size - sf::Vector2f{thicc*2, thicc*2});
 		rect_shape.setOutlineColor(sf::Color::Black);
 		rect_shape.setOutlineThickness(thicc);
-		//rect_shape.setFillColor(sf::Color(183, 241, 244));
 		rect_shape.setFillColor(sf::Color(151, 196, 198));
 	}
 }

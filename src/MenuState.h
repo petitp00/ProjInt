@@ -48,7 +48,7 @@ public:
 
 	bool HandleEvents(sf::Event const& event);
 
-	bool getActive() { return active; }
+	bool getActive() const { return active; }
 	void setActive(bool active) { this->active = active; }
 
 	void setActiveState(State active_state) {

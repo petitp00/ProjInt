@@ -12,7 +12,7 @@
 #include "Tweener.h"
 
 static sf::Color BG_COLOR = sf::Color(139, 146, 158);
-static sf::Color BACKGROUND_COLOR_HOVER = sf::Color(41, 48, 61);
+static sf::Color BG_HOVER = sf::Color(41, 48, 61);
 
 
 // Forward declaration
@@ -29,6 +29,7 @@ public:
 	// variable refs
 	bool* mute_active_ref;
 	float* volume_slider_ref;
+	std::vector<sf::Keyboard::Key*> controls_values;
 };
 
 using action_t = std::function<void(ButtonActionImpl*)>*;
@@ -141,8 +142,8 @@ public:
 	TextButton(std::string const& text_string, sf::Vector2f pos, float width,
 			   unsigned int character_size = FontSize::NORMAL,
 			   sf::Color text_color = sf::Color::Black,
-			   sf::Color background_color = sf::Color(139, 146, 158),
-			   sf::Color background_color_hover = sf::Color(41, 48, 61),
+			   sf::Color background_color = BG_COLOR,
+			   sf::Color background_color_hover = BG_HOVER,
 			   std::string const& font_name=BASE_FONT_NAME);
 
 
@@ -184,12 +185,11 @@ class ControlsTextButton : public TextButton
 {
 public:
 	ControlsTextButton()=default;
-	ControlsTextButton(std::string const& text_string,
-					   sf::Vector2f pos, float width,
+	ControlsTextButton(std::string const& text_string, sf::Vector2f pos, float width,
 					   unsigned int character_size = FontSize::NORMAL,
 					   sf::Color text_color = sf::Color::Black,
-					   sf::Color background_color = sf::Color(139, 146, 158),
-					   sf::Color background_color_hover = sf::Color(41, 48, 61),
+					   sf::Color background_color = BG_COLOR,
+					   sf::Color background_color_hover = BG_HOVER,
 					   std::string const& font_name=BASE_FONT_NAME);
 
 	bool onClick() override;
@@ -198,9 +198,13 @@ public:
 	bool onKeyPressed(sf::Keyboard::Key key) override;
 
 	void setActive(bool active) override;
+	void setKey(sf::Keyboard::Key key) { this->key = key; }
+	sf::Keyboard::Key* getKeyRef() { return &key; }
 
 private:
 	bool UpdateControlsTextButton(bool set_params = true);
+
+	sf::Keyboard::Key key;
 };
 
 class Tooltip : public GUIObject {
@@ -210,8 +214,7 @@ public:
 
 
 	void Update() override;
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=true) override;
 
 	void StartTimer(sf::Vector2i mouse_pos);
@@ -234,15 +237,11 @@ private:
 class Checkbox : public GUIObject {
 public:
 	Checkbox() = default;
-	Checkbox(bool active, sf::Vector2f pos,
-			 sf::Vector2f size ={40, 40},
-			 sf::Color background_color = sf::Color(139, 146, 158),
-			 sf::Color background_color_hover = sf::Color(41, 48, 61)
-	);
+	Checkbox(bool active, sf::Vector2f pos, sf::Vector2f size ={40, 40},
+			 sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER );
 
 	void Update() override;
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
 	bool onClick() override;
@@ -269,9 +268,7 @@ class Slider : public GUIObject {
 public:
 	Slider()=default;
 	Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value,
-		   sf::Color background_color = sf::Color(139, 146, 158),
-		   sf::Color background_color_hover = sf::Color(41, 48, 61)
-	);
+		   sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER );
 
 	void Update() override;
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
@@ -306,18 +303,12 @@ private:
 class Scrollbar : public GUIObject {
 public:
 	Scrollbar()=default;
-	Scrollbar(sf::Vector2f pos,
-			  float height,
-			  float start_val,
-			  float min_value,
-			  float max_value,
-			  sf::Color background_color = sf::Color(139, 146, 158),
-			  sf::Color background_color_hover = sf::Color(41, 48, 61)
+	Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value,
+			  sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER
 	);
 
 	void Update() override;
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
 	bool onClick() override;
@@ -353,14 +344,12 @@ private:
 class ObjContainer : public GUIObject {
 public:
 	ObjContainer()=default;
-	ObjContainer(sf::Vector2f pos,
-				 sf::Vector2f size);
+	ObjContainer(sf::Vector2f pos, sf::Vector2f size);
 
 	~ObjContainer() { delete scrollbar; }
 
 	void Update() override;
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
 	void AddObject(GUIObject* obj);
