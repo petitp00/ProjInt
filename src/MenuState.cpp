@@ -14,6 +14,7 @@ static void quit_game(ButtonActionImpl* impl) {
 	impl->game.Quit();
 }
 
+// GO TO X MENU //
 static void go_to_info_menu(ButtonActionImpl* impl) {
 	impl->game.ChangeActiveState(State::InfoMenu, State::MainMenu);
 }
@@ -34,9 +35,17 @@ static void return_to_last_state(ButtonActionImpl* impl) {
 	impl->game.ReturnToLastState();
 }
 
+// AUDIO STUFF //
 static void toggle_mute_checkbox(ButtonActionImpl* impl) { }
 static void change_volume(ButtonActionImpl* impl) { }
 
+// CONTROLS STUFF //
+static void reset_default_controls(ButtonActionImpl* impl) {
+	impl->game.getControls().LoadDefault();
+	impl->menu_state.ResetControls(impl->game.getControls());
+}
+
+// GENERAL STUFF //
 static void toggle_fps_checkbox(ButtonActionImpl* impl) {
 	impl->game.ToggleFpsCounter();
 }
@@ -50,6 +59,14 @@ MenuPage::MenuPage()
 }
 
 MenuPage::~MenuPage() { for (auto o : gui_objects) { delete o; } }
+
+void MenuPage::Clear()
+{
+	for (int i = 0; i != gui_objects.size(); ++i) {
+		delete gui_objects[i];
+	}
+	gui_objects.clear();
+}
 
 void MenuPage::Update() { for (auto o : gui_objects) { o->Update(); } }
 
@@ -65,26 +82,31 @@ void MenuPage::Render(sf::RenderTarget& target)
 	target.draw(tooltip_render_target_sprite);
 }
 
-void MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
+bool MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
 {
+	bool ret = false;
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			o->onClick();
+			if (o->onClick()) ret = true;
 		}
 	}
+	return ret;
 }
 
-void MenuPage::MouseReleasedEvent(int mouse_x, int mouse_y)
+bool MenuPage::MouseReleasedEvent(int mouse_x, int mouse_y)
 {
+	bool ret = false;
 	for (auto o : gui_objects) {
 		if (o->isClicked()) {
-			o->onClickRelease();
+			if (o->onClickRelease()) ret = true;
 		}
 	}
+	return ret;
 }
 
-void MenuPage::MouseMovedEvent(int mouse_x, int mouse_y)
+bool MenuPage::MouseMovedEvent(int mouse_x, int mouse_y)
 {
+	bool ret = false;
 	sf::Vector2i mouse(mouse_x, mouse_y);
 	for (auto o : gui_objects) {
 		if (o->isClicked()) {
@@ -92,30 +114,42 @@ void MenuPage::MouseMovedEvent(int mouse_x, int mouse_y)
 		}
 		if (o->isMouseIn(mouse)) {
 			if (!o->getHovered()) {
-				o->onHoverIn(mouse);
+				if (o->onHoverIn(mouse)) ret = true;
 			}
 			else {
 				o->UpdateHoveredMousePos(mouse);
 			}
 		}
 		else if (o->getHovered()) {
-			o->onHoverOut();
+			if (o->onHoverOut()) ret = true;
 		}
 	}
+	return ret;
 }
 
-void MenuPage::MouseWheelScrolledEvent(float delta)
+bool MenuPage::MouseWheelScrolledEvent(float delta)
 {
+	bool ret = false;
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			o->onMouseWheel(delta);
+			if (o->onMouseWheel(delta)) ret = true;
 		}
 	}
+	return ret;
+}
+
+bool MenuPage::KeyPressedEvent(sf::Keyboard::Key key)
+{
+	bool ret = false;
+	for (auto o : gui_objects) {
+		if (o->onKeyPressed(key)) ret = true;
+	}
+	return ret;
 }
 
 // MENU STATE
 MenuState::MenuState(Game& game) :
-	button_action_impl(game),
+	button_action_impl(game, *this),
 	active_page(&main_menu)
 {
 	InitMainMenu();
@@ -143,44 +177,26 @@ void MenuState::Render(sf::RenderTarget & target)
 	active_page->Render(target);
 }
 
-void MenuState::HandleEvents(sf::Event const & event)
+bool MenuState::HandleEvents(sf::Event const & event)
 {
 	if (event.type == sf::Event::KeyPressed) {
-		//active_page->KeyPressedEvent(event.key.code);
+		return active_page->KeyPressedEvent(event.key.code);
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left)
-			active_page->MousePressedEvent(event.mouseButton.x, event.mouseButton.y);
+			return active_page->MousePressedEvent(event.mouseButton.x, event.mouseButton.y);
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left)
-			active_page->MouseReleasedEvent(event.mouseButton.x, event.mouseButton.y);
+			return active_page->MouseReleasedEvent(event.mouseButton.x, event.mouseButton.y);
 	}
 	if (event.type == sf::Event::MouseMoved) {
-		active_page->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
+		return active_page->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
 	}
 	if (event.type == sf::Event::MouseWheelScrolled) {
-		active_page->MouseWheelScrolledEvent(event.mouseWheelScroll.delta);
+		return active_page->MouseWheelScrolledEvent(event.mouseWheelScroll.delta);
 	}
-}
-
-void MenuState::KeyPressedEvent(sf::Keyboard::Key key)
-{
-}
-
-void MenuState::MousePressedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y)
-{
-	active_page->MousePressedEvent(mouse_x, mouse_y);
-}
-
-void MenuState::MouseReleasedEvent(sf::Mouse::Button button, int mouse_x, int mouse_y)
-{
-	active_page->MouseReleasedEvent(mouse_x, mouse_y);
-}
-
-void MenuState::MouseMovedEvent(int mouse_x, int mouse_y)
-{
-	active_page->MouseMovedEvent(mouse_x, mouse_y);
+	return false;
 }
 
 void MenuState::InitMainMenu()
@@ -284,6 +300,7 @@ void MenuState::InitControlsMenu(Controls& controls)
 
 	auto reset_button = new TextButton("Réinitialiser", {700, float(WINDOW_HEIGHT - 100)}, 0);
 	reset_button->setTooltip(new Tooltip("Réinitialiser aux valeur par défaut", sf::seconds(0.55f)));
+	reset_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(reset_default_controls), &button_action_impl);
 	controls_menu.AddGUIObject(reset_button);
 
 	float w = float(WINDOW_WIDTH - 200);
@@ -294,7 +311,7 @@ void MenuState::InitControlsMenu(Controls& controls)
 		auto label = new TextBox(k.first + ":", {20, float(20 + 100*i)}, w, BASE_FONT_NAME, sf::Color::Black, FontSize::LARGE);
 		container->AddObject(label);
 
-		auto butt = new TextButton(getKeyString(k.second), {40 + w/2.f, float(20+100*i)}, w/2.f - 160.f);
+		auto butt = new ControlsTextButton(getKeyString(k.second), {40 + w/2.f, float(20+100*i)}, w/2.f - 160.f, 40);
 		container->AddObject(butt);
 
 		++i;

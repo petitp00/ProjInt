@@ -22,7 +22,7 @@ public:
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
-	void HandleEvent(sf::Event const& event);
+	bool HandleEvent(sf::Event const& event);
 
 private:
 	GameState& game_state;

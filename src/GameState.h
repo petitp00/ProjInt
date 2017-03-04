@@ -18,7 +18,7 @@ public:
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
-	void HandleEvent(sf::Event const& event);
+	bool HandleEvent(sf::Event const& event);
 	
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }

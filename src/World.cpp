@@ -64,7 +64,7 @@ void World::Render(sf::RenderTarget & target)
 sf::Vector2i drag_mouse_pos;
 bool middle_pressed = false;
 
-void World::HandleEvent(sf::Event const & event)
+bool World::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Middle) {
@@ -89,5 +89,7 @@ void World::HandleEvent(sf::Event const & event)
 		auto d = event.mouseWheelScroll.delta;
 		game_view.zoom(1 + -d * 0.1f);
 	}
+
+	return false;
 }
 

@@ -5,3 +5,7 @@
 "Retour/Pause" 36	;Escape
 "Inventaire" 16		;Q
 "Infos" 85		;F1
+"Up" 73
+"Down" 74
+"Left" 71
+"Right" 72

@@ -27,7 +27,7 @@ void GameState::Render(sf::RenderTarget & target)
 	world.Render(target);
 }
 
-void GameState::HandleEvent(sf::Event const & event)
+bool GameState::HandleEvent(sf::Event const & event)
 {
-	world.HandleEvent(event);
+	return world.HandleEvent(event);
 }

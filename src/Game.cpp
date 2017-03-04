@@ -18,6 +18,8 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 
 void Controls::LoadDefault()
 {
+	keys.clear();
+
 	std::ifstream s("Resources/Data/default_controls.txt");
 
 	std::string w,w2;
@@ -83,39 +85,19 @@ void Game::Start()
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { Quit(); }
-			else if (event.type == sf::Event::KeyPressed) {
 
+			if (menu_state->getActive()) {
+				if (menu_state->HandleEvents(event)) continue;
+			}
+			if (game_state->getActive()) {
+				if (game_state->HandleEvent(event)) continue; 
+			}
+
+			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
 					else { ReturnToLastState(); }
 				}
-				if (menu_state->getActive()) {
-					menu_state->KeyPressedEvent(event.key.code);
-				}
-
-			}
-			else if (event.type == sf::Event::MouseButtonPressed) {
-				if (menu_state->getActive()) {
-					menu_state->MousePressedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
-				}
-			}
-			else if (event.type == sf::Event::MouseButtonReleased) {
-				if (menu_state->getActive()) {
-					menu_state->MouseReleasedEvent(event.mouseButton.button, event.mouseButton.x, event.mouseButton.y);
-				}
-			}
-			else if (event.type == sf::Event::MouseMoved) {
-				if (menu_state->getActive()) {
-					menu_state->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
-				}
-
-			}
-
-			if (menu_state->getActive()) {
-				menu_state->HandleEvents(event);
-			}
-			if (game_state->getActive()) {
-				game_state->HandleEvent(event);
 			}
 		}
 
@@ -250,10 +232,10 @@ std::string getKeyString(sf::Keyboard::Key key)
 		break;
 	case sf::Keyboard::Divide:
 		break;
-	case sf::Keyboard::Left: return to_string('\u2190');
-	case sf::Keyboard::Right: return to_string('\u2192');
-	case sf::Keyboard::Up: return to_string('\u2191');
-	case sf::Keyboard::Down: return to_string('\u2193');
+	case sf::Keyboard::Left: return "Flèche gauche";
+	case sf::Keyboard::Right: return "Flèche droite";
+	case sf::Keyboard::Up: return "Flèche haute";
+	case sf::Keyboard::Down: return "Flèche basse";
 
 	case sf::Keyboard::Numpad0: break;
 	case sf::Keyboard::Numpad1: break;

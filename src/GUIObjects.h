@@ -11,18 +11,27 @@
 #include "Game.h"
 #include "Tweener.h"
 
+static sf::Color BG_COLOR = sf::Color(139, 146, 158);
+static sf::Color BACKGROUND_COLOR_HOVER = sf::Color(41, 48, 61);
+
+
 // Forward declaration
 class Tooltip;
+class MenuPage;
 
 class ButtonActionImpl {
 public:
-	ButtonActionImpl(Game& game);
+	ButtonActionImpl(Game& game, MenuState& menu_state);
 
 	Game& game;
+	MenuState& menu_state;
+
+	// variable refs
 	bool* mute_active_ref;
 	float* volume_slider_ref;
 };
 
+using action_t = std::function<void(ButtonActionImpl*)>*;
 
 /*
 	Base GUI Object class
@@ -35,15 +44,15 @@ public:
 	virtual ~GUIObject() = 0;
 
 	virtual void Update();
-	virtual void Render(sf::RenderTarget& target,
-						sf::RenderTarget& tooltip_render_target,
+	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 						bool draw_on_tooltip_render_target=false);
 
-	virtual void onClick() { clicked = true; }
-	virtual void onClickRelease() { clicked = false; }
-	virtual void onHoverIn(sf::Vector2i mouse_pos={0,0});
-	virtual void onHoverOut();
-	virtual void onMouseWheel(float delta) {}
+	virtual bool onClick() { clicked = true; return true; }
+	virtual bool onClickRelease() { clicked = false; return true; }
+	virtual bool onHoverIn(sf::Vector2i mouse_pos={0,0});
+	virtual bool onHoverOut();
+	virtual bool onMouseWheel(float delta) { return false; }
+	virtual bool onKeyPressed(sf::Keyboard::Key key) { return false; }
 
 	// when mouse has moved on top of object
 	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
@@ -56,15 +65,15 @@ public:
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
 	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
-	virtual void setOnClickAction(
-		std::function<void(ButtonActionImpl*)>* action,
-		ButtonActionImpl* impl) {
+	virtual void setOnClickAction(action_t action, ButtonActionImpl* impl) {
 		this->button_action_impl = impl; this->action = action;
 	}
+	virtual void setActive(bool active) { this->active = active; }
 
 	sf::Vector2f getPos() { return pos; }
 	sf::Vector2f getSize() { return size; }
 	bool getHovered() { return hovered; }
+	bool getActive() { return active; }
 
 protected:
 	sf::Vector2f pos;
@@ -72,10 +81,11 @@ protected:
 
 	bool clicked = false;
 	bool hovered = false;
+	bool active = false; // only one item can be active at once
 
 	Tooltip* tooltip = nullptr;
 	ButtonActionImpl* button_action_impl = nullptr;
-	std::function<void(ButtonActionImpl*)>* action = nullptr;
+	action_t action = nullptr;
 
 	// ADD ID? (maybe with static int)
 };
@@ -87,18 +97,13 @@ class TextBox : public GUIObject
 {
 public:
 	TextBox() = default;
-	TextBox(std::string const& text_string,
-			sf::Vector2f pos, float width,
-			sf::Font* font, sf::Color color,
-			unsigned int character_size);
+	TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font* font,
+			sf::Color color, unsigned int character_size);
 
-	TextBox(std::string const& text_string,
-			sf::Vector2f pos, float width,
-			std::string const& font_name, sf::Color color,
-			unsigned int character_size);
+	TextBox(std::string const& text_string, sf::Vector2f pos, float width,
+			std::string const& font_name, sf::Color color, unsigned int character_size);
 
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
 
@@ -129,11 +134,11 @@ private:
 	sf::Text text_obj;
 };
 
+// TEXT BUTTON CLASS
 class TextButton : public GUIObject {
 public:
 	TextButton()=default;
-	TextButton(std::string const& text_string,
-			   sf::Vector2f pos, float width,
+	TextButton(std::string const& text_string, sf::Vector2f pos, float width,
 			   unsigned int character_size = FontSize::NORMAL,
 			   sf::Color text_color = sf::Color::Black,
 			   sf::Color background_color = sf::Color(139, 146, 158),
@@ -146,13 +151,13 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
-	void onHoverOut() override;
+	bool onClick() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
 
 	void setPos(sf::Vector2f pos) override;
 
-private:
+protected:
 	void UpdateTextButton(bool set_params = true);
 
 
@@ -170,6 +175,32 @@ private:
 	std::string text_string;
 	sf::Text text_obj;
 	sf::RectangleShape rect_shape;
+};
+
+/*
+Button for controls selection
+*/
+class ControlsTextButton : public TextButton
+{
+public:
+	ControlsTextButton()=default;
+	ControlsTextButton(std::string const& text_string,
+					   sf::Vector2f pos, float width,
+					   unsigned int character_size = FontSize::NORMAL,
+					   sf::Color text_color = sf::Color::Black,
+					   sf::Color background_color = sf::Color(139, 146, 158),
+					   sf::Color background_color_hover = sf::Color(41, 48, 61),
+					   std::string const& font_name=BASE_FONT_NAME);
+
+	bool onClick() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
+	bool onKeyPressed(sf::Keyboard::Key key) override;
+
+	void setActive(bool active) override;
+
+private:
+	bool UpdateControlsTextButton(bool set_params = true);
 };
 
 class Tooltip : public GUIObject {
@@ -214,9 +245,9 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
-	void onHoverOut() override;
+	bool onClick() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
 
 	bool* getActiveRef() { return &active; }
 
@@ -237,23 +268,18 @@ private:
 class Slider : public GUIObject {
 public:
 	Slider()=default;
-	Slider(sf::Vector2f pos,
-		   float width,
-		   float start_value,
-		   float min_value,
-		   float max_value,
+	Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value,
 		   sf::Color background_color = sf::Color(139, 146, 158),
 		   sf::Color background_color_hover = sf::Color(41, 48, 61)
 	);
 
 	void Update() override;
-	void Render(sf::RenderTarget& target,
-				sf::RenderTarget& tooltip_render_target,
+	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
-	void onHoverOut() override;
+	bool onClick() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos);
 
 	float* getValueRef() { return &value; }
@@ -288,15 +314,15 @@ public:
 			  sf::Color background_color = sf::Color(139, 146, 158),
 			  sf::Color background_color_hover = sf::Color(41, 48, 61)
 	);
-	
+
 	void Update() override;
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	void onClick() override;
-	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
-	void onHoverOut() override;
+	bool onClick() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos);
 
 	float getValue() { return value; }
@@ -339,11 +365,12 @@ public:
 
 	void AddObject(GUIObject* obj);
 
-	void onClick() override;
-	void onClickRelease() override;
-	void onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
-	void onHoverOut() override;
-	void onMouseWheel(float delta) override;
+	bool onClick() override;
+	bool onClickRelease() override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
+	bool onMouseWheel(float delta) override;
+	bool onKeyPressed(sf::Keyboard::Key key) override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos) override;
 	void UpdateHoveredMousePos(sf::Vector2i mouse_pos) override;
 
