@@ -15,12 +15,16 @@ static void quit_game(ButtonActionImpl* impl) {
 }
 
 // GO TO X MENU //
+static void go_to_main_menu(ButtonActionImpl* impl) {
+	impl->game.ChangeActiveState(State::MainMenu, State::PauseMenu);
+}
+
 static void go_to_info_menu(ButtonActionImpl* impl) {
 	impl->game.ChangeActiveState(State::InfoMenu, State::MainMenu);
 }
 
 static void go_to_options_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::OptionsMenu, State::MainMenu);
+	impl->game.ChangeActiveState(State::OptionsMenu, impl->game.getActiveState());
 }
 
 static void go_to_audio_menu(ButtonActionImpl* impl) {
@@ -168,6 +172,7 @@ MenuState::MenuState(Game& game) :
 	InitOptionsMenu();
 	InitAudioMenu();
 	InitControlsMenu(game.getControls());
+	InitPauseMenu();
 }
 
 MenuState::~MenuState()
@@ -339,4 +344,22 @@ void MenuState::InitControlsMenu(Controls& controls)
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
 	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
 	controls_menu.AddGUIObject(return_button);
+}
+
+void MenuState::InitPauseMenu()
+{
+	auto title = new TextBox("Pause", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
+	pause_menu.AddGUIObject(title);
+
+	auto resume_button = new TextButton("Retour au jeu", {100, 250}, 744);
+	resume_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	pause_menu.AddGUIObject(resume_button);
+
+	auto options_button = new TextButton("Options", {100, 350}, 744);
+	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_options_menu), &button_action_impl);
+	pause_menu.AddGUIObject(options_button);
+
+	auto menu_button = new TextButton("Retour au menu principal", {100, 450}, 744);
+	menu_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_main_menu), &button_action_impl);
+	pause_menu.AddGUIObject(menu_button);
 }

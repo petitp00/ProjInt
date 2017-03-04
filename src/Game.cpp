@@ -92,6 +92,8 @@ void Game::Start()
 	sf::Time refresh(sf::seconds(0.25f));
 	int frames = 0;
 
+	bool escape_pressed = false;
+
 	sf::Clock dt_clock;
 	float dt = 0;
 
@@ -108,6 +110,14 @@ void Game::Start()
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { Quit(); }
 
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+				quit_timer.restart();
+				escape_pressed = true;
+			}
+			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Escape) {
+				escape_pressed = false;
+			}
+
 			if (menu_state->getActive()) {
 				if (menu_state->HandleEvents(event)) continue;
 			}
@@ -118,9 +128,14 @@ void Game::Start()
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
 					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
+					else if (state_machine.getActiveState() == State::Game) { ChangeActiveState(State::PauseMenu, State::Game); }
 					else { ReturnToLastState(); }
 				}
 			}
+		}
+
+		if (escape_pressed && quit_timer.getElapsedTime() >= QUICK_EXIT_TIME) {
+			Quit();
 		}
 
 		// Updates

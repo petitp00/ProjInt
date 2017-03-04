@@ -58,6 +58,7 @@ public:
 		else if (active_state == State::OptionsMenu) active_page = &options_menu;
 		else if (active_state == State::AudioOptionsMenu) active_page = &audio_menu;
 		else if (active_state == State::ControlsOptionsMenu) active_page = &controls_menu;
+		else if (active_state == State::PauseMenu) active_page = &pause_menu;
 	}
 
 	void ResetControls(Controls& controls) {
@@ -86,4 +87,7 @@ private:
 
 	void InitControlsMenu(Controls& controls);
 	MenuPage controls_menu;
+
+	void InitPauseMenu();
+	MenuPage pause_menu;
 };

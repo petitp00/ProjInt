@@ -13,6 +13,8 @@ class MenuState;
 static int WINDOW_WIDTH = 1280;
 static int WINDOW_HEIGHT = 720;
 
+static sf::Time QUICK_EXIT_TIME = sf::seconds(0.3f);
+
 //static std::string BASE_FONT_NAME = "blue highway rg.ttf";
 static std::string BASE_FONT_NAME = "Cousine-Regular.ttf";
 
@@ -98,6 +100,7 @@ public:
 	void ToggleFpsCounter();
 
 	Controls& getControls() { return game_settings.controls; }
+	State getActiveState() { return state_machine.getActiveState(); }
 
 private:
 	GameSettings game_settings;
@@ -108,4 +111,6 @@ private:
 	MenuState* menu_state;
 
 	bool show_fps_counter = true;
+
+	sf::Clock quit_timer;
 };

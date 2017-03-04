@@ -59,45 +59,27 @@ void Player::DoCollisions(std::vector<Entity*>& entities)
 
 			float tolerance = 10;
 
-			if (movement.x != 0
-			 && pos.y + size.y > epos.y
-			 && pos.y < epos.y + esize.y) {
-
-				if (pos.x + size.x >= epos.x
-				 && pos.x + size.x <= epos.x + tolerance
-				 && pos.x <= epos.x
-				 && movement.x > 0) {
-
+			if (movement.x != 0 && pos.y + size.y > epos.y && pos.y < epos.y + esize.y) {
+				if (pos.x + size.x >= epos.x && pos.x + size.x <= epos.x + tolerance
+				 && pos.x <= epos.x && movement.x > 0) {
 					pos.x = epos.x - size.x;
 					movement.x = 0;
 				}
-				else if (pos.x <= epos.x + esize.x
-					  && pos.x >= epos.x + esize.x - tolerance
-					  && pos.x + size.x >= epos.x + esize.x
-					  && movement.x < 0) {
-
+				else if (pos.x <= epos.x + esize.x && pos.x >= epos.x + esize.x - tolerance
+					  && pos.x + size.x >= epos.x + esize.x && movement.x < 0) {
 					pos.x = epos.x + esize.x;
 					movement.x = 0;
 				}
 			}
 
-			if (movement.y != 0
-			 && pos.x + size.x > epos.x
-			 && pos.x < epos.x + esize.x) {
-
-				if (pos.y + size.y >= epos.y
-				 && pos.y + size.y <= epos.y + tolerance
-				 && pos.y <= epos.y
-				 && movement.y > 0) {
-
+			if (movement.y != 0 && pos.x + size.x > epos.x && pos.x < epos.x + esize.x) {
+				if (pos.y + size.y >= epos.y && pos.y + size.y <= epos.y + tolerance
+				 && pos.y <= epos.y && movement.y > 0) {
 					pos.y = epos.y - size.y;
 					movement.y = 0;
 				}
-				else if (pos.y <= epos.y + esize.y
-					  && pos.y >= epos.y + esize.y - tolerance
-					  && pos.y + size.y >= epos.y + esize.y
-					  && movement.y < 0) {
-
+				else if (pos.y <= epos.y + esize.y && pos.y >= epos.y + esize.y - tolerance
+					  && pos.y + size.y >= epos.y + esize.y && movement.y < 0) {
 					pos.y = epos.y + esize.y;
 					movement.y = 0;
 				}
