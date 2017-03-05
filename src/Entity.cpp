@@ -6,9 +6,12 @@
 #include <iostream>
 using namespace std;
 
-GameObject::GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f size, unsigned long flags) :
-	Entity(pos, size, flags)
+GameObject::GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f size, unsigned long flags, std::vector<std::string> const& saved_data) :
+	Entity(pos, size, flags), texture_name(texture_name)
 {
+	type = GAME_OBJECT;
+
+
 	sprite.setTexture(ResourceManager::getTexture(texture_name));
 	sprite.setPosition(pos);
 
@@ -18,16 +21,44 @@ GameObject::GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f 
 	else { sprite.setScale(size.x / b.width, size.y / b.height); }
 }
 
+GameObject::GameObject(sf::Vector2f pos, sf::Vector2f size, unsigned long flags, std::vector<std::string> const & saved_data) :
+	Entity(pos, size, flags)
+{
+	type = GAME_OBJECT;
+
+	if (saved_data.size() == 1) {
+		texture_name = saved_data[0];
+		sprite.setTexture(ResourceManager::getTexture(saved_data[0]));
+		sprite.setPosition(pos);
+
+		auto b = sprite.getLocalBounds();
+		sprite.setScale(size.x / b.width, size.y / b.height);
+	}
+	else {
+		cerr << "Wrong number of saved_data. Needs: 1, given: " << saved_data.size() << endl;
+		cerr << "ERROR: Trying to create a game object without texture name in saved_data" << endl;
+	}
+}
+
 Player::Player() : Entity()
 {
+	type = PLAYER;
+	Init();
+	auto b = sprite.getLocalBounds();
+	size={b.width, b.height};
+}
+
+Player::Player(sf::Vector2f pos, sf::Vector2f size, unsigned long flags, std::vector<std::string> const & saved_data) :
+	Entity(pos, size, flags, saved_data)
+{
+	type = PLAYER;
 	Init();
 }
 
 void Player::Init()
 {
 	sprite.setTexture(ResourceManager::getTexture("box3.png"));
-	auto b = sprite.getLocalBounds();
-	size ={b.width, b.height};
+	sprite.setPosition(pos);
 }
 
 void Player::Update(float dt)
@@ -93,4 +124,9 @@ void Player::DoMovement(float dt)
 {
 	pos += movement * walk_speed * dt;
 	sprite.setPosition(pos);
+}
+
+std::vector<std::string> Entity::getSavedData()
+{
+	return std::vector<std::string>();
 }

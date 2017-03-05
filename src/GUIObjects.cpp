@@ -466,7 +466,6 @@ void Slider::UpdateSlider() {
 
 	rect_shape.setSize(sf::Vector2f(40, 40));
 	rect_shape.setPosition(pos);
-
 }
 
 Scrollbar::Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :

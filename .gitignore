@@ -253,3 +253,11 @@ paket-files/
 *.swp
 *.swp
 /Resources/Data/.default_controls.txt.swp
+/Resources/Data/desktop.ini
+/Resources/Fonts/desktop.ini
+/Resources/Sounds/desktop.ini
+/Resources/Textures/desktop.ini
+/Resources/desktop.ini
+/desktop.ini
+/desktop.ini
+*/desktop.ini

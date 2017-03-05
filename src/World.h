@@ -9,6 +9,13 @@
 
 #include "Entity.h"
 
+/*
+What we need to save:
+	- every entity
+	- player pos, health, etc.
+	- inventory
+*/
+
 class GameState;
 
 class World
@@ -17,7 +24,10 @@ public:
 	World(GameState& game_state, Controls* controls);
 	~World();
 
-	void LoadWorld();
+	void CreateAndSaveWorld(std::string const& filename);
+
+	void LoadWorld(std::string const& filename);
+	void Save(std::string const& filename);
 
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
