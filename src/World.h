@@ -27,7 +27,7 @@ public:
 	void CreateAndSaveWorld(std::string const& filename);
 
 	void LoadWorld(std::string const& filename);
-	void Save(std::string const& filename);
+	void Save();
 
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
@@ -36,9 +36,10 @@ public:
 
 private:
 	GameState& game_state;
+	std::string name;
 
 	sf::View game_view;
 
-	Player* player;
+	Player* player = nullptr;
 	std::vector<Entity*> entities;
 };

@@ -62,11 +62,13 @@ Game::Game()
 
 	game_settings.controls.LoadUserControls();
 
+	// game_state must be initialized before menu_state (because of button_action_impl)
+	game_state = new GameState(&game_settings.controls);
+
 	menu_state = new MenuState(*this);
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
-	game_state = new GameState(&game_settings.controls);
 }
 
 Game::~Game()
@@ -75,9 +77,6 @@ Game::~Game()
 	delete game_state;
 }
 
-/*
-	The game is locked at 60 fps for now. May or may not change later.
-*/
 void Game::Start()
 {
 	sf::Clock clock;
@@ -111,8 +110,10 @@ void Game::Start()
 			if (event.type == sf::Event::Closed) { Quit(); }
 
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-				quit_timer.restart();
-				escape_pressed = true;
+				if (!escape_pressed) {
+					quit_timer.restart();
+					escape_pressed = true;
+				}
 			}
 			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Escape) {
 				escape_pressed = false;
@@ -127,7 +128,8 @@ void Game::Start()
 
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
-					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
+					if (state_machine.getActiveState() == State::MainMenu) {//Quit();
+				}
 					else if (state_machine.getActiveState() == State::Game) { ChangeActiveState(State::PauseMenu, State::Game); }
 					else { ReturnToLastState(); }
 				}
@@ -208,7 +210,7 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 
 	window.create(video_mode, "Projet Intégrateur", style, ctx_settings);
 
-	window.setKeyRepeatEnabled(false);
+	//window.setKeyRepeatEnabled(false);
 
 	//window.setVerticalSyncEnabled(settings.VSync);
 }
@@ -219,7 +221,7 @@ std::string getKeyString(sf::Keyboard::Key key)
 		return string(1, char(65+int(key)));
 	}
 	if (key >= 26 && key <= 35) {
-		return string(1, char(48+int(key)));
+		return string(1, char(48+int(key)-26));
 	}
 
 	switch (key)
@@ -287,4 +289,24 @@ std::string getKeyString(sf::Keyboard::Key key)
 		return "??";
 	}
 	return std::string("????");
+}
+
+char getKeyChar(sf::Event::KeyEvent e)
+{
+	if (e.shift) {
+		if (e.code >= 0 && e.code <= 25) {
+			return char(65+int(e.code));
+		}
+	}
+	else {
+		if (e.code >= 0 && e.code <= 25) {
+			return char(97+int(e.code));
+		}
+	}
+
+	if (e.code >= 26 && e.code <= 35) {
+		return char(48+int(e.code)-26);
+	}
+	
+	return 0;
 }

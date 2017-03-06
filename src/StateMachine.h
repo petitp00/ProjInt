@@ -10,6 +10,7 @@ enum class State
 	AudioOptionsMenu,
 	ControlsOptionsMenu,
 	PauseMenu,
+	NewGameMenu,
 	Game
 };
 

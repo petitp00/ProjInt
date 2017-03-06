@@ -20,6 +20,8 @@ public:
 
 	bool HandleEvent(sf::Event const& event);
 
+	void StartNewGame(std::string const& name);
+
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
 #include "StateMachine.h"
@@ -55,6 +56,7 @@ inline std::ostream& operator<<(std::ostream& os, sf::Vector2f const& vec) {
 }
 
 std::string getKeyString(sf::Keyboard::Key key);
+char getKeyChar(sf::Event::KeyEvent e);
 
 struct Controls
 {
@@ -103,6 +105,7 @@ public:
 
 	Controls& getControls() { return game_settings.controls; }
 	State getActiveState() { return state_machine.getActiveState(); }
+	GameState& getGameState() { return *game_state; }
 
 private:
 	GameSettings game_settings;

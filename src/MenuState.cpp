@@ -1,4 +1,5 @@
 #include "MenuState.h"
+#include "GameState.h"
 
 #include "ResourceManager.h"
 
@@ -17,6 +18,10 @@ static void quit_game(ButtonActionImpl* impl) {
 // GO TO X MENU //
 static void go_to_main_menu(ButtonActionImpl* impl) {
 	impl->game.ChangeActiveState(State::MainMenu, State::PauseMenu);
+}
+
+static void go_to_new_game_menu(ButtonActionImpl* impl) {
+	impl->game.ChangeActiveState(State::NewGameMenu, State::MainMenu);
 }
 
 static void go_to_info_menu(ButtonActionImpl* impl) {
@@ -65,6 +70,11 @@ static void toggle_fps_checkbox(ButtonActionImpl* impl) {
 	impl->game.ToggleFpsCounter();
 }
 
+static void create_new_world(ButtonActionImpl* impl) {
+	impl->game_state.StartNewGame(*impl->world_name_ref);
+	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+}
+
 // MENU PAGE
 MenuPage::MenuPage()
 {
@@ -100,9 +110,10 @@ void MenuPage::Render(sf::RenderTarget& target)
 bool MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
 {
 	bool ret = false;
+	sf::Vector2i mouse(mouse_x, mouse_y);
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			if (o->onClick()) ret = true;
+			if (o->onClick(mouse)) ret = true;
 		}
 	}
 	return ret;
@@ -153,21 +164,23 @@ bool MenuPage::MouseWheelScrolledEvent(float delta)
 	return ret;
 }
 
-bool MenuPage::KeyPressedEvent(sf::Keyboard::Key key)
+bool MenuPage::KeyPressedEvent(sf::Event::KeyEvent e)
 {
 	bool ret = false;
 	for (auto o : gui_objects) {
-		if (o->onKeyPressed(key)) ret = true;
+		if (o->onKeyType(e)) ret = true;
+		//if (o->onKeyPressed(key)) ret = true;
 	}
 	return ret;
 }
 
 // MENU STATE
 MenuState::MenuState(Game& game) :
-	button_action_impl(game, *this),
+	button_action_impl(game, *this, game.getGameState()),
 	active_page(&main_menu)
 {
 	InitMainMenu();
+	InitNewGameMenu();
 	InitInfoMenu();
 	InitOptionsMenu();
 	InitAudioMenu();
@@ -196,7 +209,7 @@ void MenuState::Render(sf::RenderTarget & target)
 bool MenuState::HandleEvents(sf::Event const & event)
 {
 	if (event.type == sf::Event::KeyPressed) {
-		return active_page->KeyPressedEvent(event.key.code);
+		return active_page->KeyPressedEvent(event.key);
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left)
@@ -223,7 +236,7 @@ void MenuState::InitMainMenu()
 	float button_width = title->getSize().x;
 
 	auto play_button = new TextButton("Jouer", {100, 250}, button_width);
-	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(start_game), &button_action_impl);
+	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_new_game_menu), &button_action_impl);
 	play_button->setTooltip(new Tooltip("Commencer une partie", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(play_button);
 
@@ -245,6 +258,30 @@ void MenuState::InitMainMenu()
 	quit_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(quit_game), &button_action_impl);
 	quit_button->setTooltip(new Tooltip("Quitter le jeu", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(quit_button);
+}
+
+void MenuState::InitNewGameMenu()
+{
+	auto title = new TextBox("Nouvelle Partie", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
+	new_game_menu.AddGUIObject(title);
+
+	auto name_label = new TextBox("Nommer la partie:", {100, 350}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
+	new_game_menu.AddGUIObject(name_label);
+	
+	float px = name_label->getPos().x + name_label->getSize().x + 40.f;
+	auto name_input = new TextInputBox({px, 355.f}, float(WINDOW_WIDTH)- px - 80.f - 65.f);
+	name_input->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
+	name_input->setActive(true);
+	button_action_impl.world_name_ref = name_input->getStringRef();
+	new_game_menu.AddGUIObject(name_input);
+
+	auto ok_button = new TextButton("Ok", {float(WINDOW_WIDTH) - 65.f -60.f, 347.f}, 65.f, FontSize::SMALL);
+	ok_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
+	new_game_menu.AddGUIObject(ok_button);
+	
+	auto return_button = new TextButton("Annuler", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	new_game_menu.AddGUIObject(return_button);
 }
 
 void MenuState::InitInfoMenu()

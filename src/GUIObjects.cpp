@@ -10,7 +10,7 @@
 #include <iostream>
 using namespace std;
 
-ButtonActionImpl::ButtonActionImpl(Game & game, MenuState& menu_state) : game(game), menu_state(menu_state) {}
+ButtonActionImpl::ButtonActionImpl(Game & game, MenuState& menu_state, GameState& game_state) : game(game), menu_state(menu_state), game_state(game_state) {}
 
 GUIObject::GUIObject(sf::Vector2f pos, sf::Vector2f size) : pos(pos), size(size) {}
 
@@ -179,7 +179,7 @@ void TextButton::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_ren
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool TextButton::onClick() {
+bool TextButton::onClick(sf::Vector2i mouse_pos) {
 	onHoverOut();
 	if (action) {
 		(*action)(button_action_impl);
@@ -248,14 +248,14 @@ void TextButton::UpdateTextButton(bool set_params) {
 }
 
 // CONTROLS TEXT BUTTON
-ControlsTextButton::ControlsTextButton( std::string const & text_string, sf::Vector2f pos, float width,
+ControlsTextButton::ControlsTextButton(std::string const & text_string, sf::Vector2f pos, float width,
 									   unsigned int character_size, sf::Color text_color, sf::Color background_color,
 									   sf::Color background_color_hover, std::string const & font_name) :
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name) {
 	UpdateControlsTextButton();
 }
 
-bool ControlsTextButton::onClick() {
+bool ControlsTextButton::onClick(sf::Vector2i mouse_pos) {
 	if (!active) {
 		active = true;
 		return true;
@@ -275,9 +275,10 @@ bool ControlsTextButton::onHoverOut() {
 	return false;
 }
 
-bool ControlsTextButton::onKeyPressed(sf::Keyboard::Key key) {
-	text_string = getKeyString(key);
-	this->key = key;
+bool ControlsTextButton::onKeyType(sf::Event::KeyEvent e)
+{
+	text_string = getKeyString(e.code);
+	this->key = e.code;
 	setActive(false);
 	if (action) (*action)(button_action_impl);
 	if (UpdateControlsTextButton()) {
@@ -285,7 +286,18 @@ bool ControlsTextButton::onKeyPressed(sf::Keyboard::Key key) {
 	}
 	return false;
 }
-
+//
+//bool ControlsTextButton::onKeyPressed(sf::Keyboard::Key key) {
+//	text_string = getKeyString(key);
+//	this->key = key;
+//	setActive(false);
+//	if (action) (*action)(button_action_impl);
+//	if (UpdateControlsTextButton()) {
+//		return true;
+//	}
+//	return false;
+//}
+//
 void ControlsTextButton::setActive(bool active) {
 	GUIObject::setActive(active);
 	if (!active) onHoverOut();
@@ -380,7 +392,7 @@ void Checkbox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_rend
 	target.draw(text_obj);
 }
 
-bool Checkbox::onClick() {
+bool Checkbox::onClick(sf::Vector2i mouse_pos) {
 	//onHoverOut();
 	active = !active;
 	if (!active) text_obj.setString("");
@@ -432,8 +444,8 @@ void Slider::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render
 	target.draw(rect_shape);
 }
 
-bool Slider::onClick() {
-	GUIObject::onClick();
+bool Slider::onClick(sf::Vector2i mouse_pos) {
+	GUIObject::onClick(mouse_pos);
 	return true;
 }
 
@@ -498,8 +510,8 @@ void Scrollbar::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_ren
 	target.draw(rect_shape);
 }
 
-bool Scrollbar::onClick() {
-	GUIObject::onClick();
+bool Scrollbar::onClick(sf::Vector2i mouse_pos) {
+	GUIObject::onClick(mouse_pos);
 	return true;
 }
 
@@ -571,17 +583,17 @@ void ObjContainer::AddObject(GUIObject * obj) {
 	}
 }
 
-bool ObjContainer::onClick() {
+bool ObjContainer::onClick(sf::Vector2i mouse_pos) {
 	bool ret = false;
-	GUIObject::onClick();
+	GUIObject::onClick(mouse_pos);
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			if (!o->getActive()) if (o->onClick()) ret = true;
+			if (!o->getActive()) if (o->onClick(mouse_pos)) ret = true;
 		}
 		else if (o->getActive()) o->setActive(false);
 	}
 
-	if (scrollbar->getHovered()) if (scrollbar->onClick()) ret = true;
+	if (scrollbar->getHovered()) if (scrollbar->onClick(mouse_pos)) ret = true;
 
 	return ret;
 }
@@ -629,16 +641,27 @@ bool ObjContainer::onMouseWheel(float delta) {
 	return true;
 }
 
-bool ObjContainer::onKeyPressed(sf::Keyboard::Key key) {
+bool ObjContainer::onKeyType(sf::Event::KeyEvent e)
+{
 	bool ret = false;
 	for (auto o : gui_objects) {
 		if (o->getActive()) {
-			if (o->onKeyPressed(key)) ret = true;
+			if (o->onKeyType(e)) ret = true;
 		}
 	}
 	return ret;
 }
-
+//
+//bool ObjContainer::onKeyPressed(sf::Keyboard::Key key) {
+//	bool ret = false;
+//	for (auto o : gui_objects) {
+//		if (o->getActive()) {
+//			if (o->onKeyPressed(key)) ret = true;
+//		}
+//	}
+//	return ret;
+//}
+//
 void ObjContainer::UpdateClickDrag(sf::Vector2i mouse_pos) {
 }
 
@@ -695,5 +718,116 @@ void ObjContainer::UpdateObjContainer(bool set_params) {
 		rect_shape.setOutlineColor(sf::Color::Black);
 		rect_shape.setOutlineThickness(thicc);
 		rect_shape.setFillColor(sf::Color(151, 196, 198));
+	}
+}
+
+TextInputBox::TextInputBox(sf::Vector2f pos, float width, unsigned int character_size) :
+	GUIObject(pos, {width,0}), character_size(character_size)
+{
+	Init();
+}
+
+void TextInputBox::Update()
+{
+	GUIObject::Update();
+
+	if (active) {
+		if (clock.getElapsedTime() >= cursor_blink_time) {
+			show_cursor = !show_cursor;
+			clock.restart();
+		}
+		if (text_obj.getString().getSize() == 0) {
+			//cursor_shape.setPosition({text_obj.getPosition().x, pos.y+ 5});
+		}
+	}
+}
+
+void TextInputBox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(rect_shape);
+	target.draw(text_obj);
+	if (active && show_cursor)
+		target.draw(cursor_shape);
+
+	GUIObject::Render(target, tooltip_render_target);
+}
+
+bool TextInputBox::onClick(sf::Vector2i mouse_pos)
+{
+	if (!active) active = true;
+	clock.restart();
+
+	return false;
+}
+
+void TextInputBox::UpdateClickDrag(sf::Vector2i mouse_pos)
+{
+}
+
+bool TextInputBox::onKeyType(sf::Event::KeyEvent e)
+{
+	if (active) {
+
+		char c = getKeyChar(e);
+		if (c != 0) {
+			text_string += c;
+		}
+		else if (e.code == sf::Keyboard::Space) text_string += ' ';
+		else if (e.code == sf::Keyboard::BackSpace) {
+			if (text_string.size()) text_string.pop_back();
+		}
+
+		UpdateText();
+
+		if (e.code == sf::Keyboard::Return) {
+			if (action) {
+				(*action)(button_action_impl);
+				return true;
+			}
+		}
+
+		if (e.code != sf::Keyboard::Escape)
+			return true;
+	}
+	return false;
+}
+
+void TextInputBox::Init()
+{
+	float margin = 10.f;
+	text_obj.setString("SAMPLE TEXT FOR SIZE");
+	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	text_obj.setCharacterSize(character_size);
+	text_obj.setFillColor(sf::Color::Black);
+	size.y = text_obj.getLocalBounds().height + margin*2;
+
+	text_obj.setOrigin(0, text_obj.getLocalBounds().height);
+	text_obj.setPosition(pos.x + margin, pos.y + size.y/2.f);
+	text_obj.setString("");
+
+	rect_shape.setFillColor(sf::Color::White);
+	rect_shape.setPosition(pos);
+	rect_shape.setSize(size);
+
+	cursor_shape.setFillColor(sf::Color::Black);
+	cursor_shape.setSize({2.f, size.y - 2.f*5.f});
+	cursor_shape.setPosition({text_obj.getPosition().x, pos.y+ 5});
+}
+
+void TextInputBox::UpdateText()
+{
+	text_obj.setString(text_string);
+	if (text_string.size()) {
+		text_obj.setString(text_string);
+		if (text_obj.findCharacterPos(text_string.size()-1).x >= rect_shape.getPosition().x + rect_shape.getSize().x - 10.f - text_obj.getCharacterSize()) {
+			text_string.pop_back();
+			text_obj.setString(text_string);
+		}
+	}
+
+	if (cursor_pos > text_string.size()) cursor_pos =text_string.size()-1;
+	if (cursor_pos == text_string.size()-1) {
+		++cursor_pos;
+		cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
 	}
 }

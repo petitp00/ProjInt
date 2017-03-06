@@ -6,14 +6,17 @@
 #include <iostream>
 using namespace std;
 
+Controls* controls;
+
 World::World(GameState & game_state, Controls* controls) :
 	game_state(game_state),
 	game_view(sf::FloatRect({ 0,0 }, { float(WINDOW_WIDTH), float(WINDOW_HEIGHT) }))
 
 {
-	LoadWorld("test");
+	//LoadWorld("test");
 	//CreateAndSaveWorld("test");
-	player->setControls(controls);
+	//player->setControls(controls);
+	::controls = controls;
 }
 
 World::~World()
@@ -26,16 +29,19 @@ World::~World()
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
+	name = filename;
 	player = new Player();
+	player->setControls(controls);
 
 	entities.push_back(new GameObject({ 700, 400 }, "box.png", { 0,0 }, SOLID));
 	entities.push_back(player);
 
-	Save("test");
+	Save();
 }
 
 void World::LoadWorld(std::string const & filename)
 {
+	name = filename;
 	std::ifstream s("Resources/Data/Saves/" + filename);
 
 	std::string w, str;
@@ -102,18 +108,19 @@ void World::LoadWorld(std::string const & filename)
 			}
 		}
 	}
+	player->setControls(controls);
 }
 
-void World::Save(std::string const& filename)
+void World::Save()
 {
-	std::ifstream f("Resources/Data/Saves/" + filename, std::ios::binary);
-	std::ofstream backup("Resources/Data/Saves/" + filename + ".backup", std::ios::binary);
+	std::ifstream f("Resources/Data/Saves/" + name, std::ios::binary);
+	std::ofstream backup("Resources/Data/Saves/" + name + ".backup", std::ios::binary);
 
 	backup << f.rdbuf();
 	backup.close();
 	f.close();
 
-	std::ofstream s("Resources/Data/Saves/" + filename);
+	std::ofstream s("Resources/Data/Saves/" + name);
 
 	for (auto e : entities) {
 		s << "e " << e->getType() << " "
@@ -124,7 +131,7 @@ void World::Save(std::string const& filename)
 		s << endl;
 	}
 
-	cout << "World save to \"Resources/Data/Saves/" << filename << "\"" << endl;
+	cout << "World saved to \"Resources/Data/Saves/" << name << "\"" << endl;
 }
 
 void World::Update(float dt)
@@ -165,7 +172,7 @@ bool World::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::F6) {
-			Save("test");
+			Save();
 		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {

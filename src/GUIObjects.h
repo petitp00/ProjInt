@@ -21,15 +21,17 @@ class MenuPage;
 
 class ButtonActionImpl {
 public:
-	ButtonActionImpl(Game& game, MenuState& menu_state);
+	ButtonActionImpl(Game& game, MenuState& menu_state, GameState& game_state);
 
 	Game& game;
 	MenuState& menu_state;
+	GameState& game_state;
 
 	// variable refs
 	bool* mute_active_ref;
 	float* volume_slider_ref;
 	std::vector<sf::Keyboard::Key*> controls_values;
+	std::string* world_name_ref;
 };
 
 using action_t = std::function<void(ButtonActionImpl*)>*;
@@ -48,12 +50,13 @@ public:
 	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 						bool draw_on_tooltip_render_target=false);
 
-	virtual bool onClick() { clicked = true; return true; }
+	virtual bool onClick(sf::Vector2i mouse_pos) { clicked = true; return true; }
 	virtual bool onClickRelease() { clicked = false; return true; }
 	virtual bool onHoverIn(sf::Vector2i mouse_pos={0,0});
 	virtual bool onHoverOut();
 	virtual bool onMouseWheel(float delta) { return false; }
-	virtual bool onKeyPressed(sf::Keyboard::Key key) { return false; }
+	//virtual bool onKeyPressed(sf::Keyboard::Key key) { return false; }
+	virtual bool onKeyType(sf::Event::KeyEvent e) { return false; }
 
 	// when mouse has moved on top of object
 	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
@@ -152,7 +155,7 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
@@ -192,10 +195,11 @@ public:
 					   sf::Color background_color_hover = BG_HOVER,
 					   std::string const& font_name=BASE_FONT_NAME);
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
-	bool onKeyPressed(sf::Keyboard::Key key) override;
+	//bool onKeyPressed(sf::Keyboard::Key key) override;
+	bool onKeyType(sf::Event::KeyEvent e) override;
 
 	void setActive(bool active) override;
 	void setKey(sf::Keyboard::Key key) { this->key = key; }
@@ -244,7 +248,7 @@ public:
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
@@ -274,7 +278,7 @@ public:
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos);
@@ -311,7 +315,7 @@ public:
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	void UpdateClickDrag(sf::Vector2i mouse_pos);
@@ -354,12 +358,14 @@ public:
 
 	void AddObject(GUIObject* obj);
 
-	bool onClick() override;
+	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onClickRelease() override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	bool onMouseWheel(float delta) override;
-	bool onKeyPressed(sf::Keyboard::Key key) override;
+	//bool onKeyPressed(sf::Keyboard::Key key) override;
+	bool onKeyType(sf::Event::KeyEvent e) override;
+
 	void UpdateClickDrag(sf::Vector2i mouse_pos) override;
 	void UpdateHoveredMousePos(sf::Vector2i mouse_pos) override;
 
@@ -377,4 +383,38 @@ private:
 	sf::Sprite render_sprite;
 
 	sf::RectangleShape rect_shape;
+};
+
+class TextInputBox : public GUIObject {
+public:
+	TextInputBox()=default;
+	TextInputBox(sf::Vector2f pos, float width, unsigned int character_size = FontSize::SMALL);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	bool onClick(sf::Vector2i mouse_pos) override;
+	void UpdateClickDrag(sf::Vector2i mouse_pos);
+	bool onKeyType(sf::Event::KeyEvent e) override;
+	std::string* getStringRef() { return &text_string; }
+
+private:
+	void Init(); // sets the size (height) and the positions of stuff
+	void UpdateText(); // updates the text's string and such
+
+	std::string text_string;
+	unsigned int cursor_pos = 0;
+
+	float width = 0;
+	int character_size;
+
+	sf::RectangleShape rect_shape;
+	sf::RectangleShape cursor_shape;
+	sf::Text text_obj;
+
+	sf::Clock clock;
+	sf::Time cursor_blink_time = sf::seconds(0.5f);
+	bool show_cursor = true;
 };

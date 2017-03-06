@@ -31,3 +31,8 @@ bool GameState::HandleEvent(sf::Event const & event)
 {
 	return world.HandleEvent(event);
 }
+
+void GameState::StartNewGame(std::string const & name)
+{
+	world.CreateAndSaveWorld(name);
+}
