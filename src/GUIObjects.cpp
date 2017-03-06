@@ -286,18 +286,7 @@ bool ControlsTextButton::onKeyType(sf::Event::KeyEvent e)
 	}
 	return false;
 }
-//
-//bool ControlsTextButton::onKeyPressed(sf::Keyboard::Key key) {
-//	text_string = getKeyString(key);
-//	this->key = key;
-//	setActive(false);
-//	if (action) (*action)(button_action_impl);
-//	if (UpdateControlsTextButton()) {
-//		return true;
-//	}
-//	return false;
-//}
-//
+
 void ControlsTextButton::setActive(bool active) {
 	GUIObject::setActive(active);
 	if (!active) onHoverOut();
@@ -306,6 +295,23 @@ void ControlsTextButton::setActive(bool active) {
 bool ControlsTextButton::UpdateControlsTextButton(bool set_params) {
 	UpdateTextButton(set_params);
 	return true; //TODO: Check if key entered is ok, else return false
+}
+
+// WORLDSELECTBUTTON //
+WorldSelectButton::WorldSelectButton(std::string const & text_string, sf::Vector2f pos, float width, unsigned int character_size, sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) :
+	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name)
+{
+}
+
+bool WorldSelectButton::onClick(sf::Vector2i mouse_pos)
+{
+	onHoverOut();
+	if (action) {
+		button_action_impl->load_world_name = world_name;
+		(*action)(button_action_impl);
+		return true;
+	}
+	return false;
 }
 
 // TOOLTIP //
@@ -570,14 +576,15 @@ void ObjContainer::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_
 
 	render_texture.display();
 	target.draw(render_sprite);
-
-	scrollbar->Render(target, tooltip_render_target, draw_on_tooltip_render_target);
+	if (show_scrollbar)
+		scrollbar->Render(target, tooltip_render_target, draw_on_tooltip_render_target);
 }
 
 void ObjContainer::AddObject(GUIObject * obj) {
 	gui_objects.push_back(obj);
 
 	if (obj->getPos().y + obj->getSize().y + 20 > max_offset +size.y - 20) {
+		show_scrollbar = true;
 		max_offset = obj->getPos().y + obj->getSize().y - size.y + 40.f;
 		scrollbar->setMaxValue(max_offset);
 	}
@@ -818,7 +825,6 @@ void TextInputBox::UpdateText()
 {
 	text_obj.setString(text_string);
 	if (text_string.size()) {
-		text_obj.setString(text_string);
 		if (text_obj.findCharacterPos(text_string.size()-1).x >= rect_shape.getPosition().x + rect_shape.getSize().x - 10.f - text_obj.getCharacterSize()) {
 			text_string.pop_back();
 			text_obj.setString(text_string);

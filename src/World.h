@@ -24,6 +24,8 @@ public:
 	World(GameState& game_state, Controls* controls);
 	~World();
 
+	void Clear();
+
 	void CreateAndSaveWorld(std::string const& filename);
 
 	void LoadWorld(std::string const& filename);

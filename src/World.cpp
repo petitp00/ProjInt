@@ -10,7 +10,7 @@ Controls* controls;
 
 World::World(GameState & game_state, Controls* controls) :
 	game_state(game_state),
-	game_view(sf::FloatRect({ 0,0 }, { float(WINDOW_WIDTH), float(WINDOW_HEIGHT) }))
+	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 
 {
 	//LoadWorld("test");
@@ -21,6 +21,11 @@ World::World(GameState & game_state, Controls* controls) :
 
 World::~World()
 {
+	Clear();
+}
+
+void World::Clear()
+{
 	for (int i = 0; i != entities.size(); ++i) {
 		delete entities[i];
 	}
@@ -29,11 +34,12 @@ World::~World()
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
+	Clear();
 	name = filename;
 	player = new Player();
 	player->setControls(controls);
 
-	entities.push_back(new GameObject({ 700, 400 }, "box.png", { 0,0 }, SOLID));
+	entities.push_back(new GameObject({700, 400}, "box.png", {0,0}, SOLID));
 	entities.push_back(player);
 
 	Save();
@@ -41,6 +47,7 @@ void World::CreateAndSaveWorld(std::string const & filename)
 
 void World::LoadWorld(std::string const & filename)
 {
+	Clear();
 	name = filename;
 	std::ifstream s("Resources/Data/Saves/" + filename);
 
@@ -109,15 +116,21 @@ void World::LoadWorld(std::string const & filename)
 		}
 	}
 	player->setControls(controls);
+
 }
 
 void World::Save()
 {
+	bool file_existed = false;
 	std::ifstream f("Resources/Data/Saves/" + name, std::ios::binary);
-	std::ofstream backup("Resources/Data/Saves/" + name + ".backup", std::ios::binary);
+	if (f.is_open()) file_existed = true;
 
-	backup << f.rdbuf();
-	backup.close();
+	if (file_existed) {
+		std::ofstream backup("Resources/Data/Saves/" + name + ".backup", std::ios::binary);
+		backup << f.rdbuf();
+		backup.close();
+	}
+
 	f.close();
 
 	std::ofstream s("Resources/Data/Saves/" + name);
@@ -127,8 +140,13 @@ void World::Save()
 			<< e->getPos().x << " " << e->getPos().y << " "
 			<< e->getSize().x << " " << e->getSize().y << " "
 			<< e->getFlags() << " ";
-		for (auto & str : e->getSavedData()) { s << '"' << str << "\" ";}
+		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
+	}
+
+	if (!file_existed) {
+		std::ofstream stream("Resources/Data/Saves/all_saves", std::ios_base::app);
+		stream << name << endl;
 	}
 
 	cout << "World saved to \"Resources/Data/Saves/" << name << "\"" << endl;
@@ -178,7 +196,7 @@ bool World::HandleEvent(sf::Event const & event)
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Middle) {
 			middle_pressed = true;
-			drag_mouse_pos = { event.mouseButton.x, event.mouseButton.y };
+			drag_mouse_pos ={event.mouseButton.x, event.mouseButton.y};
 		}
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
@@ -188,7 +206,7 @@ bool World::HandleEvent(sf::Event const & event)
 	}
 	if (event.type == sf::Event::MouseMoved) {
 		if (middle_pressed) {
-			sf::Vector2i m ={ event.mouseMove.x, event.mouseMove.y };
+			sf::Vector2i m ={event.mouseMove.x, event.mouseMove.y};
 			game_view.move(-sf::Vector2f(m - drag_mouse_pos));
 			drag_mouse_pos = m;
 		}

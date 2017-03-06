@@ -36,3 +36,8 @@ void GameState::StartNewGame(std::string const & name)
 {
 	world.CreateAndSaveWorld(name);
 }
+
+void GameState::LoadGame(std::string const & name)
+{
+	world.LoadWorld(name);
+}

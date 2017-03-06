@@ -32,6 +32,7 @@ public:
 	float* volume_slider_ref;
 	std::vector<sf::Keyboard::Key*> controls_values;
 	std::string* world_name_ref;
+	std::string load_world_name;
 };
 
 using action_t = std::function<void(ButtonActionImpl*)>*;
@@ -198,7 +199,6 @@ public:
 	bool onClick(sf::Vector2i mouse_pos) override;
 	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
-	//bool onKeyPressed(sf::Keyboard::Key key) override;
 	bool onKeyType(sf::Event::KeyEvent e) override;
 
 	void setActive(bool active) override;
@@ -209,6 +209,24 @@ private:
 	bool UpdateControlsTextButton(bool set_params = true);
 
 	sf::Keyboard::Key key;
+};
+
+class WorldSelectButton : public TextButton
+{
+public:
+	WorldSelectButton()=default;
+	WorldSelectButton(std::string const& text_string, sf::Vector2f pos, float width,
+					   unsigned int character_size = FontSize::NORMAL,
+					   sf::Color text_color = sf::Color::Black,
+					   sf::Color background_color = BG_COLOR,
+					   sf::Color background_color_hover = BG_HOVER,
+					   std::string const& font_name=BASE_FONT_NAME);
+
+	bool onClick(sf::Vector2i mouse_pos) override;
+
+	void setWorldName(std::string name) { world_name = name; }
+private:
+	std::string world_name;
 };
 
 class Tooltip : public GUIObject {
@@ -374,6 +392,8 @@ private:
 
 	std::vector<GUIObject*> gui_objects;
 	Scrollbar* scrollbar;
+
+	bool show_scrollbar = false;
 
 	float y_offset = 0.f;
 	float min_offset = 0.0f;

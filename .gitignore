@@ -261,3 +261,5 @@ paket-files/
 /desktop.ini
 /desktop.ini
 */desktop.ini
+Resources/Data/Saves/
+Resources/Data/Saves/*

@@ -3,6 +3,7 @@
 
 #include "ResourceManager.h"
 
+#include <fstream>
 #include <iostream>
 using namespace std;
 
@@ -21,7 +22,13 @@ static void go_to_main_menu(ButtonActionImpl* impl) {
 }
 
 static void go_to_new_game_menu(ButtonActionImpl* impl) {
+	impl->menu_state.ResetNewGame();
 	impl->game.ChangeActiveState(State::NewGameMenu, State::MainMenu);
+}
+
+static void go_to_load_game_menu(ButtonActionImpl* impl) {
+	impl->menu_state.ResetLoadGame();
+	impl->game.ChangeActiveState(State::LoadGameMenu, State::MainMenu);
 }
 
 static void go_to_info_menu(ButtonActionImpl* impl) {
@@ -71,7 +78,15 @@ static void toggle_fps_checkbox(ButtonActionImpl* impl) {
 }
 
 static void create_new_world(ButtonActionImpl* impl) {
+	//impl->menu_state.ResetNewGame();
+	impl->game.ReturnToLastState();
 	impl->game_state.StartNewGame(*impl->world_name_ref);
+	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+}
+
+static void load_world(ButtonActionImpl* impl) {
+	impl->game.ReturnToLastState();
+	impl->game_state.LoadGame(impl->load_world_name);
 	impl->game.ChangeActiveState(State::Game, State::MainMenu);
 }
 
@@ -181,6 +196,7 @@ MenuState::MenuState(Game& game) :
 {
 	InitMainMenu();
 	InitNewGameMenu();
+	InitLoadGameMenu();
 	InitInfoMenu();
 	InitOptionsMenu();
 	InitAudioMenu();
@@ -241,6 +257,7 @@ void MenuState::InitMainMenu()
 	main_menu.AddGUIObject(play_button);
 
 	auto load_button = new TextButton("Charger une partie", {100, 350}, button_width);
+	load_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_load_game_menu), &button_action_impl);
 	load_button->setTooltip(new Tooltip("Charger une partie sauvegardée", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(load_button);
 
@@ -267,7 +284,7 @@ void MenuState::InitNewGameMenu()
 
 	auto name_label = new TextBox("Nommer la partie:", {100, 350}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
 	new_game_menu.AddGUIObject(name_label);
-	
+
 	float px = name_label->getPos().x + name_label->getSize().x + 40.f;
 	auto name_input = new TextInputBox({px, 355.f}, float(WINDOW_WIDTH)- px - 80.f - 65.f);
 	name_input->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
@@ -278,10 +295,51 @@ void MenuState::InitNewGameMenu()
 	auto ok_button = new TextButton("Ok", {float(WINDOW_WIDTH) - 65.f -60.f, 347.f}, 65.f, FontSize::SMALL);
 	ok_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
 	new_game_menu.AddGUIObject(ok_button);
-	
+
 	auto return_button = new TextButton("Annuler", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
 	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
 	new_game_menu.AddGUIObject(return_button);
+}
+
+void MenuState::InitLoadGameMenu()
+{
+	auto title = new TextBox("Charger une partie", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
+	load_game_menu.AddGUIObject(title);
+
+	vector<string> saves;
+	ifstream s("Resources/Data/Saves/all_saves");
+	string str;
+	char c;
+	while (s.get(c)) {
+		if (c == '\n') {
+			saves.push_back(str);
+			str = "";
+		}
+		else {
+			str += c;
+		}
+	}
+	float w = float(WINDOW_WIDTH - 200);
+
+	auto container = new ObjContainer({100, 180}, {w, 420.f});
+	int i = 0;
+	for (auto & sv : saves) {
+		auto label = new TextBox(sv, {20, float(20 + 100*i)}, w, BASE_FONT_NAME, sf::Color::Black, FontSize::LARGE);
+		container->AddObject(label);
+
+		auto butt = new WorldSelectButton("Jouer", {20.f + 650.f, float(26 + 100*i)}, 130.f, FontSize::SMALL, sf::Color::Black);
+		butt->setWorldName(sv);
+		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(load_world), &button_action_impl);
+		container->AddObject(butt);
+
+		++i;
+	}
+
+	load_game_menu.AddGUIObject(container);
+
+	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	load_game_menu.AddGUIObject(return_button);
 }
 
 void MenuState::InitInfoMenu()

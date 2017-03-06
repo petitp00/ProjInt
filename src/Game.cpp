@@ -128,8 +128,7 @@ void Game::Start()
 
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
-					if (state_machine.getActiveState() == State::MainMenu) {//Quit();
-				}
+					if (state_machine.getActiveState() == State::MainMenu) {Quit(); }
 					else if (state_machine.getActiveState() == State::Game) { ChangeActiveState(State::PauseMenu, State::Game); }
 					else { ReturnToLastState(); }
 				}

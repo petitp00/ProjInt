@@ -11,6 +11,7 @@ enum class State
 	ControlsOptionsMenu,
 	PauseMenu,
 	NewGameMenu,
+	LoadGameMenu,
 	Game
 };
 

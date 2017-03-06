@@ -54,12 +54,23 @@ public:
 	void setActiveState(State active_state) {
 		this->active_state = active_state;
 		if (active_state == State::MainMenu) active_page = &main_menu;
-		if (active_state == State::NewGameMenu) active_page = &new_game_menu;
+		else if (active_state == State::NewGameMenu) active_page = &new_game_menu;
+		else if (active_state == State::LoadGameMenu) active_page = &load_game_menu;
 		else if (active_state == State::InfoMenu) active_page = &info_menu;
 		else if (active_state == State::OptionsMenu) active_page = &options_menu;
 		else if (active_state == State::AudioOptionsMenu) active_page = &audio_menu;
 		else if (active_state == State::ControlsOptionsMenu) active_page = &controls_menu;
 		else if (active_state == State::PauseMenu) active_page = &pause_menu;
+	}
+
+	void ResetNewGame() {
+		new_game_menu.Clear();
+		InitNewGameMenu();
+	}
+
+	void ResetLoadGame() {
+		load_game_menu.Clear();
+		InitLoadGameMenu();
 	}
 
 	void ResetControls(Controls& controls) {
@@ -79,6 +90,9 @@ private:
 
 	void InitNewGameMenu();
 	MenuPage new_game_menu;
+
+	void InitLoadGameMenu();
+	MenuPage load_game_menu;
 
 	void InitInfoMenu();
 	MenuPage info_menu;
