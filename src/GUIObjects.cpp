@@ -658,17 +658,7 @@ bool ObjContainer::onKeyType(sf::Event::KeyEvent e)
 	}
 	return ret;
 }
-//
-//bool ObjContainer::onKeyPressed(sf::Keyboard::Key key) {
-//	bool ret = false;
-//	for (auto o : gui_objects) {
-//		if (o->getActive()) {
-//			if (o->onKeyPressed(key)) ret = true;
-//		}
-//	}
-//	return ret;
-//}
-//
+
 void ObjContainer::UpdateClickDrag(sf::Vector2i mouse_pos) {
 }
 
@@ -743,9 +733,6 @@ void TextInputBox::Update()
 			show_cursor = !show_cursor;
 			clock.restart();
 		}
-		if (text_obj.getString().getSize() == 0) {
-			//cursor_shape.setPosition({text_obj.getPosition().x, pos.y+ 5});
-		}
 	}
 }
 
@@ -761,30 +748,78 @@ void TextInputBox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_
 
 bool TextInputBox::onClick(sf::Vector2i mouse_pos)
 {
+	GUIObject::onClick(mouse_pos);
+
 	if (!active) active = true;
 	clock.restart();
+
+	float cw = 18;
+
+	if (text_string.size() >= 2) {
+		cw = text_obj.findCharacterPos(1).x - text_obj.findCharacterPos(0).x;
+	}
+
+	for (int i = text_string.size(); i >= 0; --i) {
+		float cx = text_obj.findCharacterPos(i).x;
+
+		if (mouse_pos.x >= cx -cw/2.f) {
+			cursor_pos = i;
+			break;
+		}
+	}
+
+	UpdateCursorPos();
 
 	return false;
 }
 
 void TextInputBox::UpdateClickDrag(sf::Vector2i mouse_pos)
 {
+	float cw = 18;
+
+	if (text_string.size() >= 2) {
+		cw = text_obj.findCharacterPos(1).x - text_obj.findCharacterPos(0).x;
+	}
+
+	for (int i = text_string.size(); i >= 0; --i) {
+		float cx = text_obj.findCharacterPos(i).x;
+
+		if (mouse_pos.x >= cx -cw/2.f) {
+			cursor_pos = i;
+			break;
+		}
+	}
+
+	UpdateCursorPos();
 }
 
 bool TextInputBox::onKeyType(sf::Event::KeyEvent e)
 {
 	if (active) {
-
 		char c = getKeyChar(e);
 		if (c != 0) {
-			text_string += c;
+			text_string.insert(cursor_pos, {c});
+			++cursor_pos;
 		}
-		else if (e.code == sf::Keyboard::Space) text_string += ' ';
+		else if (e.code == sf::Keyboard::Space) {
+			text_string.insert(cursor_pos, " ");
+			++cursor_pos;
+		}
 		else if (e.code == sf::Keyboard::BackSpace) {
-			if (text_string.size()) text_string.pop_back();
+			if (text_string.size() && cursor_pos >0) {
+				text_string = text_string.substr(0, cursor_pos-1) + text_string.substr(cursor_pos);
+				--cursor_pos;
+			}
+		}
+		else if (e.code == sf::Keyboard::Left) {
+			if (cursor_pos>0) --cursor_pos;
+		}
+		else if (e.code == sf::Keyboard::Right) {
+			if (cursor_pos < text_string.size()) ++cursor_pos;
 		}
 
 		UpdateText();
+		UpdateCursorPos();
 
 		if (e.code == sf::Keyboard::Return) {
 			if (action) {
@@ -823,17 +858,19 @@ void TextInputBox::Init()
 
 void TextInputBox::UpdateText()
 {
+	string old_string = text_obj.getString();
 	text_obj.setString(text_string);
 	if (text_string.size()) {
 		if (text_obj.findCharacterPos(text_string.size()-1).x >= rect_shape.getPosition().x + rect_shape.getSize().x - 10.f - text_obj.getCharacterSize()) {
-			text_string.pop_back();
+			text_string = old_string;
 			text_obj.setString(text_string);
+			--cursor_pos;
 		}
 	}
+}
 
+void TextInputBox::UpdateCursorPos()
+{
 	if (cursor_pos > text_string.size()) cursor_pos =text_string.size()-1;
-	if (cursor_pos == text_string.size()-1) {
-		++cursor_pos;
-		cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
-	}
+	cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
 }

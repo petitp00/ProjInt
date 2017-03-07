@@ -90,6 +90,38 @@ static void load_world(ButtonActionImpl* impl) {
 	impl->game.ChangeActiveState(State::Game, State::MainMenu);
 }
 
+static void delete_world(ButtonActionImpl* impl) {
+	vector<string> saves;
+	ifstream s("Resources/Data/Saves/all_saves");
+	string str;
+	char c;
+	while (s.get(c)) {
+		if (c == '\n') {
+			if (str != impl->load_world_name) {
+				saves.push_back(str);
+			}
+			str = "";
+		}
+		else {
+			str += c;
+		}
+	}
+
+
+	ofstream s2("Resources/Data/Saves/all_saves");
+	for (auto & sv : saves) {
+		s2 << sv << endl;
+	}
+
+	std::string sss = "del \"Resources\\Data\\Saves\\" + impl->load_world_name + "\"";
+	std::string ssss = "del \"Resources\\Data\\Saves\\" + impl->load_world_name + ".backup\"";
+
+	system(sss.c_str());
+	system(ssss.c_str());
+
+	go_to_main_menu(impl);
+}
+
 // MENU PAGE
 MenuPage::MenuPage()
 {
@@ -251,7 +283,7 @@ void MenuState::InitMainMenu()
 
 	float button_width = title->getSize().x;
 
-	auto play_button = new TextButton("Jouer", {100, 250}, button_width);
+	auto play_button = new TextButton("Nouvelle partie", {100, 250}, button_width);
 	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_new_game_menu), &button_action_impl);
 	play_button->setTooltip(new Tooltip("Commencer une partie", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(play_button);
@@ -324,13 +356,22 @@ void MenuState::InitLoadGameMenu()
 	auto container = new ObjContainer({100, 180}, {w, 420.f});
 	int i = 0;
 	for (auto & sv : saves) {
-		auto label = new TextBox(sv, {20, float(20 + 100*i)}, w, BASE_FONT_NAME, sf::Color::Black, FontSize::LARGE);
+		string sss = sv;
+		if (sv.size() >= 16) {
+			sss = sv.substr(0, 16) + "...";
+		}
+		auto label = new TextBox(sss, {20, float(20 + 100*i)}, w, BASE_FONT_NAME, sf::Color::Black, FontSize::LARGE);
 		container->AddObject(label);
 
-		auto butt = new WorldSelectButton("Jouer", {20.f + 650.f, float(26 + 100*i)}, 130.f, FontSize::SMALL, sf::Color::Black);
+		auto butt = new WorldSelectButton("Jouer", {650.f, float(26 + 100*i)}, 130.f, FontSize::SMALL, sf::Color::Black);
 		butt->setWorldName(sv);
 		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(load_world), &button_action_impl);
 		container->AddObject(butt);
+
+		auto butt2 = new WorldSelectButton("Supprimer", {130.f + 20.f + 650.f, float(26 + 100*i)}, 200.f, FontSize::SMALL, sf::Color::Black);
+		butt2->setWorldName(sv);
+		butt2->setOnClickAction(new std::function<void(ButtonActionImpl*)>(delete_world), &button_action_impl);
+		container->AddObject(butt2);
 
 		++i;
 	}

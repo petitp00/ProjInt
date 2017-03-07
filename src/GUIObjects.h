@@ -423,6 +423,7 @@ public:
 private:
 	void Init(); // sets the size (height) and the positions of stuff
 	void UpdateText(); // updates the text's string and such
+	void UpdateCursorPos();
 
 	std::string text_string;
 	unsigned int cursor_pos = 0;
