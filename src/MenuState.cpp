@@ -119,7 +119,7 @@ static void delete_world(ButtonActionImpl* impl) {
 	system(sss.c_str());
 	system(ssss.c_str());
 
-	go_to_main_menu(impl);
+	impl->menu_state.ResetLoadGame();
 }
 
 // MENU PAGE
@@ -160,7 +160,7 @@ bool MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
 	sf::Vector2i mouse(mouse_x, mouse_y);
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			if (o->onClick(mouse)) ret = true;
+			if (o->onClick(mouse)) { ret = true; return true; }
 		}
 	}
 	return ret;

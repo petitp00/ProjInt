@@ -595,7 +595,9 @@ bool ObjContainer::onClick(sf::Vector2i mouse_pos) {
 	GUIObject::onClick(mouse_pos);
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
-			if (!o->getActive()) if (o->onClick(mouse_pos)) ret = true;
+			if (!o->getActive()) if (o->onClick(mouse_pos)) {
+				ret = true; return true;
+			}
 		}
 		else if (o->getActive()) o->setActive(false);
 	}
