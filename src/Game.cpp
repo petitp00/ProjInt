@@ -128,9 +128,15 @@ void Game::Start()
 
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
-					if (state_machine.getActiveState() == State::MainMenu) {Quit(); }
+					if (state_machine.getActiveState() == State::MainMenu) { Quit(); }
 					else if (state_machine.getActiveState() == State::Game) { ChangeActiveState(State::PauseMenu, State::Game); }
 					else { ReturnToLastState(); }
+				}
+				else if (event.key.code == sf::Keyboard::Space) {
+					if (state_machine.getActiveState() == State::MainMenu) {
+						game_state->StartNewGame("dev");
+						ChangeActiveState(State::Game, State::MainMenu);
+					}
 				}
 			}
 		}
@@ -306,6 +312,6 @@ char getKeyChar(sf::Event::KeyEvent e)
 	if (e.code >= 26 && e.code <= 35) {
 		return char(48+int(e.code)-26);
 	}
-	
+
 	return 0;
 }
