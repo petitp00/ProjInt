@@ -3,6 +3,7 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/System/Clock.hpp>
 
 #include <string>
 #include <vector>
@@ -87,6 +88,29 @@ private:
 	std::string texture_name;
 };
 
+class AnimationComponent
+{
+public:
+	void Update();
+	void Init();
+
+	sf::Vector2f* entity_pos; // not the same as the sprite's pos
+	sf::Vector2f entity_box_texture_pos; // where the collision box of the entity starts in the texture
+	sf::Vector2f frame_size;
+	sf::Vector2f scale;
+	sf::Sprite sprite;
+	sf::Texture* tileset;
+	sf::Time frame_time;
+
+	int nb_of_frames;
+	int frame = 0;
+
+	bool flip = false;
+
+private:
+	sf::Clock clock;
+};
+
 class Player : public Entity
 {
 public:
@@ -107,6 +131,7 @@ public:
 private:
 	Controls* controls = nullptr;
 
+	AnimationComponent anim_comp;
 	sf::Sprite sprite; // replace with animation component
 
 	sf::Vector2f movement;
