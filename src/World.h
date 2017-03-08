@@ -2,8 +2,9 @@
 
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
 
 #include <vector>
 
@@ -17,6 +18,39 @@ What we need to save:
 */
 
 class GameState;
+
+enum GroundType {
+	GRASS,
+	SAND
+};
+	
+class GroundTile {
+public:
+
+	GroundTile(GroundType type, sf::Vector2f pos);
+
+	GroundType getType() { return type; }
+	sf::Vector2f getPos() { return pos; }
+
+private:
+	GroundType type;
+	sf::Vector2f pos;
+};
+
+class Ground : public sf::Drawable
+{
+public:
+	void LoadTileMap(const int* tiles, unsigned width, unsigned height);
+	void Clear();
+
+private:
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+	sf::VertexArray vertices;
+	std::vector<GroundTile> tiles;
+	sf::Texture* tileset;
+
+};
 
 class World
 {
@@ -42,6 +76,7 @@ private:
 
 	sf::View game_view;
 
+	Ground ground;
 	Player* player = nullptr;
 	std::vector<Entity*> entities;
 };

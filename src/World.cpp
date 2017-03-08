@@ -1,12 +1,65 @@
 #include "World.h"
 
 #include "GameState.h"
+#include "ResourceManager.h"
+#include "rng.h"
 
 #include <fstream>
 #include <iostream>
 using namespace std;
 
 Controls* controls;
+
+
+GroundTile::GroundTile(GroundType type, sf::Vector2f pos) :
+	type(type), pos(pos)
+{ }
+
+
+void Ground::LoadTileMap(const int * tiles, unsigned width, unsigned height)
+{
+	static const int tile_size = 64;
+	static const int visual_size = 64 * 1.5;
+
+	tileset = &ResourceManager::getTexture("Placeholders/Ground.png");
+
+	vertices.setPrimitiveType(sf::Quads);
+	vertices.resize(width*height*4);
+
+	for (unsigned i = 0; i != width; ++i) {
+		for (unsigned j = 0; j != height; ++j) {
+			int tile_nb = tiles[i+j*width];
+
+			int u, v = 0;
+			u = rng::rand_int(0, 2);
+			if (tile_nb == GRASS) { v = 0; }
+			if (tile_nb == SAND) { v = 1; }
+
+			sf::Vertex* quad = &vertices[(i+j*width) * 4];
+
+			quad[0].position = sf::Vector2f(i*visual_size, j*visual_size);
+			quad[1].position = sf::Vector2f((i+1)*visual_size, j*visual_size);
+			quad[2].position = sf::Vector2f((i+1)*visual_size, (j+1)*visual_size);
+			quad[3].position = sf::Vector2f(i*visual_size, (j+1)*visual_size);
+
+			quad[0].texCoords = sf::Vector2f(u*tile_size, v*tile_size);
+			quad[1].texCoords = sf::Vector2f((u+1)*tile_size, v*tile_size);
+			quad[2].texCoords = sf::Vector2f((u+1)*tile_size, (v+1)*tile_size);
+			quad[3].texCoords = sf::Vector2f(u*tile_size, (v+1)*tile_size);
+		}
+	}
+}
+
+void Ground::Clear()
+{
+	tiles.clear();
+}
+
+void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
+{
+	states.texture = tileset;
+	target.draw(vertices, states);
+}
 
 World::World(GameState & game_state, Controls* controls) :
 	game_state(game_state),
@@ -30,12 +83,24 @@ void World::Clear()
 		delete entities[i];
 	}
 	entities.clear();
+	ground.Clear();
 }
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
 	Clear();
 	name = filename;
+
+	const int w = 100, h = 100;
+	int t[w*h] ={};
+
+	for (int i = 0; i != w*h; ++i) {
+		if (i % 4 == 0) t[i] = 1;
+		else t[i] = 0;
+	}
+
+	ground.LoadTileMap(t, w, h);
+
 	player = new Player();
 	player->setControls(controls);
 
@@ -176,6 +241,8 @@ void World::Render(sf::RenderTarget & target)
 {
 	target.setView(game_view);
 
+	target.draw(ground);
+
 	for (auto e : entities) {
 		e->Render(target);
 	}
@@ -219,4 +286,3 @@ bool World::HandleEvent(sf::Event const & event)
 
 	return false;
 }
-
