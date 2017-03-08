@@ -72,6 +72,7 @@ void AnimationComponent::Init()
 {
 	sprite.setTexture(*tileset);
 	sprite.setOrigin(entity_box_texture_pos);
+	sprite.setPosition(*entity_pos);
 
 	frame_size.x = sprite.getLocalBounds().width / float(nb_of_frames);
 	frame_size.y = sprite.getLocalBounds().height;
