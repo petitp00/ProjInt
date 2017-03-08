@@ -106,18 +106,24 @@ static void delete_world(ButtonActionImpl* impl) {
 			str += c;
 		}
 	}
+	s.close();
 
 
 	ofstream s2("Resources/Data/Saves/all_saves");
 	for (auto & sv : saves) {
 		s2 << sv << endl;
 	}
+	s2.close();
 
 	std::string sss = "del \"Resources\\Data\\Saves\\" + impl->load_world_name + "\"";
-	std::string ssss = "del \"Resources\\Data\\Saves\\" + impl->load_world_name + ".backup\"";
-
 	system(sss.c_str());
-	system(ssss.c_str());
+
+	ifstream back("Resources/Data/saves/" + impl->load_world_name + ".backup");
+	if (back) {
+		std::string ssss = "del \"Resources\\Data\\Saves\\" + impl->load_world_name + ".backup\"";
+		back.close();
+		system(ssss.c_str());
+	}
 
 	impl->menu_state.ResetLoadGame();
 }
