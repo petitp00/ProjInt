@@ -40,16 +40,19 @@ private:
 class Ground : public sf::Drawable
 {
 public:
-	void LoadTileMap(const int* tiles, unsigned width, unsigned height);
+	void LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height);
 	void Clear();
 
+	std::vector<GroundTile>& getTiles() { return tiles; }
+	int getWidth() { return width; }
+	int getHeight() { return height; }
 private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	sf::VertexArray vertices;
 	std::vector<GroundTile> tiles;
 	sf::Texture* tileset;
-
+	int width, height;
 };
 
 class World

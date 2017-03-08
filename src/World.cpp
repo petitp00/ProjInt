@@ -16,19 +16,24 @@ GroundTile::GroundTile(GroundType type, sf::Vector2f pos) :
 { }
 
 
-void Ground::LoadTileMap(const int * tiles, unsigned width, unsigned height)
+void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
 {
 	static const int tile_size = 64;
 	static const int visual_size = 64 * 1.5;
+
+	this->width = width;
+	this->height = height;
 
 	tileset = &ResourceManager::getTexture("Placeholders/Ground.png");
 
 	vertices.setPrimitiveType(sf::Quads);
 	vertices.resize(width*height*4);
 
-	for (unsigned i = 0; i != width; ++i) {
-		for (unsigned j = 0; j != height; ++j) {
+	for (unsigned j = 0; j != height; ++j) {
+		for (unsigned i = 0; i != width; ++i) {
 			int tile_nb = tiles[i+j*width];
+
+			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(i, j));
 
 			int u, v = 0;
 			u = rng::rand_int(0, 2);
@@ -92,7 +97,9 @@ void World::CreateAndSaveWorld(std::string const & filename)
 	name = filename;
 
 	const int w = 100, h = 100;
-	int t[w*h] ={};
+	//int t[w*h] ={};
+
+	vector<int> t(w*h, 0);
 
 	for (int i = 0; i != w*h; ++i) {
 		if (i % 4 == 0) t[i] = 1;
@@ -179,6 +186,17 @@ void World::LoadWorld(std::string const & filename)
 				break;
 			}
 		}
+		else if (w == "[TILE_MAP]") {
+			vector<int> tiles;
+			int width, height;
+			s >> width;
+			s >> height;
+			while (s >> w) {
+				tiles.push_back(stoi(w));
+			}
+
+			ground.LoadTileMap(tiles, width, height);
+		}
 	}
 	player->setControls(controls);
 
@@ -208,6 +226,13 @@ void World::Save()
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
 	}
+
+	s << "[TILE_MAP]" << endl;
+	s << ground.getWidth() << endl << ground.getHeight() << endl;
+	for (auto t : ground.getTiles()) {
+		s << t.getType() << " ";
+	}
+	s << endl;
 
 	if (!file_existed) {
 		std::ofstream stream("Resources/Data/Saves/all_saves", std::ios_base::app);
