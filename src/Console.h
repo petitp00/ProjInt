@@ -22,12 +22,14 @@ namespace ConsoleNamespace {
 	static std::string CONSOLE_FONT = "consola.ttf";
 	static unsigned int CONSOLE_FONT_SIZE = 18;
 	static float CONSOLE_ALPHA = 0.75f;
+	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3.f;
 	static sf::Color TEXT_COLOR = sf::Color(180, 180, 180, 255*CONSOLE_ALPHA);
 	static sf::Color TEXT_COLOR2 = sf::Color(254, 254, 255, 255*CONSOLE_ALPHA);
 	static sf::Color BG_COLOR = sf::Color(41, 52, 71, 255*CONSOLE_ALPHA);
 	static sf::Color BG_COLOR2 = sf::Color(26, 34, 45, 255*CONSOLE_ALPHA);
-
-	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3.f;
+	static sf::Color RESULT_COLOR = sf::Color(255, 205, 54);
+	static sf::Color INFO_COLOR = sf::Color(54, 197, 219);
+	static sf::Color ERROR_COLOR = sf::Color(237, 68, 59);
 
 	enum LineMode {
 		COMMAND,
@@ -36,9 +38,7 @@ namespace ConsoleNamespace {
 		ERROR,
 	};
 
-	static sf::Color RESULT_COLOR = sf::Color(255, 205, 54);
-	static sf::Color INFO_COLOR = sf::Color(54, 197, 219);
-	static sf::Color ERROR_COLOR = sf::Color(237, 68, 59);
+	static int MAX_AMOUNT_OF_LINES = 18;
 
 	class Console
 	{

@@ -92,9 +92,15 @@ void Console::Render(sf::RenderTarget & target)
 	}
 }
 
+//
+// PARSE AND EXECUTE
+//
+
 void Console::ParseAndExecute()
 {
-	if (input_string == "clear") {
+	if (input_string == "" || input_string == " ") { }
+	else if (input_string == "clear") {
+		for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
 		lines.clear();
 	}
 	else if (input_string == "help") {
@@ -192,6 +198,11 @@ void Console::AddLine(std::string text, LineMode mode)
 	else if (mode == ERROR)		l->setFillColor(ERROR_COLOR);
 
 	lines.push_front(l);
+
+	if (lines.size() > MAX_AMOUNT_OF_LINES) {
+		delete lines[lines.size()-1];
+		lines.pop_back();
+	}
 
 	for (int i = lines.size()-1; i >= 0; --i) {
 		lines[i]->setOrigin({-margin, -float(CONSOLE_HEIGHT - input_height - (i+1) * 40.f)});
