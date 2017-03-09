@@ -68,7 +68,7 @@ Game::Game()
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
-	console = new ConsoleNamespace::Console;
+	console = new ConsoleNamespace::Console(*this, *menu_state, *game_state);
 }
 
 Game::~Game()

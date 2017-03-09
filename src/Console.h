@@ -9,13 +9,34 @@
 #include <SFML/Window/Event.hpp>
 
 #include <deque>
+#include <vector>
+#include <functional>
 
-/*
-	CONSOLE CLASS
 
-		+
 
-*/
+
+
+
+
+
+
+
+
+
+
+
+// TODO: add a cin like function for command actions
+
+
+
+
+
+
+
+
+
+
+
 
 namespace ConsoleNamespace {
 
@@ -41,20 +62,46 @@ namespace ConsoleNamespace {
 
 	static unsigned int MAX_AMOUNT_OF_LINES = 18;
 
+
+	/* Commands to implement:
+		+ OpenEditor	- to open the map editor. Also makes new commands available
+		+ help
+		+
+	*/
+
+	struct CommandActionImpl {
+		CommandActionImpl(
+			Console& console, Game& game, MenuState& menu_state, GameState& game_state) :
+			console(console), game(game), menu_state(menu_state), game_state(game_state) {}
+		
+		Console& console;
+		Game& game;
+		MenuState& menu_state;
+		GameState& game_state;
+	};
+
+	using caction_t = std::function<void(CommandActionImpl* impl, const std::vector<std::string>&)>;
+
+	struct Command {
+		Command(std::string name, caction_t action) :
+			name(name), action(action) {}
+		std::string name; //eg.: help, clear, set, etc.
+
+		// arguments passed in a vector
+		caction_t action;
+	};
+
 	class Console
 	{
 	public:
-		Console();
+		Console(Game& game, MenuState& menu_state, GameState& game_state);
 		~Console();
 
 		void Init();
-
 		void Update();
 		void Render(sf::RenderTarget& target);
-
 		void ParseAndExecute();
-
-		bool HandleEvent(sf::Event const& event);
+		bool HandleEvent(const sf::Event& event);
 
 		// Getters
 		bool getActive() { return active; }
@@ -63,16 +110,19 @@ namespace ConsoleNamespace {
 		void setActive(bool active);
 
 	private:
-		void AddLine(std::string text, LineMode mode = COMMAND);
-		std::deque<sf::Text*> lines;
-
 		bool active = false;
 		bool big_mode = false;
 
-		float ypos = -float(CONSOLE_HEIGHT);
-		Tweener ypos_tw;
+		CommandActionImpl command_action_impl;
+		std::vector<Command*> commands;
+		void InitCommands();
+
+		void AddLine(std::string text, LineMode mode = COMMAND);
+		std::deque<sf::Text*> lines;
 
 		// Graphical stuff
+		float ypos = -float(CONSOLE_HEIGHT);
+		Tweener ypos_tw;
 		sf::RectangleShape main_shape;
 		sf::RectangleShape input_shape;
 

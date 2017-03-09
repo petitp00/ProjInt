@@ -85,7 +85,6 @@ Player::Player() : Entity()
 	type = PLAYER;
 	Init();
 	auto b = sprite.getLocalBounds();
-	//size={b.width, b.height};
 }
 
 Player::Player(sf::Vector2f pos, sf::Vector2f size, unsigned long flags, std::vector<std::string> const & saved_data) :

@@ -11,13 +11,19 @@ bool go_up_then_not_active = false;
 float input_height = 30.f;
 float margin = 15.f;
 
-Console::Console()
+Console::Console(Game& game, MenuState& menu_state, GameState& game_state) :
+	command_action_impl(*this, game, menu_state, game_state)
 {
 	Init();
+	InitCommands();
 }
 
 Console::~Console()
 {
+	for (int i = 0; i != commands.size(); ++i) {
+		delete commands[i];
+	}
+	commands.clear();
 }
 
 void Console::Init()
@@ -98,6 +104,15 @@ void Console::Render(sf::RenderTarget & target)
 
 void Console::ParseAndExecute()
 {
+	bool found_command = false;
+
+	for (auto c : commands) {
+		if (c->name == input_string) {
+			c->action(&command_action_impl, vector<string>());
+			found_command = true;
+		}
+	}
+
 	if (input_string == "" || input_string == " ") {}
 	else if (input_string == "clear") {
 		for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
@@ -106,7 +121,7 @@ void Console::ParseAndExecute()
 	else if (input_string == "help") {
 		AddLine("This will display available commands", RESULT);
 	}
-	else {
+	else if (!found_command){
 		AddLine("\"" + input_string + "\" is not a command.", ERROR);
 	}
 }
@@ -119,9 +134,7 @@ bool Console::HandleEvent(sf::Event const & event)
 				go_up_then_not_active = false;
 				active = false;
 			}
-			else {
-				setActive(false);
-			}
+			else { setActive(false); }
 		}
 
 		if (event.key.code == sf::Keyboard::Return) {
@@ -186,6 +199,31 @@ void Console::setActive(bool active)
 		go_up_then_not_active = true; // don't set active to false yet because we want to render during the transition
 		ypos_tw.Reset(TweenType::QuartIn, ypos, -float(CONSOLE_HEIGHT), sf::seconds(0.3f));
 	}
+}
+
+void Console::InitCommands()
+{
+	#define cmd_begin caction_t([](CommandActionImpl* impl, const vector<string>& args)
+	#define cmd_end ))
+
+	commands.push_back(new Command("test",
+	cmd_begin
+	{
+		cout << "it works!"<< endl;
+	}
+	cmd_end
+	);
+
+	commands.push_back(new Command("quit",
+	cmd_begin
+	{
+		impl->game.Quit();
+	}
+	cmd_end
+	);
+
+	#undef cmd_begin
+	#undef cmd_end
 }
 
 void Console::AddLine(std::string text, LineMode mode)
