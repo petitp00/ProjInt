@@ -12,24 +12,25 @@
 
 /*
 	CONSOLE CLASS
-		
-		+ 
+
+		+
 
 */
 
 namespace ConsoleNamespace {
-	
+
+	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3;
 	static std::string CONSOLE_FONT = "consola.ttf";
-	static unsigned int CONSOLE_FONT_SIZE = 18;
-	static float CONSOLE_ALPHA = 0.75f;
-	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3.f;
-	static sf::Color TEXT_COLOR = sf::Color(180, 180, 180, 255*CONSOLE_ALPHA);
-	static sf::Color TEXT_COLOR2 = sf::Color(254, 254, 255, 255*CONSOLE_ALPHA);
-	static sf::Color BG_COLOR = sf::Color(41, 52, 71, 255*CONSOLE_ALPHA);
-	static sf::Color BG_COLOR2 = sf::Color(26, 34, 45, 255*CONSOLE_ALPHA);
-	static sf::Color RESULT_COLOR = sf::Color(255, 205, 54);
-	static sf::Color INFO_COLOR = sf::Color(54, 197, 219);
-	static sf::Color ERROR_COLOR = sf::Color(237, 68, 59);
+	static uint CONSOLE_FONT_SIZE = 18;
+	static int CONSOLE_ALPHA = int(0.75 * 255);
+
+	static sf::Color TEXT_COLOR		= sf::Color(180, 180, 180, CONSOLE_ALPHA);
+	static sf::Color TEXT_COLOR2	= sf::Color(254, 254, 255, CONSOLE_ALPHA);
+	static sf::Color BG_COLOR		= sf::Color(41,  52,  71,  CONSOLE_ALPHA);
+	static sf::Color BG_COLOR2		= sf::Color(26,  34,  45,  CONSOLE_ALPHA);
+	static sf::Color RESULT_COLOR	= sf::Color(255, 205, 54);
+	static sf::Color INFO_COLOR		= sf::Color(54,  197, 219);
+	static sf::Color ERROR_COLOR	= sf::Color(237, 68,  59);
 
 	enum LineMode {
 		COMMAND,
@@ -38,7 +39,7 @@ namespace ConsoleNamespace {
 		ERROR,
 	};
 
-	static int MAX_AMOUNT_OF_LINES = 18;
+	static unsigned int MAX_AMOUNT_OF_LINES = 18;
 
 	class Console
 	{
@@ -68,7 +69,7 @@ namespace ConsoleNamespace {
 		bool active = false;
 		bool big_mode = false;
 
-		float ypos = -CONSOLE_HEIGHT;
+		float ypos = -float(CONSOLE_HEIGHT);
 		Tweener ypos_tw;
 
 		// Graphical stuff
@@ -83,12 +84,12 @@ namespace ConsoleNamespace {
 		std::string input_string;
 		sf::Text input_text_obj_greater_then;
 		sf::Text input_text_obj;
-		
+
 		sf::RectangleShape caret_shape;
 		int caret_pos = 0;
 		bool draw_caret = true;
 		sf::Clock caret_clock;
-		sf::Time caret_blink_time = sf::seconds(0.4);
+		sf::Time caret_blink_time = sf::seconds(0.4f);
 
 	};
 

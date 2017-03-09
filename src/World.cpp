@@ -11,15 +11,12 @@ using namespace std;
 Controls* controls;
 
 
-GroundTile::GroundTile(GroundType type, sf::Vector2f pos) :
-	type(type), pos(pos)
-{ }
-
+GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
 
 void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
 {
 	static const int tile_size = 64;
-	static const int visual_size = 64 * 1.5;
+	static const int visual_size = int(64 * 1.5);
 
 	this->width = width;
 	this->height = height;
@@ -33,7 +30,7 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 		for (unsigned i = 0; i != width; ++i) {
 			int tile_nb = tiles[i+j*width];
 
-			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(i, j));
+			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(float(i), float(j)));
 
 			int u, v = 0;
 			u = rng::rand_int(0, 2);
@@ -42,15 +39,15 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 
 			sf::Vertex* quad = &vertices[(i+j*width) * 4];
 
-			quad[0].position = sf::Vector2f(i*visual_size, j*visual_size);
-			quad[1].position = sf::Vector2f((i+1)*visual_size, j*visual_size);
-			quad[2].position = sf::Vector2f((i+1)*visual_size, (j+1)*visual_size);
-			quad[3].position = sf::Vector2f(i*visual_size, (j+1)*visual_size);
+			quad[0].position = sf::Vector2f(float(i*visual_size),		float(j*visual_size));
+			quad[1].position = sf::Vector2f(float((i+1)*visual_size),	float(j*visual_size));
+			quad[2].position = sf::Vector2f(float((i+1)*visual_size),	float(j+1)*visual_size);
+			quad[3].position = sf::Vector2f(float(i*visual_size),		float(j+1)*visual_size);
 
-			quad[0].texCoords = sf::Vector2f(u*tile_size, v*tile_size);
-			quad[1].texCoords = sf::Vector2f((u+1)*tile_size, v*tile_size);
-			quad[2].texCoords = sf::Vector2f((u+1)*tile_size, (v+1)*tile_size);
-			quad[3].texCoords = sf::Vector2f(u*tile_size, (v+1)*tile_size);
+			quad[0].texCoords = sf::Vector2f(float(u*tile_size),		float(v*tile_size));
+			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v*tile_size));
+			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v+1)*tile_size);
+			quad[3].texCoords = sf::Vector2f(float(u*tile_size),		float(v+1)*tile_size);
 		}
 	}
 }
@@ -71,9 +68,6 @@ World::World(GameState & game_state, Controls* controls) :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 
 {
-	//LoadWorld("test");
-	//CreateAndSaveWorld("test");
-	//player->setControls(controls);
 	::controls = controls;
 }
 
@@ -97,15 +91,11 @@ void World::CreateAndSaveWorld(std::string const & filename)
 	name = filename;
 
 	const int w = 100, h = 100;
-	//int t[w*h] ={};
-
 	vector<int> t(w*h, 0);
-
 	for (int i = 0; i != w*h; ++i) {
 		if (i % 4 == 0) t[i] = 1;
 		else t[i] = 0;
 	}
-
 	ground.LoadTileMap(t, w, h);
 
 	player = new Player();

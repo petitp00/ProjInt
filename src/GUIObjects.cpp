@@ -399,7 +399,6 @@ void Checkbox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_rend
 }
 
 bool Checkbox::onClick(sf::Vector2i mouse_pos) {
-	//onHoverOut();
 	active = !active;
 	if (!active) text_obj.setString("");
 	else text_obj.setString("X");

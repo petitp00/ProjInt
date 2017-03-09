@@ -8,6 +8,8 @@
 
 #include <map>
 
+using uint = unsigned int;
+
 namespace ConsoleNamespace { class Console; };
 class GameState;
 class MenuState;
@@ -17,7 +19,6 @@ static int WINDOW_HEIGHT = 720;
 
 static sf::Time QUICK_EXIT_TIME = sf::seconds(0.3f);
 
-//static std::string BASE_FONT_NAME = "blue highway rg.ttf";
 static std::string BASE_FONT_NAME = "Cousine-Regular.ttf";
 
 enum FontSize

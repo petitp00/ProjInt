@@ -78,7 +78,6 @@ static void toggle_fps_checkbox(ButtonActionImpl* impl) {
 }
 
 static void create_new_world(ButtonActionImpl* impl) {
-	//impl->menu_state.ResetNewGame();
 	impl->game.ReturnToLastState();
 	impl->game_state.StartNewGame(*impl->world_name_ref);
 	impl->game.ChangeActiveState(State::Game, State::MainMenu);
@@ -222,7 +221,6 @@ bool MenuPage::KeyPressedEvent(sf::Event::KeyEvent e)
 	bool ret = false;
 	for (auto o : gui_objects) {
 		if (o->onKeyType(e)) ret = true;
-		//if (o->onKeyPressed(key)) ret = true;
 	}
 	return ret;
 }

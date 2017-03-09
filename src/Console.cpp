@@ -23,7 +23,7 @@ Console::~Console()
 void Console::Init()
 {
 	if (big_mode) CONSOLE_HEIGHT = WINDOW_HEIGHT;
-	else CONSOLE_HEIGHT = WINDOW_HEIGHT/3.f;
+	else CONSOLE_HEIGHT = WINDOW_HEIGHT/3;
 
 	main_shape.setFillColor(BG_COLOR);
 	main_shape.setSize({float(WINDOW_WIDTH), float(CONSOLE_HEIGHT)});
@@ -98,7 +98,7 @@ void Console::Render(sf::RenderTarget & target)
 
 void Console::ParseAndExecute()
 {
-	if (input_string == "" || input_string == " ") { }
+	if (input_string == "" || input_string == " ") {}
 	else if (input_string == "clear") {
 		for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
 		lines.clear();
@@ -153,7 +153,7 @@ bool Console::HandleEvent(sf::Event const & event)
 			}
 		}
 		else if (event.key.code == sf::Keyboard::Right) {
-			if (caret_pos < input_string.size()) {
+			if (uint(caret_pos) < input_string.size()) {
 				++caret_pos;
 				draw_caret = true;
 			}
@@ -174,17 +174,17 @@ void Console::setActive(bool active)
 		big_mode = false;
 		this->active = true;
 		Init();
-		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3));
+		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3f));
 	}
 	else if (active && this->active) {
 		big_mode = !big_mode;
 		Init();
-		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3));
+		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3f));
 	}
 	else {
 		big_mode = false;
 		go_up_then_not_active = true; // don't set active to false yet because we want to render during the transition
-		ypos_tw.Reset(TweenType::QuartIn, ypos, -CONSOLE_HEIGHT, sf::seconds(0.3));
+		ypos_tw.Reset(TweenType::QuartIn, ypos, -float(CONSOLE_HEIGHT), sf::seconds(0.3f));
 	}
 }
 
