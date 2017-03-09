@@ -142,8 +142,11 @@ void Game::Start()
 						ChangeActiveState(State::Game, State::MainMenu);
 					}
 				}
-				else if (event.key.code == sf::Keyboard::Quote) {
+				else if (event.key.code == sf::Keyboard::F1) {
 					console->setActive(true);
+				}
+				else {
+					//cout << event.key.code << endl;
 				}
 			}
 		}
@@ -310,10 +313,62 @@ char getKeyChar(sf::Event::KeyEvent e)
 		if (e.code >= 0 && e.code <= 25) {
 			return char(65+int(e.code));
 		}
+
+		switch (e.code) {
+		case sf::Keyboard::LBracket: return '[';
+		case sf::Keyboard::RBracket: return ']';
+		case sf::Keyboard::SemiColon: return ':';
+		case sf::Keyboard::Comma: return '\'';
+		case sf::Keyboard::Period: return '.';
+		case sf::Keyboard::Quote: return '|';
+		case sf::Keyboard::Slash: return 'É';
+		case sf::Keyboard::BackSlash: return '>';
+		case sf::Keyboard::Tilde: return '{';
+		case sf::Keyboard::Equal: return '+';
+		case sf::Keyboard::Dash: return '_';
+		case sf::Keyboard::Space: return ' ';
+		default: break;	
+		}
 	}
 	else {
 		if (e.code >= 0 && e.code <= 25) {
 			return char(97+int(e.code));
+		}
+
+		if (!e.alt) {
+			switch (e.code) {
+			case sf::Keyboard::LBracket: return '[';
+			case sf::Keyboard::RBracket: return ']';
+			case sf::Keyboard::SemiColon: return ';';
+			case sf::Keyboard::Comma: return ',';
+			case sf::Keyboard::Period: return '.';
+			case sf::Keyboard::Quote: return '#';
+			case sf::Keyboard::Slash: return 'é';
+			case sf::Keyboard::BackSlash: return '<';
+			case sf::Keyboard::Tilde: return '{';
+			case sf::Keyboard::Equal: return '=';
+			case sf::Keyboard::Dash: return '-';
+			case sf::Keyboard::Space: return ' ';
+			default: break;
+			}
+		}
+
+		if (e.alt) {
+			switch (e.code) {
+			case sf::Keyboard::LBracket: return '[';
+			case sf::Keyboard::RBracket: return ']';
+			case sf::Keyboard::SemiColon: return '~';
+			case sf::Keyboard::Comma: return '¯';
+			case sf::Keyboard::Period: return '.';
+			case sf::Keyboard::Quote: return '\\';
+			case sf::Keyboard::Slash: return 'É';
+			case sf::Keyboard::BackSlash: return '}';
+			case sf::Keyboard::Tilde: return '{';
+			case sf::Keyboard::Equal: return '=';
+			case sf::Keyboard::Dash: return '-';
+			case sf::Keyboard::Space: return ' ';
+			default: break;
+			}
 		}
 	}
 

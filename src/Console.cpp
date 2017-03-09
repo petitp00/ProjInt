@@ -2,6 +2,7 @@
 
 #include "ResourceManager.h"
 
+#include <sstream>
 #include <iostream>
 using namespace std;
 using namespace ConsoleNamespace;
@@ -106,22 +107,21 @@ void Console::ParseAndExecute()
 {
 	bool found_command = false;
 
+	string str, a;
+	vector<string> args;
+	stringstream ss(input_string);
+	
+	ss >> str;
+	while (ss >> a) args.push_back(a);
+
 	for (auto c : commands) {
-		if (c->name == input_string) {
-			c->action(&command_action_impl, vector<string>());
+		if (c->name == str) {
+			c->action(&command_action_impl, args);
 			found_command = true;
 		}
 	}
 
-	if (input_string == "" || input_string == " ") {}
-	else if (input_string == "clear") {
-		for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
-		lines.clear();
-	}
-	else if (input_string == "help") {
-		AddLine("This will display available commands", RESULT);
-	}
-	else if (!found_command){
+	if (!found_command && input_string != "" && input_string != " ") {
 		AddLine("\"" + input_string + "\" is not a command.", ERROR);
 	}
 }
@@ -144,15 +144,17 @@ bool Console::HandleEvent(sf::Event const & event)
 			caret_pos = 0;
 		}
 
+		uint input_string_size_before = input_string.size();
 		char c = getKeyChar(event.key);
-		if (c != 0) {
+		if (c != 0)
 			input_string.insert(caret_pos, {c});
-			++caret_pos;
-		}
-		else if (event.key.code == sf::Keyboard::Space) {
+		else if (event.key.code == sf::Keyboard::Space)
 			input_string.insert(caret_pos, {" "});
-			++caret_pos;
-		}
+		else if (event.key.code == sf::Keyboard::Dash && event.key.shift)
+			input_string.insert(caret_pos, {"_"});
+		else if (event.key.code == sf::Keyboard::Dash && !event.key.shift)
+			input_string.insert(caret_pos, {"-"});
+
 		else if (event.key.code == sf::Keyboard::BackSpace) {
 			if (input_string.size() && caret_pos >0) {
 				input_string = input_string.substr(0, caret_pos-1) + input_string.substr(caret_pos);
@@ -172,10 +174,15 @@ bool Console::HandleEvent(sf::Event const & event)
 			}
 		}
 
+
+		if (input_string_size_before < input_string.size()) {
+			++caret_pos;
+		}
+
 		UpdateInputTextObj();
 		UpdateInputCaret(true);
 
-		if (event.key.code != sf::Keyboard::Quote)
+		if (event.key.code != sf::Keyboard::F1)
 			return true;
 	}
 	return false;
@@ -201,29 +208,48 @@ void Console::setActive(bool active)
 	}
 }
 
+void Console::ClearLines()
+{
+	for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
+	lines.clear();
+}
+
 void Console::InitCommands()
 {
-	#define cmd_begin caction_t([](CommandActionImpl* impl, const vector<string>& args)
-	#define cmd_end ))
+	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([](CommandActionImpl* impl, const vector<string>& args) func )));
 
-	commands.push_back(new Command("test",
-	cmd_begin
-	{
-		cout << "it works!"<< endl;
-	}
-	cmd_end
-	);
 
-	commands.push_back(new Command("quit",
-	cmd_begin
-	{
+	add_cmd("test", {
+		cout << "it works!" << endl;
+	});
+
+	add_cmd("wew", {
+		impl->console.AddLine("WEW", RESULT);
+	});
+
+	add_cmd("list_args", {
+		if (args.size()) {
+			impl->console.AddLine("Here are the arguments:", RESULT);
+			for (auto & a : args) impl->console.AddLine(a, INFO);
+		}
+		else {
+			impl->console.AddLine("No arguments given", RESULT);
+		}
+	});
+
+	add_cmd("clear", {
+		impl->console.ClearLines();
+	});
+
+	add_cmd("help", {
+		impl->console.AddLine("This will display available commands", RESULT);
+	});
+
+	add_cmd("quit", {
 		impl->game.Quit();
-	}
-	cmd_end
-	);
+	});
 
-	#undef cmd_begin
-	#undef cmd_end
+	#undef add_cmd
 }
 
 void Console::AddLine(std::string text, LineMode mode)
@@ -267,3 +293,4 @@ void Console::UpdateInputCaret(bool update_pos)
 		draw_caret = !draw_caret;
 	}
 }
+

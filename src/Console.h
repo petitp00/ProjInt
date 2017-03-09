@@ -13,31 +13,6 @@
 #include <functional>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// TODO: add a cin like function for command actions
-
-
-
-
-
-
-
-
-
-
-
-
 namespace ConsoleNamespace {
 
 	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3;
@@ -83,8 +58,7 @@ namespace ConsoleNamespace {
 	using caction_t = std::function<void(CommandActionImpl* impl, const std::vector<std::string>&)>;
 
 	struct Command {
-		Command(std::string name, caction_t action) :
-			name(name), action(action) {}
+		Command(std::string name, caction_t action) : name(name), action(action) {}
 		std::string name; //eg.: help, clear, set, etc.
 
 		// arguments passed in a vector
@@ -109,9 +83,13 @@ namespace ConsoleNamespace {
 		// Setters
 		void setActive(bool active);
 
+		// Functions for commands
+		void ClearLines();
+
 	private:
 		bool active = false;
 		bool big_mode = false;
+		bool waiting_on_input = false;
 
 		CommandActionImpl command_action_impl;
 		std::vector<Command*> commands;
@@ -140,6 +118,7 @@ namespace ConsoleNamespace {
 		bool draw_caret = true;
 		sf::Clock caret_clock;
 		sf::Time caret_blink_time = sf::seconds(0.4f);
+
 
 	};
 
