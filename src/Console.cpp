@@ -22,6 +22,9 @@ Console::~Console()
 
 void Console::Init()
 {
+	if (big_mode) CONSOLE_HEIGHT = WINDOW_HEIGHT;
+	else CONSOLE_HEIGHT = WINDOW_HEIGHT/3.f;
+
 	main_shape.setFillColor(BG_COLOR);
 	main_shape.setSize({float(WINDOW_WIDTH), float(CONSOLE_HEIGHT)});
 
@@ -91,6 +94,15 @@ void Console::Render(sf::RenderTarget & target)
 
 void Console::ParseAndExecute()
 {
+	if (input_string == "clear") {
+		lines.clear();
+	}
+	else if (input_string == "help") {
+		AddLine("This will display available commands", RESULT);
+	}
+	else {
+		AddLine("\"" + input_string + "\" is not a command.", ERROR);
+	}
 }
 
 bool Console::HandleEvent(sf::Event const & event)
@@ -154,32 +166,31 @@ void Console::setActive(bool active)
 {
 	if (active && !this->active) {
 		big_mode = false;
-		CONSOLE_HEIGHT = WINDOW_HEIGHT/3.f;
-		Init();
 		this->active = true;
+		Init();
 		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3));
 	}
-	else if (this->active && active) {
+	else if (active && this->active) {
 		big_mode = !big_mode;
-		if (big_mode)
-		CONSOLE_HEIGHT = WINDOW_HEIGHT;
-		else
-		CONSOLE_HEIGHT = WINDOW_HEIGHT/3.f;
-		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3));
 		Init();
+		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3));
 	}
 	else {
 		big_mode = false;
-		CONSOLE_HEIGHT = WINDOW_HEIGHT/3.f;
-		go_up_then_not_active = true;
+		go_up_then_not_active = true; // don't set active to false yet because we want to render during the transition
 		ypos_tw.Reset(TweenType::QuartIn, ypos, -CONSOLE_HEIGHT, sf::seconds(0.3));
 	}
 }
 
-void Console::AddLine(std::string text)
+void Console::AddLine(std::string text, LineMode mode)
 {
 	auto l = new sf::Text(text, ResourceManager::getFont(CONSOLE_FONT), CONSOLE_FONT_SIZE);
-	l->setFillColor(TEXT_COLOR);
+
+	if (mode == COMMAND)		l->setFillColor(TEXT_COLOR);
+	else if (mode == RESULT)	l->setFillColor(RESULT_COLOR);
+	else if (mode == INFO)		l->setFillColor(INFO_COLOR);
+	else if (mode == ERROR)		l->setFillColor(ERROR_COLOR);
+
 	lines.push_front(l);
 
 	for (int i = lines.size()-1; i >= 0; --i) {

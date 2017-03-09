@@ -29,6 +29,17 @@ namespace ConsoleNamespace {
 
 	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3.f;
 
+	enum LineMode {
+		COMMAND,
+		RESULT,
+		INFO,
+		ERROR,
+	};
+
+	static sf::Color RESULT_COLOR = sf::Color(255, 205, 54);
+	static sf::Color INFO_COLOR = sf::Color(54, 197, 219);
+	static sf::Color ERROR_COLOR = sf::Color(237, 68, 59);
+
 	class Console
 	{
 	public:
@@ -51,7 +62,7 @@ namespace ConsoleNamespace {
 		void setActive(bool active);
 
 	private:
-		void AddLine(std::string text);
+		void AddLine(std::string text, LineMode mode = COMMAND);
 		std::deque<sf::Text*> lines;
 
 		bool active = false;
