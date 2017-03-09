@@ -8,6 +8,7 @@
 
 #include <map>
 
+namespace ConsoleNamespace { class Console; };
 class GameState;
 class MenuState;
 
@@ -110,6 +111,8 @@ public:
 private:
 	GameSettings game_settings;
 	sf::RenderWindow window;
+
+	ConsoleNamespace::Console* console;
 
 	StateMachine state_machine;
 	GameState* game_state;

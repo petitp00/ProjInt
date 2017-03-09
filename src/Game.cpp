@@ -2,13 +2,12 @@
 
 #include <SFML/Window/Event.hpp>
 
+#include "Console.h"
 #include "GameState.h"
 #include "MenuState.h"
-
 #include "ResourceManager.h"
 
 #include <fstream>
-
 #include <iostream>
 using namespace std;
 
@@ -69,12 +68,14 @@ Game::Game()
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
+	console = new ConsoleNamespace::Console;
 }
 
 Game::~Game()
 {
 	delete menu_state;
 	delete game_state;
+	delete console;
 }
 
 void Game::Start()
@@ -125,6 +126,9 @@ void Game::Start()
 			if (game_state->getActive()) {
 				if (game_state->HandleEvent(event)) continue;
 			}
+			if (console->getActive()) {
+				if (console->HandleEvent(event)) continue;
+			}
 
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape) {
@@ -138,6 +142,9 @@ void Game::Start()
 						ChangeActiveState(State::Game, State::MainMenu);
 					}
 				}
+				else if (event.key.code == sf::Keyboard::Quote) {
+					console->setActive(true);
+				}
 			}
 		}
 
@@ -148,13 +155,14 @@ void Game::Start()
 		// Updates
 		if (menu_state->getActive()) { menu_state->Update(); }
 		if (game_state->getActive()) { game_state->Update(dt); }
-
+		if (console->getActive()) { console->Update(); }
 
 		// Renders
 		window.clear(sf::Color::White);
 
 		if (menu_state->getActive()) { menu_state->Render(window); }
 		if (game_state->getActive()) { game_state->Render(window); }
+		if (console->getActive()) { console->Render(window); }
 
 		window.setView(window.getDefaultView());
 		if (show_fps_counter)
