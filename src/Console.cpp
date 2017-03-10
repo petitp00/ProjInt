@@ -92,7 +92,7 @@ void Console::Render(sf::RenderTarget & target)
 	target.draw(input_shape);
 	target.draw(input_text_obj_greater_then);
 	target.draw(input_text_obj);
-	if (draw_caret) target.draw(caret_shape);
+	if (draw_caret && typing_active) target.draw(caret_shape);
 	for (auto & l : lines) {
 		target.draw(*l);
 	}
@@ -127,6 +127,22 @@ void Console::ParseAndExecute()
 
 bool Console::HandleEvent(sf::Event const & event)
 {
+	if (event.type == sf::Event::MouseButtonPressed) {
+		if (event.mouseButton.button == sf::Mouse::Left) {
+			auto mx = event.mouseButton.x;
+			auto my = event.mouseButton.y;
+			if (!big_mode) {
+				if (my > CONSOLE_HEIGHT) {
+					typing_active = false;
+				}
+				else {
+					typing_active = true;
+				}
+			}
+		}
+		return true;
+	}
+
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Escape) {
 			if (go_up_then_not_active) {
@@ -136,53 +152,56 @@ bool Console::HandleEvent(sf::Event const & event)
 			else { setActive(false); }
 		}
 
-		if (event.key.code == sf::Keyboard::Return) {
-			AddLine("> " + input_string);
-			ParseAndExecute();
-			input_string = "";
-			caret_pos = 0;
-		}
-
-		uint input_string_size_before = input_string.size();
-		char c = getKeyChar(event.key);
-		if (c != 0)
-			input_string.insert(caret_pos, {c});
-		else if (event.key.code == sf::Keyboard::Space)
-			input_string.insert(caret_pos, {" "});
-		else if (event.key.code == sf::Keyboard::Dash && event.key.shift)
-			input_string.insert(caret_pos, {"_"});
-		else if (event.key.code == sf::Keyboard::Dash && !event.key.shift)
-			input_string.insert(caret_pos, {"-"});
-
-		else if (event.key.code == sf::Keyboard::BackSpace) {
-			if (input_string.size() && caret_pos >0) {
-				input_string = input_string.substr(0, caret_pos-1) + input_string.substr(caret_pos);
-				--caret_pos;
+		if (typing_active) {
+			if (event.key.code == sf::Keyboard::Return) {
+				AddLine("> " + input_string);
+				ParseAndExecute();
+				input_string = "";
+				caret_pos = 0;
 			}
-		}
-		else if (event.key.code == sf::Keyboard::Left) {
-			if (caret_pos > 0) {
-				--caret_pos;
-				draw_caret = true;
+
+			uint input_string_size_before = input_string.size();
+			char c = getKeyChar(event.key);
+			if (c != 0)
+				input_string.insert(caret_pos, {c});
+			else if (event.key.code == sf::Keyboard::Space)
+				input_string.insert(caret_pos, {" "});
+			else if (event.key.code == sf::Keyboard::Dash && event.key.shift)
+				input_string.insert(caret_pos, {"_"});
+			else if (event.key.code == sf::Keyboard::Dash && !event.key.shift)
+				input_string.insert(caret_pos, {"-"});
+
+			else if (event.key.code == sf::Keyboard::BackSpace) {
+				if (input_string.size() && caret_pos >0) {
+					input_string = input_string.substr(0, caret_pos-1) + input_string.substr(caret_pos);
+					--caret_pos;
+				}
 			}
-		}
-		else if (event.key.code == sf::Keyboard::Right) {
-			if (uint(caret_pos) < input_string.size()) {
+			else if (event.key.code == sf::Keyboard::Left) {
+				if (caret_pos > 0) {
+					--caret_pos;
+					draw_caret = true;
+				}
+			}
+			else if (event.key.code == sf::Keyboard::Right) {
+				if (uint(caret_pos) < input_string.size()) {
+					++caret_pos;
+					draw_caret = true;
+				}
+			}
+
+
+			if (input_string_size_before < input_string.size()) {
 				++caret_pos;
-				draw_caret = true;
 			}
+
+			UpdateInputTextObj();
+			UpdateInputCaret(true);
+
 		}
-
-
-		if (input_string_size_before < input_string.size()) {
-			++caret_pos;
-		}
-
-		UpdateInputTextObj();
-		UpdateInputCaret(true);
-
-		if (event.key.code != sf::Keyboard::F1)
+		if (event.key.code != sf::Keyboard::F1 && typing_active)
 			return true;
+
 	}
 	return false;
 }
@@ -205,16 +224,19 @@ void Console::setActive(bool active)
 	if (active && !this->active) {
 		big_mode = false;
 		this->active = true;
+		this->typing_active = true;
 		Init();
 		ypos_tw.Reset(TweenType::QuartInOut, ypos, 0, sf::seconds(0.3f));
 	}
 	else if (active && this->active) {
 		big_mode = !big_mode;
+		this->typing_active = true;
 		Init();
 		ypos_tw.Reset(TweenType::QuartInOut, ypos, 0, sf::seconds(0.3f));
 	}
 	else {
 		big_mode = false;
+		this->typing_active = false;
 		go_up_then_not_active = true; // don't set active to false yet because we want to render during the transition
 		ypos_tw.Reset(TweenType::QuartInOut, ypos, -float(CONSOLE_HEIGHT), sf::seconds(0.3f));
 	}

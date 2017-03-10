@@ -96,6 +96,7 @@ namespace ConsoleNamespace {
 
 	private:
 		bool active = false;
+		bool typing_active = true;
 		bool big_mode = false;
 		bool waiting_on_input = false;
 
