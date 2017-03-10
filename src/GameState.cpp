@@ -39,7 +39,7 @@ bool GameState::HandleEvent(sf::Event const & event)
 				if (e) {
 					game.getConsole().PrintInfo("Entity clicked");
 					game.getConsole().PrintInfo("ID: " + to_string(e->getId()));
-					game.getConsole().PrintInfo("Type: " + to_string(e->getType()));
+					game.getConsole().PrintInfo("Type: " + to_string(e->getType()) + "   (" + getEntityTypeString(e->getType()) + ")");
 				}
 			}
 		}

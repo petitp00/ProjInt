@@ -27,15 +27,25 @@ Entity Saving:
 		+ the vector would be passed as an argument in the entity's ctor
 */
 
+enum Type {
+	ENTITY,
+	PLAYER,
+	GAME_OBJECT
+};
+
+static std::string getEntityTypeString(Type t) {
+	switch (t)
+	{
+	case ENTITY: return "ENTITY";
+	case PLAYER: return "PLAYER";
+	case GAME_OBJECT: return "GAME_OBJECT";
+	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
+	}
+}
 
 class Entity
 {
 public:
-	enum Type {
-		ENTITY,
-		PLAYER,
-		GAME_OBJECT
-	};
 
 	Entity() {
 		++last_id;

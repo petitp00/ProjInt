@@ -128,7 +128,7 @@ void Console::ParseAndExecute()
 bool Console::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::MouseButtonPressed) {
-		if (event.mouseButton.button == sf::Mouse::Left) {
+		if (true || event.mouseButton.button == sf::Mouse::Left) {
 			auto mx = event.mouseButton.x;
 			auto my = event.mouseButton.y;
 			if (!big_mode) {
@@ -150,6 +150,7 @@ bool Console::HandleEvent(sf::Event const & event)
 				active = false;
 			}
 			else { setActive(false); }
+			return true;
 		}
 
 		if (typing_active) {
