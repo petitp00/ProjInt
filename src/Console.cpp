@@ -60,9 +60,7 @@ void Console::Init()
 	input_string = "";
 	UpdateInputTextObj();
 
-	for (int i = lines.size()-1; i >= 0; --i) {
-		lines[i]->setOrigin({-margin, -float(CONSOLE_HEIGHT - input_height - (i+1) * 40.f)});
-	}
+	UpdateLinesOrigin();
 }
 
 void Console::Update()
@@ -188,23 +186,31 @@ bool Console::HandleEvent(sf::Event const & event)
 	return false;
 }
 
+Command* Console::getCommand(const std::string & name)
+{
+	for (auto c : commands) {
+		if (c->name == name) return c;
+	}
+	return nullptr;
+}
+
 void Console::setActive(bool active)
 {
 	if (active && !this->active) {
 		big_mode = false;
 		this->active = true;
 		Init();
-		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3f));
+		ypos_tw.Reset(TweenType::QuartInOut, ypos, 0, sf::seconds(0.3f));
 	}
 	else if (active && this->active) {
 		big_mode = !big_mode;
 		Init();
-		ypos_tw.Reset(TweenType::QuartIn, ypos, 0, sf::seconds(0.3f));
+		ypos_tw.Reset(TweenType::QuartInOut, ypos, 0, sf::seconds(0.3f));
 	}
 	else {
 		big_mode = false;
 		go_up_then_not_active = true; // don't set active to false yet because we want to render during the transition
-		ypos_tw.Reset(TweenType::QuartIn, ypos, -float(CONSOLE_HEIGHT), sf::seconds(0.3f));
+		ypos_tw.Reset(TweenType::QuartInOut, ypos, -float(CONSOLE_HEIGHT), sf::seconds(0.3f));
 	}
 }
 
@@ -212,6 +218,17 @@ void Console::ClearLines()
 {
 	for (int i = 0; i != lines.size(); ++i) { delete lines[i]; }
 	lines.clear();
+}
+
+void Console::AddInfo(const std::string & name, const std::string & desc, const std::string & help)
+{
+	auto c = getCommand(name);
+	if (!c) {
+		cerr << "Command \"" << name << "\" does not exist. AddInfo() failed" << endl;
+		return;
+	}
+	c->desc = desc;
+	c->help_string = help;
 }
 
 void Console::InitCommands()
@@ -240,14 +257,36 @@ void Console::InitCommands()
 	add_cmd("clear", {
 		impl->console.ClearLines();
 	});
+	AddInfo("clear", "Clear the console", "Just write clear. No arguments needed.");
 
 	add_cmd("help", {
-		impl->console.AddLine("This will display available commands", RESULT);
+		if (!args.size()) {
+			for (auto c : impl->console.getCommands()) {
+				int nb_of_spaces = 30 - c->name.size();
+				string str = c->name;
+				while (nb_of_spaces--) str+=' ';
+				str += c->desc;
+				impl->console.AddLine(str, RESULT);
+			}
+		}
+		else if (args.size() == 1) {
+			std::string name = args[0];
+			auto c = impl->console.getCommand(name);
+			if (c)	impl->console.AddLine(c->help_string					 , RESULT);
+			else	impl->console.AddLine("\"" + name + "\" is not a command", ERROR);
+		}
+		else {
+			impl->console.AddLine("Too many arguments given. Expected 0 or 1", ERROR);
+		}
 	});
+	AddInfo("help", "Display available commands or help for specific command",
+			"Usage:\nhelp            List commands\nhelp command    Display help for command"
+	);
 
 	add_cmd("quit", {
 		impl->game.Quit();
 	});
+	AddInfo("quit", "Quit game", "Just write quit. No arguments needed.");
 
 	#undef add_cmd
 }
@@ -268,8 +307,16 @@ void Console::AddLine(std::string text, LineMode mode)
 		lines.pop_back();
 	}
 
-	for (int i = lines.size()-1; i >= 0; --i) {
-		lines[i]->setOrigin({-margin, -float(CONSOLE_HEIGHT - input_height - (i+1) * 40.f)});
+	UpdateLinesOrigin();
+}
+
+void Console::UpdateLinesOrigin()
+{
+	if (lines.size()) {
+		lines[0]->setOrigin(-margin, -float(CONSOLE_HEIGHT - input_height - 20.f - lines[0]->getLocalBounds().height));
+		for (int i = 1; i < lines.size(); ++i) {
+			lines[i]->setOrigin(-margin, -float(-lines[i-1]->getOrigin().y - 18.f - lines[i]->getLocalBounds().height));
+		}
 	}
 }
 

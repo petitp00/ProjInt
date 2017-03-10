@@ -18,7 +18,7 @@ namespace ConsoleNamespace {
 	static int CONSOLE_HEIGHT = WINDOW_HEIGHT / 3;
 	static std::string CONSOLE_FONT = "consola.ttf";
 	static uint CONSOLE_FONT_SIZE = 18;
-	static int CONSOLE_ALPHA = int(0.75 * 255);
+	static int CONSOLE_ALPHA = int(0.85 * 255);
 
 	static sf::Color TEXT_COLOR		= sf::Color(180, 180, 180, CONSOLE_ALPHA);
 	static sf::Color TEXT_COLOR2	= sf::Color(254, 254, 255, CONSOLE_ALPHA);
@@ -35,7 +35,7 @@ namespace ConsoleNamespace {
 		ERROR,
 	};
 
-	static unsigned int MAX_AMOUNT_OF_LINES = 18;
+	static unsigned int MAX_AMOUNT_OF_LINES = 24;
 
 
 	/* Commands to implement:
@@ -61,6 +61,9 @@ namespace ConsoleNamespace {
 		Command(std::string name, caction_t action) : name(name), action(action) {}
 		std::string name; //eg.: help, clear, set, etc.
 
+		std::string desc = "No description available";
+		std::string help_string = "No help available for: " + name;
+
 		// arguments passed in a vector
 		caction_t action;
 	};
@@ -79,12 +82,15 @@ namespace ConsoleNamespace {
 
 		// Getters
 		bool getActive() { return active; }
+		std::vector<Command*>& getCommands() { return commands; }
+		Command* getCommand(const std::string& name);
 
 		// Setters
 		void setActive(bool active);
 
 		// Functions for commands
 		void ClearLines();
+		void AddInfo(const std::string& name, const std::string& desc, const std::string& help);
 
 	private:
 		bool active = false;
@@ -96,6 +102,7 @@ namespace ConsoleNamespace {
 		void InitCommands();
 
 		void AddLine(std::string text, LineMode mode = COMMAND);
+		void UpdateLinesOrigin();
 		std::deque<sf::Text*> lines;
 
 		// Graphical stuff
