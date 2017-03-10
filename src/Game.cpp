@@ -327,6 +327,17 @@ char getKeyChar(sf::Event::KeyEvent e)
 		case sf::Keyboard::Equal: return '+';
 		case sf::Keyboard::Dash: return '_';
 		case sf::Keyboard::Space: return ' ';
+		case sf::Keyboard::Num1: return '!';
+		case sf::Keyboard::Num2: return '"';
+		case sf::Keyboard::Num3: return '/';
+		case sf::Keyboard::Num4: return '$';
+		case sf::Keyboard::Num5: return '%';
+		case sf::Keyboard::Num6: return '?';
+		case sf::Keyboard::Num7: return '&';
+		case sf::Keyboard::Num8: return '*';
+		case sf::Keyboard::Num9: return '(';
+		case sf::Keyboard::Num0: return ')';
+
 		default: break;	
 		}
 	}
