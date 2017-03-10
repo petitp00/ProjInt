@@ -62,7 +62,7 @@ Game::Game()
 	game_settings.controls.LoadUserControls();
 
 	// game_state must be initialized before menu_state (because of button_action_impl)
-	game_state = new GameState(&game_settings.controls);
+	game_state = new GameState(*this);
 
 	menu_state = new MenuState(*this);
 	menu_state->setActive(true);

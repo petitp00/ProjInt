@@ -54,6 +54,7 @@ void Console::Init()
 	caret_shape.setSize({2, input_height-8.f});
 	caret_shape.setOrigin(0, -float(CONSOLE_HEIGHT - input_height +4.f));
 
+	caret_pos = 0;
 	input_string = " ";
 	UpdateInputTextObj();
 	UpdateInputCaret(true);
@@ -184,6 +185,11 @@ bool Console::HandleEvent(sf::Event const & event)
 			return true;
 	}
 	return false;
+}
+
+void Console::PrintInfo(const std::string & str)
+{
+	AddLine(str, INFO);
 }
 
 Command* Console::getCommand(const std::string & name)

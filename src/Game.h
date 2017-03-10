@@ -105,6 +105,8 @@ public:
 
 	void ToggleFpsCounter();
 
+	sf::RenderWindow& getWindow() { return window; }
+	ConsoleNamespace::Console& getConsole() { return *console; }
 	Controls& getControls() { return game_settings.controls; }
 	State getActiveState() { return state_machine.getActiveState(); }
 	GameState& getGameState() { return *game_state; }

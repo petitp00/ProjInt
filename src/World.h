@@ -62,16 +62,30 @@ public:
 	~World();
 
 	void Clear();
-
 	void CreateAndSaveWorld(std::string const& filename);
-
 	void LoadWorld(std::string const& filename);
 	void Save();
+
+
+
+
+
+
+
+	sf::Vector2f getPlayerPos() { return player->getPos(); }
+
+
+
+
+
 
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
 	bool HandleEvent(sf::Event const& event);
+
+	sf::View& getGameView() { return game_view; }
+	Entity* FindEntityClicked(sf::Vector2f mpos);
 
 private:
 	GameState& game_state;

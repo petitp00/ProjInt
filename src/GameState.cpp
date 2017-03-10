@@ -1,13 +1,15 @@
 #include "GameState.h"
 
+#include "Console.h"
 #include "rng.h"
 #include "ResourceManager.h"
 
 #include <iostream>
 using namespace std;
 
-GameState::GameState(Controls* controls) :
-	world(*this, controls)
+GameState::GameState(Game& game) :
+	game(game),
+	world(*this, &game.getControls())
 {
 }
 
@@ -29,6 +31,19 @@ void GameState::Render(sf::RenderTarget & target)
 
 bool GameState::HandleEvent(sf::Event const & event)
 {
+	if (game.getConsole().getActive()) {
+		if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.mouseButton.button == sf::Mouse::Middle) {
+				auto p = game.getWindow().mapPixelToCoords(sf::Mouse::getPosition(game.getWindow()), world.getGameView());
+				auto e = world.FindEntityClicked(p);
+				if (e) {
+					game.getConsole().PrintInfo("Entity clicked");
+					game.getConsole().PrintInfo("ID: " + to_string(e->getId()));
+					game.getConsole().PrintInfo("Type: " + to_string(e->getType()));
+				}
+			}
+		}
+	}
 	return world.HandleEvent(event);
 }
 

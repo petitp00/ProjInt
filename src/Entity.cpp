@@ -6,6 +6,8 @@
 #include <iostream>
 using namespace std;
 
+int Entity::last_id = 0;
+
 GameObject::GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f size, unsigned long flags, std::vector<std::string> const& saved_data) :
 	Entity(pos, size, flags), texture_name(texture_name)
 {

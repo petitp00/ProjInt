@@ -301,3 +301,18 @@ bool World::HandleEvent(sf::Event const & event)
 
 	return false;
 }
+
+Entity * World::FindEntityClicked(sf::Vector2f mpos)
+{
+	for (auto e : entities) {
+		auto ep = e->getPos();
+		auto es = e->getSize();
+		
+		if (mpos.x > ep.x && mpos.y < ep.x + es.x) {
+			if (mpos.y > ep.y && mpos.y < ep.y + es.y) {
+				return e;
+			}
+		}
+	}
+	return nullptr;
+}

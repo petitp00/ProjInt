@@ -80,6 +80,8 @@ namespace ConsoleNamespace {
 		void ParseAndExecute();
 		bool HandleEvent(const sf::Event& event);
 
+		void PrintInfo(const std::string& str);
+
 		// Getters
 		bool getActive() { return active; }
 		std::vector<Command*>& getCommands() { return commands; }

@@ -37,12 +37,18 @@ public:
 		GAME_OBJECT
 	};
 
-	Entity()=default;
+	Entity() {
+		++last_id;
+		id = last_id;
+	}
 	Entity(sf::Vector2f pos, sf::Vector2f size, unsigned long flags=NO_FLAG,
 		   std::vector<std::string> const& saved_data={}) {
 		this->pos = pos;
 		this->size = size;
 		this->flags = flags;
+
+		++last_id;
+		id = last_id;
 	}
 	virtual ~Entity() = 0 {}
 
@@ -57,6 +63,7 @@ public:
 	bool getDead() { return dead; }
 	Type getType() { return type; }
 	unsigned long getFlags() { return flags; }
+	int getId() { return id; }
 
 	void AddFlag(unsigned long flag) { flags |= flag; }
 	bool HasFlag(unsigned long flag) { return (flags & flag) == flag; }
@@ -67,6 +74,9 @@ protected:
 	bool dead = false;
 	Type type = ENTITY;
 	unsigned long flags;
+
+	int id;
+	static int last_id;
 };
 
 class GameObject : public Entity

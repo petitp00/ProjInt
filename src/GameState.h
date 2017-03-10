@@ -12,7 +12,7 @@
 class GameState
 {
 public:
-	GameState(Controls* controls);
+	GameState(Game& game);
 	~GameState();
 
 	void Update(float dt);
@@ -28,6 +28,8 @@ public:
 
 private:
 	bool active = false;
+
+	Game& game;
 
 	World world;
 
