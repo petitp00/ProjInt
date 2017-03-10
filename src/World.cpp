@@ -117,9 +117,9 @@ void World::LoadWorld(std::string const & filename)
 
 	while (s >> w) {
 		if (w == "e") {
-			Entity::Type t;
+			Type t;
 			s >> str;
-			t = Entity::Type(atoi(str.c_str()));
+			t = Type(atoi(str.c_str()));
 
 			sf::Vector2f p;
 			s >> str;
@@ -160,15 +160,15 @@ void World::LoadWorld(std::string const & filename)
 
 			switch (t)
 			{
-			case Entity::ENTITY:
+			case ENTITY:
 				cerr << "ERROR in save file: \"Data/Saves/" << filename << "\": entity saved as type Entity, which is a pure virtual class." << endl;
 				break;
-			case Entity::PLAYER:
+			case PLAYER:
 				pl = new Player(p, sz, f, vec);
 				player = pl;
 				entities.push_back(player);
 				break;
-			case Entity::GAME_OBJECT:
+			case GAME_OBJECT:
 				go = new GameObject(p, sz, f, vec);
 				entities.push_back(go);
 				break;
@@ -308,7 +308,7 @@ Entity * World::FindEntityClicked(sf::Vector2f mpos)
 		auto ep = e->getPos();
 		auto es = e->getSize();
 		
-		if (mpos.x > ep.x && mpos.y < ep.x + es.x) {
+		if (mpos.x > ep.x && mpos.x < ep.x + es.x) {
 			if (mpos.y > ep.y && mpos.y < ep.y + es.y) {
 				return e;
 			}
