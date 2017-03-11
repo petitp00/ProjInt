@@ -19,6 +19,7 @@ GameState::~GameState()
 
 void GameState::Update(float dt)
 {
+	if (!game.getConsole().getActive())
 	world.Update(dt);
 }
 

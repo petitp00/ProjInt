@@ -237,9 +237,7 @@ void World::Update(float dt)
 	for (auto i = entities.begin(); i != entities.end();) {
 		auto e = *i;
 		if (!e->getDead()) {
-
 			e->Update(dt);
-
 		}
 		else {
 			i = entities.erase(i);

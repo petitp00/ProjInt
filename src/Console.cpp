@@ -30,7 +30,7 @@ Console::~Console()
 void Console::Init()
 {
 	if (big_mode) CONSOLE_HEIGHT = WINDOW_HEIGHT;
-	else CONSOLE_HEIGHT = WINDOW_HEIGHT/3;
+	else CONSOLE_HEIGHT = WINDOW_HEIGHT/2;
 
 	main_shape.setFillColor(BG_COLOR);
 	main_shape.setSize({float(WINDOW_WIDTH), float(CONSOLE_HEIGHT)});

@@ -66,19 +66,6 @@ public:
 	void LoadWorld(std::string const& filename);
 	void Save();
 
-
-
-
-
-
-
-	sf::Vector2f getPlayerPos() { return player->getPos(); }
-
-
-
-
-
-
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
