@@ -264,15 +264,6 @@ void Console::InitCommands()
 {
 	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([](CommandActionImpl* impl, const vector<string>& args) func )));
 
-
-	add_cmd("test", {
-		cout << "it works!" << endl;
-	});
-
-	add_cmd("wew", {
-		impl->console.AddLine("WEW", RESULT);
-	});
-
 	add_cmd("list_args", {
 		if (args.size()) {
 			impl->console.AddLine("Here are the arguments:", RESULT);
