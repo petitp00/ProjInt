@@ -165,6 +165,7 @@ void Game::Start()
 
 		if (menu_state->getActive()) { menu_state->Render(window); }
 		if (game_state->getActive()) { game_state->Render(window); }
+		window.setView(window.getDefaultView());
 		if (console->getActive()) { console->Render(window); }
 
 		window.setView(window.getDefaultView());

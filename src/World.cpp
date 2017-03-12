@@ -3,6 +3,7 @@
 #include "GameState.h"
 #include "ResourceManager.h"
 #include "rng.h"
+#include "Editor/Editor.h"
 
 #include <fstream>
 #include <iostream>
@@ -10,10 +11,11 @@ using namespace std;
 
 GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
 
+static const int tile_size = 64;
+static const int visual_tile_size = int(64 * 1.5);
+
 void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
 {
-	static const int tile_size = 64;
-	static const int visual_size = int(64 * 1.5);
 
 	this->width = width;
 	this->height = height;
@@ -31,15 +33,16 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 
 			int u, v = 0;
 			u = rng::rand_int(0, 2);
+			if (tile_nb == NONE) { u = 3; }
 			if (tile_nb == GRASS) { v = 0; }
 			if (tile_nb == SAND) { v = 1; }
 
 			sf::Vertex* quad = &vertices[(i+j*width) * 4];
 
-			quad[0].position = sf::Vector2f(float(i*visual_size),		float(j*visual_size));
-			quad[1].position = sf::Vector2f(float((i+1)*visual_size),	float(j*visual_size));
-			quad[2].position = sf::Vector2f(float((i+1)*visual_size),	float(j+1)*visual_size);
-			quad[3].position = sf::Vector2f(float(i*visual_size),		float(j+1)*visual_size);
+			quad[0].position = sf::Vector2f(float(i*visual_tile_size),		float(j*visual_tile_size));
+			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j*visual_tile_size));
+			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j+1)*visual_tile_size);
+			quad[3].position = sf::Vector2f(float(i*visual_tile_size),		float(j+1)*visual_tile_size);
 
 			quad[0].texCoords = sf::Vector2f(float(u*tile_size),		float(v*tile_size));
 			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v*tile_size));
@@ -94,8 +97,7 @@ void World::CreateAndSaveWorld(std::string const & filename)
 	const int w = 100, h = 100;
 	vector<int> t(w*h, 0);
 	for (int i = 0; i != w*h; ++i) {
-		if (i % 4 == 0) t[i] = 1;
-		else t[i] = 0;
+		t[i] = 0;
 	}
 	ground.LoadTileMap(t, w, h);
 
@@ -115,8 +117,8 @@ void World::CreateNewBlank(const std::string & filename)
 	player->setControls(controls);
 	entities.push_back(player);
 
-	vector<int> t(0, 0);
-	ground.LoadTileMap(t, 0, 0);
+	vector<int> t(EditorMode::WORLD_W/visual_tile_size * EditorMode::WORLD_H/visual_tile_size, NONE);
+	ground.LoadTileMap(t, EditorMode::WORLD_W/visual_tile_size, EditorMode::WORLD_H/visual_tile_size);
 
 	Save();
 }
@@ -268,7 +270,9 @@ void World::Update(float dt)
 
 void World::Render(sf::RenderTarget & target)
 {
+#ifndef EDITOR_MODE
 	target.setView(game_view);
+#endif
 
 	target.draw(ground);
 
@@ -276,7 +280,7 @@ void World::Render(sf::RenderTarget & target)
 		e->Render(target);
 	}
 
-	target.setView(target.getDefaultView());
+	//target.setView(target.getDefaultView());
 }
 
 sf::Vector2i drag_mouse_pos;

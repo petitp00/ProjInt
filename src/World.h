@@ -22,9 +22,10 @@ What we need to save:
 
 class GameState;
 
-enum GroundType {
-	GRASS,
-	SAND
+enum GroundType { 
+	NONE = 0,
+	GRASS = 1,
+	SAND = 2
 };
 	
 class GroundTile {
