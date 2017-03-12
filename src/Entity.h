@@ -28,9 +28,11 @@ Entity Saving:
 */
 
 enum Type {
+	ERROR,
 	ENTITY,
 	PLAYER,
-	GAME_OBJECT
+	GAME_OBJECT,
+	ROCK
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -39,9 +41,24 @@ static std::string getEntityTypeString(Type t) {
 	case ENTITY: return "ENTITY";
 	case PLAYER: return "PLAYER";
 	case GAME_OBJECT: return "GAME_OBJECT";
+	case ROCK: return "ROCK";
+	case Type::ERROR: return "ERROR";
 	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
 }
+
+static Type getEntityTypeFromString(const std::string& str) {
+	if (str == "ENTITY") return ENTITY;
+	if (str == "PLAYER") return PLAYER;
+	if (str == "GAME_OBJECT") return GAME_OBJECT;
+	if (str == "ROCK") return ROCK;
+	return Type::ERROR;
+}
+
+static unsigned long getFlagsFromString(const std::string& str) {
+	return 0;
+}
+
 
 class Entity
 {
@@ -65,11 +82,13 @@ public:
 	virtual void Update(float dt) {};
 	virtual void Render(sf::RenderTarget& target) = 0;
 
+	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
 	void setDead(bool dead) { this->dead = dead; }
 
 	virtual std::vector<std::string> getSavedData();
 	sf::Vector2f const& getPos() { return pos; }
 	sf::Vector2f const& getSize() { return size; }
+	sf::FloatRect const getCollisionBox() { return {pos,size}; }
 	bool getDead() { return dead; }
 	Type getType() { return type; }
 	unsigned long getFlags() { return flags; }
@@ -89,23 +108,39 @@ protected:
 	static int last_id;
 };
 
-class GameObject : public Entity
+//TODO: Rename this to GameObject and delete the other
+class ComplexGameObject : public Entity
 {
+	friend ComplexGameObject* make_rock(sf::Vector2f pos);
 public:
-	GameObject()=default;
-	GameObject(sf::Vector2f pos, std::string texture_name, sf::Vector2f size={ 0,0 },
-			   unsigned long flags=NO_FLAG,
-			   std::vector<std::string> const& saved_data={});
-	GameObject(sf::Vector2f pos, sf::Vector2f size, unsigned long flags=NO_FLAG,
-			   std::vector<std::string> const& saved_data={});
+	ComplexGameObject()=default;
+	ComplexGameObject(std::string texture_name, unsigned long flags=NO_FLAG,
+					  std::vector<std::string> const& saved_data={});
+	
+	ComplexGameObject(unsigned long flags,
+					  std::vector<std::string> const& saved_data={}); // for loading
 
+	void Init(); // call this after members are set
 	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
 
-	std::vector<std::string> getSavedData() override { return {texture_name}; }
+	void setPos(sf::Vector2f pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
+
+	std::vector<std::string> getSavedData() override {
+		return {
+			std::to_string(pos.x) +" "+ std::to_string(pos.y),
+			std::to_string(size.x) +" "+ std::to_string(size.y),
+			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
+			texture_name,
+
+
+		};
+	}
 
 private:
 	sf::Sprite sprite;
-	std::string texture_name;
+	sf::Vector2f sprite_origin ={0,0};
+	std::string texture_name = "";
+	float scale = 1.f;
 };
 
 class AnimationComponent
@@ -147,6 +182,7 @@ public:
 	void DoMovement(float dt);
 
 	void setControls(Controls* controls) { this->controls = controls; }
+	void setPos(sf::Vector2f pos) override;
 
 private:
 	Controls* controls = nullptr;
@@ -157,3 +193,23 @@ private:
 	sf::Vector2f movement;
 	float walk_speed = 0.3f;
 };
+
+// static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
+//	auto rock = new GameObject(pos, "Placeholders/rock.png", {128, 128}, IMMORTAL|SOLID);
+//	rock->type = ROCK;
+//	rock->sprite.setOrigin(10, 20);
+//	rock->size ={48*2,36*2};
+//	return rock;
+//}
+
+static ComplexGameObject* make_rock(sf::Vector2f pos ={0,0}) {
+	auto rock = new ComplexGameObject("Placeholders/rock.png", SOLID|IMMORTAL);
+	rock->type = ROCK;
+	rock->pos = pos;
+	rock->sprite_origin = {10, 20};
+	auto scale = 2;
+	rock->size ={48.f*scale, 36.f*scale};
+	rock->scale = scale;
+	rock->Init();
+	return rock;
+}

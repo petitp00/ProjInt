@@ -7,8 +7,11 @@
 #include <SFML/Graphics/VertexArray.hpp>
 
 #include <vector>
+#include <functional>
 
 #include "Entity.h"
+
+namespace EditorMode { class Editor; }
 
 /*
 What we need to save:
@@ -57,13 +60,16 @@ private:
 
 class World
 {
+	friend class EditorMode::Editor;
 public:
-	World(GameState& game_state, Controls* controls);
+	World();
+	World(Controls* controls);
 	~World();
 
 	void Clear();
-	void CreateAndSaveWorld(std::string const& filename);
-	void LoadWorld(std::string const& filename);
+	void CreateAndSaveWorld(const std::string& filename);
+	void CreateNewBlank(const std::string& filename);
+	void LoadWorld(const std::string& filename);
 	void Save();
 
 	void Update(float dt);
@@ -74,8 +80,11 @@ public:
 	sf::View& getGameView() { return game_view; }
 	Entity* FindEntityClicked(sf::Vector2f mpos);
 
+	void AddEntity(Entity* e) { entities.push_back(e); }
+	void DeleteEntity(int id);
+
 private:
-	GameState& game_state;
+	Controls* controls;
 	std::string name;
 
 	sf::View game_view;

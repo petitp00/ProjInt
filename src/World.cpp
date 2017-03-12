@@ -8,9 +8,6 @@
 #include <iostream>
 using namespace std;
 
-Controls* controls;
-
-
 GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
 
 void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
@@ -63,12 +60,16 @@ void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
 	target.draw(vertices, states);
 }
 
-World::World(GameState & game_state, Controls* controls) :
-	game_state(game_state),
+World::World():
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
+{
+}
+
+World::World(Controls* controls) :
+	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)})),
+	controls(controls)
 
 {
-	::controls = controls;
 }
 
 World::~World()
@@ -100,9 +101,22 @@ void World::CreateAndSaveWorld(std::string const & filename)
 
 	player = new Player();
 	player->setControls(controls);
-
-	entities.push_back(new GameObject({700, 400}, "box.png", {0,0}, SOLID));
 	entities.push_back(player);
+
+	Save();
+}
+
+void World::CreateNewBlank(const std::string & filename)
+{
+	Clear();
+	name = filename;
+
+	player = new Player();
+	player->setControls(controls);
+	entities.push_back(player);
+
+	vector<int> t(0, 0);
+	ground.LoadTileMap(t, 0, 0);
 
 	Save();
 }
@@ -156,7 +170,7 @@ void World::LoadWorld(std::string const & filename)
 			}
 
 			Player* pl;
-			GameObject* go;
+			ComplexGameObject* go;
 
 			switch (t)
 			{
@@ -169,7 +183,9 @@ void World::LoadWorld(std::string const & filename)
 				entities.push_back(player);
 				break;
 			case GAME_OBJECT:
-				go = new GameObject(p, sz, f, vec);
+				break;
+			case ROCK:
+				go = make_rock(p);
 				entities.push_back(go);
 				break;
 			default:
@@ -305,7 +321,7 @@ Entity * World::FindEntityClicked(sf::Vector2f mpos)
 	for (auto e : entities) {
 		auto ep = e->getPos();
 		auto es = e->getSize();
-		
+
 		if (mpos.x > ep.x && mpos.x < ep.x + es.x) {
 			if (mpos.y > ep.y && mpos.y < ep.y + es.y) {
 				return e;
@@ -313,4 +329,19 @@ Entity * World::FindEntityClicked(sf::Vector2f mpos)
 		}
 	}
 	return nullptr;
+}
+
+void World::DeleteEntity(int id)
+{
+	int index = -1;
+	for (uint i = 0; i != entities.size(); ++i) {
+		if (entities[i]->getId() == id) {
+			index = i;
+			break;
+		}
+	}
+	if (index != -1) {
+		delete entities[index];
+		entities.erase(entities.begin() + index);
+	}
 }

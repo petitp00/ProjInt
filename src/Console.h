@@ -2,6 +2,7 @@
 
 #include "Game.h"
 #include "Tweener.h"
+#include "Editor/Editor.h"
 
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -45,14 +46,18 @@ namespace ConsoleNamespace {
 	*/
 
 	struct CommandActionImpl {
+		CommandActionImpl(Console* console, EditorMode::Editor* editor) :
+			console(console), editor(editor) {}
 		CommandActionImpl(
-			Console& console, Game& game, MenuState& menu_state, GameState& game_state) :
+			Console* console, Game* game, MenuState* menu_state, GameState* game_state) :
 			console(console), game(game), menu_state(menu_state), game_state(game_state) {}
 		
-		Console& console;
-		Game& game;
-		MenuState& menu_state;
-		GameState& game_state;
+		Console* console = nullptr;
+		Game* game = nullptr;
+		MenuState* menu_state = nullptr;
+		GameState* game_state = nullptr;
+
+		EditorMode::Editor* editor = nullptr;
 	};
 
 	using caction_t = std::function<void(CommandActionImpl* impl, const std::vector<std::string>&)>;
@@ -72,6 +77,7 @@ namespace ConsoleNamespace {
 	{
 	public:
 		Console(Game& game, MenuState& menu_state, GameState& game_state);
+		Console(EditorMode::Editor& editor);
 		~Console();
 
 		void Init();
@@ -103,10 +109,14 @@ namespace ConsoleNamespace {
 		CommandActionImpl command_action_impl;
 		std::vector<Command*> commands;
 		void InitCommands();
+		void InitEditorCommands();
 
 		void AddLine(std::string text, LineMode mode = COMMAND);
 		void UpdateLinesOrigin();
 		std::deque<sf::Text*> lines;
+
+		std::deque<std::string> command_history;
+		int c_hist_index = 0;
 
 		// Graphical stuff
 		float ypos = -float(CONSOLE_HEIGHT);

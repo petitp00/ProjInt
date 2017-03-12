@@ -13,10 +13,17 @@ float input_height = 30.f;
 float margin = 15.f;
 
 Console::Console(Game& game, MenuState& menu_state, GameState& game_state) :
-	command_action_impl(*this, game, menu_state, game_state)
+	command_action_impl(this, &game, &menu_state, &game_state)
 {
 	Init();
 	InitCommands();
+}
+
+Console::Console(EditorMode::Editor & editor) :
+	command_action_impl(this, &editor)
+{
+	Init();
+	InitEditorCommands();
 }
 
 Console::~Console()
@@ -154,8 +161,11 @@ bool Console::HandleEvent(sf::Event const & event)
 		}
 
 		if (typing_active) {
+			bool up_or_down = false;
 			if (event.key.code == sf::Keyboard::Return) {
 				AddLine("> " + input_string);
+				command_history.push_front(input_string);
+				c_hist_index = -1;
 				ParseAndExecute();
 				input_string = "";
 				caret_pos = 0;
@@ -190,10 +200,27 @@ bool Console::HandleEvent(sf::Event const & event)
 					draw_caret = true;
 				}
 			}
+			else if (event.key.code == sf::Keyboard::Up) {
+				if (command_history.size()) {
+					if (c_hist_index < (int)command_history.size()-1) { ++c_hist_index;}
+					if (c_hist_index >= 0) input_string = command_history[c_hist_index];
+				}
+				up_or_down = true;
+			}
+			else if (event.key.code == sf::Keyboard::Down) {
+				if (command_history.size()) {
+					if (c_hist_index > 0) { --c_hist_index; }
+					if (c_hist_index >= 0) input_string = command_history[c_hist_index];
+				}
+				up_or_down = true;
+			}
 
 
-			if (input_string_size_before < input_string.size()) {
+			if (input_string_size_before < input_string.size() && !up_or_down) {
 				++caret_pos;
+			}
+			if (up_or_down) {
+				caret_pos = input_string.size();
 			}
 
 			UpdateInputTextObj();
@@ -266,37 +293,37 @@ void Console::InitCommands()
 
 	add_cmd("list_args", {
 		if (args.size()) {
-			impl->console.AddLine("Here are the arguments:", RESULT);
-			for (auto & a : args) impl->console.AddLine(a, INFO);
+			impl->console->AddLine("Here are the arguments:", RESULT);
+			for (auto & a : args) impl->console->AddLine(a, INFO);
 		}
 		else {
-			impl->console.AddLine("No arguments given", RESULT);
+			impl->console->AddLine("No arguments given", RESULT);
 		}
 	});
 
 	add_cmd("clear", {
-		impl->console.ClearLines();
+		impl->console->ClearLines();
 	});
 	AddInfo("clear", "Clear the console", "Just write clear. No arguments needed.");
 
 	add_cmd("help", {
 		if (!args.size()) {
-			for (auto c : impl->console.getCommands()) {
+			for (auto c : impl->console->getCommands()) {
 				int nb_of_spaces = 30 - c->name.size();
 				string str = c->name;
 				while (nb_of_spaces--) str+=' ';
 				str += c->desc;
-				impl->console.AddLine(str, RESULT);
+				impl->console->AddLine(str, RESULT);
 			}
 		}
 		else if (args.size() == 1) {
 			std::string name = args[0];
-			auto c = impl->console.getCommand(name);
-			if (c)	impl->console.AddLine(c->help_string					 , RESULT);
-			else	impl->console.AddLine("\"" + name + "\" is not a command", ERROR);
+			auto c = impl->console->getCommand(name);
+			if (c)	impl->console->AddLine(c->help_string					 , RESULT);
+			else	impl->console->AddLine("\"" + name + "\" is not a command", ERROR);
 		}
 		else {
-			impl->console.AddLine("Too many arguments given. Expected 0 or 1", ERROR);
+			impl->console->AddLine("Too many arguments given. Expected 0 or 1", ERROR);
 		}
 	});
 	AddInfo("help", "Display available commands or help for specific command",
@@ -304,11 +331,132 @@ void Console::InitCommands()
 	);
 
 	add_cmd("quit", {
-		impl->game.Quit();
+		impl->game->Quit();
 	});
 	AddInfo("quit", "Quit game", "Just write quit. No arguments needed.");
 
 	#undef add_cmd
+}
+
+void Console::InitEditorCommands()
+{
+	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([&](CommandActionImpl* impl, const vector<string>& args) func )));
+
+	add_cmd("load", {
+		if (args.size() == 1) {
+			impl->editor->world.LoadWorld(args[0]);
+		}
+		else {
+			impl->editor->console->AddLine("Usage:\nload world_name", ERROR);
+		}
+	});
+
+	add_cmd("dev", {
+		impl->editor->world.CreateNewBlank("dev");
+		impl->editor->world_init = true;
+	});
+
+	add_cmd("save", {
+		impl->editor->world.Save();
+	})
+
+	add_cmd("CreateWorld", {
+		if (args.size() == 0)
+			impl->console->AddLine("Usage:\nCreateWorld world_name", ERROR);
+		else if (args.size() == 1) {
+			impl->editor->world.CreateNewBlank(args[0]);
+			impl->editor->world_init = true;
+		}
+		else if (args.size() == 2)
+			impl->console->AddLine("Not yet implemented", ERROR);
+		else
+			impl->console->AddLine("Too many arguments given.", ERROR);
+	});
+
+	#define new_ent_usage "Usage:\n\
+NewEnt Type              Creates an entity of type [Type] at (0,0) with no flags (or with default flags)\n\
+NewEnt Type flags        Creates an entity of type [Type] at (0,0) with flags (added to default flags if they exist)\n\
+NewEnt Type x y          Creates an entity of type [Type] at (x,y) with no flags (or with default flags)\n\
+NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (added to default flags if they exist)\n\
+"
+	
+	// "mouse" to add it to mouse pos
+
+	add_cmd("NewEnt", {
+		if (args.size() == 0) {
+			impl->console->AddLine(new_ent_usage, ERROR);
+			return;
+		}
+	
+		Type type = ENTITY;
+		sf::Vector2f pos(0, 0);
+		unsigned long flags = NO_FLAG;
+
+
+		if (args.size() >= 1) {
+			std::string type_str;
+			for (auto i = 0; i != args[0].size(); ++i) {
+				type_str += toupper(args[0][i]);
+			}
+			type = getEntityTypeFromString(type_str);
+		}
+		if (args.size() >= 3) { pos = sf::Vector2f( atof(args[1].c_str()), atof(args[2].c_str()) ); }
+		if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
+		if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
+
+		if (type == ROCK) {
+			impl->editor->world.AddEntity(make_rock(pos));
+		}
+
+
+	});
+	AddInfo("NewEnt", "Create a new entity",new_ent_usage);
+
+	add_cmd("del", {
+		if (args.size() == 1) {
+			impl->editor->world.DeleteEntity(atoi(args[0].c_str()));
+		}
+		else {
+			impl->console->AddLine("Usage:\ndel id", ERROR);
+		}
+	});
+
+	add_cmd("clear", {
+		impl->console->ClearLines();
+	});
+	AddInfo("clear", "Clear the console", "Just write clear. No arguments needed.");
+
+	add_cmd("help", {
+		if (!args.size()) {
+			for (auto c : impl->console->getCommands()) {
+				int nb_of_spaces = 30 - c->name.size();
+				string str = c->name;
+				while (nb_of_spaces--) str+=' ';
+				str += c->desc;
+				impl->console->AddLine(str, RESULT);
+			}
+		}
+		else if (args.size() == 1) {
+			std::string name = args[0];
+			auto c = impl->console->getCommand(name);
+			if (c)	impl->console->AddLine(c->help_string					 , RESULT);
+			else	impl->console->AddLine("\"" + name + "\" is not a command", ERROR);
+		}
+		else {
+			impl->console->AddLine("Too many arguments given. Expected 0 or 1", ERROR);
+		}
+	});
+	AddInfo("help", "Display available commands or help for specific command",
+			"Usage:\nhelp            List commands\nhelp command    Display help for command"
+	);
+
+	add_cmd("quit", {
+		impl->editor->Quit();
+	});
+	AddInfo("quit", "Quit editor", "Just write quit. No arguments needed.");
+
+	#undef add_cmd
+	#undef new_ent_usage
 }
 
 void Console::AddLine(std::string text, LineMode mode)

@@ -1,5 +1,11 @@
-#include "Game.h"
 #include "ResourceManager.h"
+
+#ifndef EDITOR_MODE
+#include "Game.h"
+#endif
+#ifdef EDITOR_MODE
+#include "Editor/Editor.h"
+#endif
 
 #include <iostream>
 using namespace std;
@@ -16,7 +22,8 @@ int main()
 #endif
 
 #ifdef EDITOR_MODE
-
+		EditorMode::Editor editor;
+		editor.Start();
 #endif
 
 	cout << "Deleting resources ..." << endl;

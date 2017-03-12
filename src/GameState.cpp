@@ -9,7 +9,7 @@ using namespace std;
 
 GameState::GameState(Game& game) :
 	game(game),
-	world(*this, &game.getControls())
+	world(&game.getControls())
 {
 }
 
