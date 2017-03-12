@@ -408,14 +408,13 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 			}
 			type = getEntityTypeFromString(type_str);
 		}
-		if (args.size() >= 3) { pos = sf::Vector2f( atof(args[1].c_str()), atof(args[2].c_str()) ); }
+		if (args.size() >= 3) { pos = sf::Vector2f(float(atof(args[1].c_str())), float(atof(args[2].c_str()))); }
 		if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
 		if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
 
 		if (type == ROCK) {
 			impl->editor->world.AddEntity(make_rock(pos));
 		}
-
 
 	});
 	AddInfo("NewEnt", "Create a new entity",new_ent_usage);
@@ -491,7 +490,7 @@ void Console::UpdateLinesOrigin()
 {
 	if (lines.size()) {
 		lines[0]->setOrigin(-margin, -float(CONSOLE_HEIGHT - input_height - 20.f - lines[0]->getLocalBounds().height));
-		for (int i = 1; i < lines.size(); ++i) {
+		for (uint i = 1; i < lines.size(); ++i) {
 			lines[i]->setOrigin(-margin, -float(-lines[i-1]->getOrigin().y - 18.f - lines[i]->getLocalBounds().height));
 		}
 	}

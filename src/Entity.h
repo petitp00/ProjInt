@@ -207,7 +207,7 @@ static ComplexGameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	rock->type = ROCK;
 	rock->pos = pos;
 	rock->sprite_origin = {10, 20};
-	auto scale = 2;
+	auto scale = 2.f;
 	rock->size ={48.f*scale, 36.f*scale};
 	rock->scale = scale;
 	rock->Init();
