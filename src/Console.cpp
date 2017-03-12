@@ -2,6 +2,7 @@
 
 #include "ResourceManager.h"
 
+#include <fstream>
 #include <sstream>
 #include <iostream>
 using namespace std;
@@ -347,18 +348,27 @@ void Console::InitEditorCommands()
 			impl->editor->world.LoadWorld(args[0]);
 		}
 		else {
-			impl->editor->console->AddLine("Usage:\nload world_name", ERROR);
+			string s_str = "Available saves:";
+			string s;
+			ifstream ss("Resources/Data/Saves/all_saves");
+			while (ss >> s) s_str += "\n" + s;
+			impl->editor->console->AddLine(s_str, RESULT);
 		}
 	});
+	AddInfo("load", "Load an existing save", "Usage:\n\
+load                 Display list of available saves\n\
+load world_name      Load world_name");
 
 	add_cmd("dev", {
 		impl->editor->world.CreateNewBlank("dev");
 		impl->editor->world_init = true;
 	});
+	AddInfo("dev", "Quick create world \"dev\"", "Just write dev. Overwrites the previous world.");
 
 	add_cmd("save", {
 		impl->editor->world.Save();
-	})
+	});
+	AddInfo("save", "Save world", "Just write save.");
 
 	add_cmd("CreateWorld", {
 		if (args.size() == 0)
@@ -367,11 +377,9 @@ void Console::InitEditorCommands()
 			impl->editor->world.CreateNewBlank(args[0]);
 			impl->editor->world_init = true;
 		}
-		else if (args.size() == 2)
-			impl->console->AddLine("Not yet implemented", ERROR);
-		else
-			impl->console->AddLine("Too many arguments given.", ERROR);
+		else impl->console->AddLine("Too many arguments given.", ERROR);
 	});
+	AddInfo("CreateWorld", "Creates new world.", "Usage:\nCreateWorld world_name");
 
 	#define new_ent_usage "Usage:\n\
 NewEnt Type              Creates an entity of type [Type] at (0,0) with no flags (or with default flags)\n\
@@ -420,6 +428,7 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 			impl->console->AddLine("Usage:\ndel id", ERROR);
 		}
 	});
+	AddInfo("del", "Delete an entity", "Usage:\ndel id");
 
 	add_cmd("clear", {
 		impl->console->ClearLines();
