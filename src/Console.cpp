@@ -415,6 +415,9 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		if (type == ROCK) {
 			impl->editor->world.AddEntity(make_rock(pos));
 		}
+		else if (type == BUSH) {
+			impl->editor->world.AddEntity(make_bush(pos));
+		}
 
 	});
 	AddInfo("NewEnt", "Create a new entity",new_ent_usage);

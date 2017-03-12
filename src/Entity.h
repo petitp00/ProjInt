@@ -28,11 +28,12 @@ Entity Saving:
 */
 
 enum Type {
-	ERROR,
-	ENTITY,
-	PLAYER,
-	GAME_OBJECT,
-	ROCK
+	ERROR = 0,
+	ENTITY = 1,
+	PLAYER = 2,
+	GAME_OBJECT = 3,
+	ROCK = 4,
+	BUSH = 5,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -42,6 +43,7 @@ static std::string getEntityTypeString(Type t) {
 	case PLAYER: return "PLAYER";
 	case GAME_OBJECT: return "GAME_OBJECT";
 	case ROCK: return "ROCK";
+	case BUSH: return "BUSH";
 	case Type::ERROR: return "ERROR";
 	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -52,6 +54,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "PLAYER") return PLAYER;
 	if (str == "GAME_OBJECT") return GAME_OBJECT;
 	if (str == "ROCK") return ROCK;
+	if (str == "BUSH") return BUSH;
 	return Type::ERROR;
 }
 
@@ -112,6 +115,7 @@ protected:
 class ComplexGameObject : public Entity
 {
 	friend ComplexGameObject* make_rock(sf::Vector2f pos);
+	friend ComplexGameObject* make_bush(sf::Vector2f pos);
 public:
 	ComplexGameObject()=default;
 	ComplexGameObject(std::string texture_name, unsigned long flags=NO_FLAG,
@@ -212,4 +216,16 @@ static ComplexGameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	rock->scale = scale;
 	rock->Init();
 	return rock;
+}
+
+static ComplexGameObject* make_bush(sf::Vector2f pos ={0,0}) {
+	auto bush = new ComplexGameObject("Placeholders/bush.png", NO_FLAG);
+	bush->type = BUSH;
+	bush->pos = pos;
+	bush->sprite_origin ={0,0};
+	auto scale = 2.f;
+	bush->size ={46*scale, 36*scale};
+	bush->scale = scale;
+	bush->Init();
+	return bush;
 }

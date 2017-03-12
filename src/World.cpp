@@ -190,6 +190,9 @@ void World::LoadWorld(std::string const & filename)
 				go = make_rock(p);
 				entities.push_back(go);
 				break;
+			case BUSH:
+				go = make_bush(p);
+				entities.push_back(go);
 			default:
 				break;
 			}
