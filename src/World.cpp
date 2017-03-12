@@ -172,7 +172,7 @@ void World::LoadWorld(std::string const & filename)
 			}
 
 			Player* pl;
-			ComplexGameObject* go;
+			GameObject* go;
 
 			switch (t)
 			{

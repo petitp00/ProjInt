@@ -13,19 +13,19 @@ std::vector<std::string> Entity::getSavedData()
 	return std::vector<std::string>();
 }
 
-ComplexGameObject::ComplexGameObject(std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data):
+GameObject::GameObject(std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data):
 	Entity({0,0}, {0,0}, flags), texture_name(texture_name)
 {
 	type = GAME_OBJECT;
 }
 
-ComplexGameObject::ComplexGameObject(unsigned long flags, std::vector<std::string> const & saved_data):
+GameObject::GameObject(unsigned long flags, std::vector<std::string> const & saved_data):
 	Entity({0,0}, {0,0}, flags)
 {
 	type = GAME_OBJECT;
 }
 
-void ComplexGameObject::Init()
+void GameObject::Init()
 {
 	sprite.setTexture(ResourceManager::getTexture(texture_name));
 	sprite.setOrigin(sprite_origin);

@@ -111,17 +111,16 @@ protected:
 	static int last_id;
 };
 
-//TODO: Rename this to GameObject and delete the other
-class ComplexGameObject : public Entity
+class GameObject : public Entity
 {
-	friend ComplexGameObject* make_rock(sf::Vector2f pos);
-	friend ComplexGameObject* make_bush(sf::Vector2f pos);
+	friend GameObject* make_rock(sf::Vector2f pos);
+	friend GameObject* make_bush(sf::Vector2f pos);
 public:
-	ComplexGameObject()=default;
-	ComplexGameObject(std::string texture_name, unsigned long flags=NO_FLAG,
+	GameObject()=default;
+	GameObject(std::string texture_name, unsigned long flags=NO_FLAG,
 					  std::vector<std::string> const& saved_data={});
 	
-	ComplexGameObject(unsigned long flags,
+	GameObject(unsigned long flags,
 					  std::vector<std::string> const& saved_data={}); // for loading
 
 	void Init(); // call this after members are set
@@ -206,8 +205,8 @@ private:
 //	return rock;
 //}
 
-static ComplexGameObject* make_rock(sf::Vector2f pos ={0,0}) {
-	auto rock = new ComplexGameObject("Placeholders/rock.png", SOLID|IMMORTAL);
+static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
+	auto rock = new GameObject("Placeholders/rock.png", SOLID|IMMORTAL);
 	rock->type = ROCK;
 	rock->pos = pos;
 	rock->sprite_origin = {10, 20};
@@ -218,8 +217,8 @@ static ComplexGameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	return rock;
 }
 
-static ComplexGameObject* make_bush(sf::Vector2f pos ={0,0}) {
-	auto bush = new ComplexGameObject("Placeholders/bush.png", NO_FLAG);
+static GameObject* make_bush(sf::Vector2f pos ={0,0}) {
+	auto bush = new GameObject("Placeholders/bush.png", NO_FLAG);
 	bush->type = BUSH;
 	bush->pos = pos;
 	bush->sprite_origin ={0,0};
