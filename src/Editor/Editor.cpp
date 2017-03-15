@@ -206,8 +206,8 @@ void Editor::Start()
 				else {
 					if (left_pressed && ground_edit_mode) {
 						sf::Vector2f pi;
-						pi.x = int(mpos.x/Ground::getVisualTileSize());
-						pi.y = int(mpos.y/Ground::getVisualTileSize());
+						pi.x = float(int(mpos.x/Ground::getVisualTileSize()));
+						pi.y = float(int(mpos.y/Ground::getVisualTileSize()));
 
 						if (pi != last_ground_edit) {
 							last_ground_edit = pi;

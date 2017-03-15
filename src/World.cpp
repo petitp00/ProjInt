@@ -94,8 +94,8 @@ void Ground::Clear()
 void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
 {
 	sf::Vector2f tpos;
-	tpos.x = int(mpos.x / visual_tile_size);
-	tpos.y = int(mpos.y / visual_tile_size);
+	tpos.x = float(int(mpos.x / visual_tile_size));
+	tpos.y = float(int(mpos.y / visual_tile_size));
 
 	for (auto &t : tiles) {
 		if (t.getPos() == tpos) {
@@ -110,8 +110,8 @@ void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
 GroundType Ground::getTileClicked(sf::Vector2f mpos)
 {
 	sf::Vector2f tpos;
-	tpos.x = int(mpos.x / visual_tile_size);
-	tpos.y = int(mpos.y / visual_tile_size);
+	tpos.x = float(int(mpos.x / visual_tile_size));
+	tpos.y = float(int(mpos.y / visual_tile_size));
 
 	for (auto &t : tiles) {
 		if (t.getPos() == tpos) {
@@ -123,7 +123,7 @@ GroundType Ground::getTileClicked(sf::Vector2f mpos)
 
 float Ground::getVisualTileSize()
 {
-	return visual_tile_size;
+	return float(visual_tile_size);
 }
 
 void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
