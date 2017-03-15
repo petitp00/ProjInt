@@ -200,8 +200,12 @@ void World::LoadWorld(std::string const & filename)
 
 	std::string w, str;
 
+	sf::Clock clock;
+
+	cout << "loading entities";
 	while (s >> w) {
 		if (w == "e") {
+			cout << ".";
 			Type t;
 			s >> str;
 			t = Type(atoi(str.c_str()));
@@ -267,6 +271,7 @@ void World::LoadWorld(std::string const & filename)
 			}
 		}
 		else if (w == "[TILE_MAP]") {
+			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl << "loading tile_map...";
 			vector<int> tiles;
 			int width, height;
 			s >> width;
@@ -278,6 +283,7 @@ void World::LoadWorld(std::string const & filename)
 			ground.LoadTileMap(tiles, width, height);
 		}
 	}
+	cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
 	player->setControls(controls);
 
 }
@@ -298,6 +304,8 @@ void World::Save()
 
 	std::ofstream s("Resources/Data/Saves/" + name);
 
+	sf::Clock clock;
+	cout << "saving entities...";
 	for (auto e : entities) {
 		s << "e " << e->getType() << " "
 			<< e->getPos().x << " " << e->getPos().y << " "
@@ -306,13 +314,18 @@ void World::Save()
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
 	}
+	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;;
 
+	clock.restart();
+
+	cout << "saving tilemap...";
 	s << "[TILE_MAP]" << endl;
 	s << ground.getWidth() << endl << ground.getHeight() << endl;
 	for (auto t : ground.getTiles()) {
 		s << t.getType() << " ";
 	}
 	s << endl;
+	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;;
 
 	if (!file_existed) {
 		std::ofstream stream("Resources/Data/Saves/all_saves", std::ios_base::app);
