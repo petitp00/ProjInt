@@ -51,19 +51,24 @@ namespace EditorMode {
 		World world;
 		bool world_init = false;
 
+		void UpdateGameViewMinimapShape();
+
+		void ToggleGroundEditMode();
+		
+
+	private:
+		sf::Clock quit_timer;
+
+		std::vector<GUIInfo*> gui_infos;
+
 		sf::View game_view;
 		sf::View minimap_view;
 		sf::Vector2f game_view_size;
 		sf::Vector2f minimap_view_size;
 		float game_view_zoom = 1.0f;
 		sf::RectangleShape game_view_minimap_shape;
-		void UpdateGameViewMinimapShape();
 
 		bool ground_edit_mode = false;
-
-	private:
-		sf::Clock quit_timer;
-
-		std::vector<GUIInfo*> gui_infos;
+		GUIInfo* ground_edit_info = nullptr;
 	};
 }

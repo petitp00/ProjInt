@@ -110,6 +110,14 @@ void Console::Render(sf::RenderTarget & target)
 // PARSE AND EXECUTE
 //
 
+string getLower(const string& str) {
+	string s;
+	for (auto c : str) {
+		s+=tolower(c);
+	}
+	return s;
+}
+
 void Console::ParseAndExecute()
 {
 	bool found_command = false;
@@ -122,7 +130,7 @@ void Console::ParseAndExecute()
 	while (ss >> a) args.push_back(a);
 
 	for (auto c : commands) {
-		if (c->name == str) {
+		if (getLower(c->name) == getLower(str)) {
 			c->action(&command_action_impl, args);
 			found_command = true;
 		}
@@ -288,6 +296,58 @@ void Console::AddInfo(const std::string & name, const std::string & desc, const 
 	c->help_string = help;
 }
 
+void Console::AddLine(std::string text, LineMode mode)
+{
+	auto l = new sf::Text(text, ResourceManager::getFont(CONSOLE_FONT), CONSOLE_FONT_SIZE);
+
+	if (mode == COMMAND)		l->setFillColor(TEXT_COLOR);
+	else if (mode == RESULT)	l->setFillColor(RESULT_COLOR);
+	else if (mode == INFO)		l->setFillColor(INFO_COLOR);
+	else if (mode == ERROR)		l->setFillColor(ERROR_COLOR);
+
+	lines.push_front(l);
+
+	if (lines.size() > MAX_AMOUNT_OF_LINES) {
+		delete lines[lines.size()-1];
+		lines.pop_back();
+	}
+
+	UpdateLinesOrigin();
+}
+
+void Console::UpdateLinesOrigin()
+{
+	if (lines.size()) {
+		lines[0]->setOrigin(-margin, -float(CONSOLE_HEIGHT - input_height - 20.f - lines[0]->getLocalBounds().height));
+		for (uint i = 1; i < lines.size(); ++i) {
+			lines[i]->setOrigin(-margin, -float(-lines[i-1]->getOrigin().y - 18.f - lines[i]->getLocalBounds().height));
+		}
+	}
+}
+
+void Console::UpdateInputTextObj()
+{
+	input_text_obj.setString(input_string);
+}
+
+void Console::UpdateInputCaret(bool update_pos)
+{
+	if (update_pos) {
+		float cposx = input_text_obj.findCharacterPos(caret_pos).x;
+		caret_shape.setPosition(cposx, ypos);
+	}
+	else {
+		caret_shape.setPosition(caret_shape.getPosition().x, ypos);
+	}
+
+	if (caret_clock.getElapsedTime() >= caret_blink_time) {
+		caret_clock.restart();
+		draw_caret = !draw_caret;
+	}
+}
+
+// INIT COMMANDS // INIT COMMANDS // INIT COMMANDS // INIT COMMANDS // INIT COMMANDS // INIT COMMANDS // INIT COMMANDS // INIT COMMANDS //
+
 void Console::InitCommands()
 {
 	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([](CommandActionImpl* impl, const vector<string>& args) func )));
@@ -381,6 +441,11 @@ load world_name      Load world_name");
 	});
 	AddInfo("CreateWorld", "Creates new world.", "Usage:\nCreateWorld world_name");
 
+	add_cmd("GroundEdit", {
+		impl->editor->ToggleGroundEditMode();
+	});
+	AddInfo("GroundEdit", "Toggles editor's ground edit mode", "Just type GroundEdit");
+
 	#define new_ent_usage "Usage:\n\
 NewEnt Type              Creates an entity of type [Type] at (0,0) with no flags (or with default flags)\n\
 NewEnt Type flags        Creates an entity of type [Type] at (0,0) with flags (added to default flags if they exist)\n\
@@ -388,8 +453,6 @@ NewEnt Type x y          Creates an entity of type [Type] at (x,y) with no flags
 NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (added to default flags if they exist)\n\
 "
 	
-	// "mouse" to add it to mouse pos
-
 	add_cmd("NewEnt", {
 		if (args.size() == 0) {
 			impl->console->AddLine(new_ent_usage, ERROR);
@@ -468,55 +531,5 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 
 	#undef add_cmd
 	#undef new_ent_usage
-}
-
-void Console::AddLine(std::string text, LineMode mode)
-{
-	auto l = new sf::Text(text, ResourceManager::getFont(CONSOLE_FONT), CONSOLE_FONT_SIZE);
-
-	if (mode == COMMAND)		l->setFillColor(TEXT_COLOR);
-	else if (mode == RESULT)	l->setFillColor(RESULT_COLOR);
-	else if (mode == INFO)		l->setFillColor(INFO_COLOR);
-	else if (mode == ERROR)		l->setFillColor(ERROR_COLOR);
-
-	lines.push_front(l);
-
-	if (lines.size() > MAX_AMOUNT_OF_LINES) {
-		delete lines[lines.size()-1];
-		lines.pop_back();
-	}
-
-	UpdateLinesOrigin();
-}
-
-void Console::UpdateLinesOrigin()
-{
-	if (lines.size()) {
-		lines[0]->setOrigin(-margin, -float(CONSOLE_HEIGHT - input_height - 20.f - lines[0]->getLocalBounds().height));
-		for (uint i = 1; i < lines.size(); ++i) {
-			lines[i]->setOrigin(-margin, -float(-lines[i-1]->getOrigin().y - 18.f - lines[i]->getLocalBounds().height));
-		}
-	}
-}
-
-void Console::UpdateInputTextObj()
-{
-	input_text_obj.setString(input_string);
-}
-
-void Console::UpdateInputCaret(bool update_pos)
-{
-	if (update_pos) {
-		float cposx = input_text_obj.findCharacterPos(caret_pos).x;
-		caret_shape.setPosition(cposx, ypos);
-	}
-	else {
-		caret_shape.setPosition(caret_shape.getPosition().x, ypos);
-	}
-
-	if (caret_clock.getElapsedTime() >= caret_blink_time) {
-		caret_clock.restart();
-		draw_caret = !draw_caret;
-	}
 }
 

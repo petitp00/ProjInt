@@ -16,6 +16,7 @@ static const int visual_tile_size = int(64 * 1.5);
 
 void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
 {
+	this->tiles.clear();
 
 	this->width = width;
 	this->height = height;
@@ -52,9 +53,68 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 	}
 }
 
+void Ground::ReloadTileMap()
+{
+	vertices.clear();
+	vertices.setPrimitiveType(sf::Quads);
+	vertices.resize(width*height*4);
+
+	for (unsigned j = 0; j != height; ++j) {
+		for (unsigned i = 0; i != width; ++i) {
+			int tile_nb = tiles[i+j*width].getType();
+
+			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(float(i), float(j)));
+
+			int u, v = 0;
+			u = rng::rand_int(0, 2);
+			if (tile_nb == NONE) { u = 3; }
+			if (tile_nb == GRASS) { v = 0; }
+			if (tile_nb == SAND) { v = 1; }
+
+			sf::Vertex* quad = &vertices[(i+j*width) * 4];
+
+			quad[0].position = sf::Vector2f(float(i*visual_tile_size),		float(j*visual_tile_size));
+			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j*visual_tile_size));
+			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j+1)*visual_tile_size);
+			quad[3].position = sf::Vector2f(float(i*visual_tile_size),		float(j+1)*visual_tile_size);
+
+			quad[0].texCoords = sf::Vector2f(float(u*tile_size),		float(v*tile_size));
+			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v*tile_size));
+			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v+1)*tile_size);
+			quad[3].texCoords = sf::Vector2f(float(u*tile_size),		float(v+1)*tile_size);
+		}
+	}
+}
+
 void Ground::Clear()
 {
 	tiles.clear();
+}
+
+void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
+{
+	sf::Vector2f tpos;
+	tpos.x = int(mpos.x / visual_tile_size);
+	tpos.y = int(mpos.y / visual_tile_size);
+
+	for (auto &t : tiles) {
+		if (t.getPos() == tpos) {
+			t.setType(type);
+			ReloadTileMap();
+			break;
+		}
+	}
+
+}
+
+GroundType Ground::getTileClicked(sf::Vector2f mpos)
+{
+	return GroundType();
+}
+
+float Ground::getVisualTileSize()
+{
+	return visual_tile_size;
 }
 
 void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
@@ -281,21 +341,28 @@ void World::Render(sf::RenderTarget & target)
 
 	vector<Entity*> entities_front;
 
-	for (auto e : entities) {
-		if (e->getType() != PLAYER) {
-			if (player->getPos().y + player->getSize().y > e->getPos().y + e->getSize().y) {
-				e->Render(target);
+	if (player) {
+		for (auto e : entities) {
+			if (e->getType() != PLAYER) {
+				if (player->getPos().y + player->getSize().y > e->getPos().y + e->getSize().y) {
+					e->Render(target);
+				}
+				else {
+					entities_front.push_back(e);
+				}
 			}
-			else {
-				entities_front.push_back(e);
+		}
+
+		player->Render(target);
+
+		for (auto e : entities_front) {
+			if (e->getType() != PLAYER) {
+				e->Render(target);
 			}
 		}
 	}
-
-	player->Render(target);
-
-	for (auto e : entities_front) {
-		if (e->getType() != PLAYER) {
+	else {
+		for (auto e : entities) {
 			e->Render(target);
 		}
 	}

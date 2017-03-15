@@ -33,6 +33,8 @@ public:
 
 	GroundTile(GroundType type, sf::Vector2f pos);
 
+	void setType(GroundType type) { this->type = type; }
+
 	GroundType getType() { return type; }
 	sf::Vector2f getPos() { return pos; }
 
@@ -45,11 +47,17 @@ class Ground : public sf::Drawable
 {
 public:
 	void LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height);
+	void ReloadTileMap();
 	void Clear();
 
+	void setTileClicked(sf::Vector2f mpos, GroundType type);
+	GroundType getTileClicked(sf::Vector2f mpos);
 	std::vector<GroundTile>& getTiles() { return tiles; }
 	int getWidth() { return width; }
 	int getHeight() { return height; }
+	
+	static float getVisualTileSize();
+
 private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

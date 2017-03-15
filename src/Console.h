@@ -38,13 +38,6 @@ namespace ConsoleNamespace {
 
 	static unsigned int MAX_AMOUNT_OF_LINES = 24;
 
-
-	/* Commands to implement:
-		+ OpenEditor	- to open the map editor. Also makes new commands available
-		+ help
-		+
-	*/
-
 	struct CommandActionImpl {
 		CommandActionImpl(Console* console, EditorMode::Editor* editor) :
 			console(console), editor(editor) {}
@@ -108,8 +101,6 @@ namespace ConsoleNamespace {
 
 		CommandActionImpl command_action_impl;
 		std::vector<Command*> commands;
-		void InitCommands();
-		void InitEditorCommands();
 
 		void AddLine(std::string text, LineMode mode = COMMAND);
 		void UpdateLinesOrigin();
@@ -139,7 +130,8 @@ namespace ConsoleNamespace {
 		sf::Clock caret_clock;
 		sf::Time caret_blink_time = sf::seconds(0.4f);
 
-
+		void InitCommands();
+		void InitEditorCommands();
 	};
 
 };
