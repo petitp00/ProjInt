@@ -279,8 +279,25 @@ void World::Render(sf::RenderTarget & target)
 
 	target.draw(ground);
 
+	vector<Entity*> entities_front;
+
 	for (auto e : entities) {
-		e->Render(target);
+		if (e->getType() != PLAYER) {
+			if (player->getPos().y + player->getSize().y > e->getPos().y + e->getSize().y) {
+				e->Render(target);
+			}
+			else {
+				entities_front.push_back(e);
+			}
+		}
+	}
+
+	player->Render(target);
+
+	for (auto e : entities_front) {
+		if (e->getType() != PLAYER) {
+			e->Render(target);
+		}
 	}
 
 	//target.setView(target.getDefaultView());

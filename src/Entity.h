@@ -197,21 +197,13 @@ private:
 	float walk_speed = 0.3f;
 };
 
-// static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
-//	auto rock = new GameObject(pos, "Placeholders/rock.png", {128, 128}, IMMORTAL|SOLID);
-//	rock->type = ROCK;
-//	rock->sprite.setOrigin(10, 20);
-//	rock->size ={48*2,36*2};
-//	return rock;
-//}
-
 static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	auto rock = new GameObject("Placeholders/rock.png", SOLID|IMMORTAL);
 	rock->type = ROCK;
 	rock->pos = pos;
-	rock->sprite_origin = {10, 20};
+	rock->sprite_origin = {14, 34};
 	auto scale = 2.f;
-	rock->size ={48.f*scale, 36.f*scale};
+	rock->size ={40.f*scale, 20.f*scale};
 	rock->scale = scale;
 	rock->Init();
 	return rock;
