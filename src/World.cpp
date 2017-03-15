@@ -288,8 +288,11 @@ void World::LoadWorld(std::string const & filename)
 
 }
 
-void World::Save()
+void World::Save(const string& filename)
 {
+	if (filename != "") {
+		name = filename;
+	}
 	bool file_existed = false;
 	std::ifstream f("Resources/Data/Saves/" + name, std::ios::binary);
 	if (f.is_open()) file_existed = true;

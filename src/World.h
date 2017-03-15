@@ -89,7 +89,7 @@ public:
 	void CreateAndSaveWorld(const std::string& filename);
 	void CreateNewBlank(const std::string& filename);
 	void LoadWorld(const std::string& filename);
-	void Save();
+	void Save(const std::string& filename ="");
 
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);

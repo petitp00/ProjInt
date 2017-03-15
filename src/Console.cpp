@@ -426,9 +426,14 @@ load world_name      Load world_name");
 	AddInfo("dev", "Quick create world \"dev\"", "Just write dev. Overwrites the previous world.");
 
 	add_cmd("save", {
-		impl->editor->world.Save();
+		if (args.size() == 0) {
+			impl->editor->world.Save();
+		}
+		else {
+			impl->editor->world.Save(args[0]);
+		}
 	});
-	AddInfo("save", "Save world", "Just write save.");
+	AddInfo("save", "Save world", "Usage:\nsave                     save the world\nsave world_name          save the world to world_name");
 
 	add_cmd("CreateWorld", {
 		if (args.size() == 0)
