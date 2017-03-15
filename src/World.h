@@ -27,6 +27,16 @@ enum GroundType {
 	GRASS = 1,
 	SAND = 2
 };
+
+static const int ground_type_max = SAND;
+static std::string getGroundTypeString(GroundType type) {
+	switch (type) {
+	case NONE: return "NONE";
+	case GRASS: return "GRASS";
+	case SAND: return "SAND";
+	default: return "???";
+	}
+}
 	
 class GroundTile {
 public:

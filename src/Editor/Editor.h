@@ -70,5 +70,6 @@ namespace EditorMode {
 
 		bool ground_edit_mode = false;
 		GUIInfo* ground_edit_info = nullptr;
+		int ground_type = NONE;
 	};
 }

@@ -135,7 +135,7 @@ void Editor::Start()
 					auto p = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
 
 					if (ground_edit_mode) {
-						world.ground.setTileClicked(p, GRASS);
+						world.ground.setTileClicked(p, GroundType(ground_type));
 					}
 					else {
 						auto e = world.FindEntityClicked(p);
@@ -172,6 +172,18 @@ void Editor::Start()
 					game_view.setSize(game_view_size * game_view_zoom);
 					UpdateGameViewMinimapShape();
 				}
+				else if (ground_edit_mode) {
+					auto delta = event.mouseWheelScroll.delta;
+					if (delta > 0) {
+						if (ground_type != ground_type_max) ++ground_type;
+						else ground_type = 0;
+					}
+					else {
+						if (ground_type != 0) --ground_type;
+						else ground_type = ground_type_max;
+					}
+					ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
+				}
 			}
 
 			if (event.type == sf::Event::MouseMoved) {
@@ -192,7 +204,7 @@ void Editor::Start()
 
 						if (pi != last_ground_edit) {
 							last_ground_edit = pi;
-							world.ground.setTileClicked(mpos, GRASS);
+							world.ground.setTileClicked(mpos, GroundType(ground_type));
 						}
 					}
 					else {
@@ -312,7 +324,7 @@ void Editor::ToggleGroundEditMode()
 {
 	ground_edit_mode = !ground_edit_mode;
 	ground_edit_info->active = ground_edit_mode;
-	ground_edit_info->setVal("on");
+	ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
 
 	if (ground_edit_mode) {
 		
