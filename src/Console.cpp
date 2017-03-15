@@ -441,10 +441,10 @@ load world_name      Load world_name");
 	});
 	AddInfo("CreateWorld", "Creates new world.", "Usage:\nCreateWorld world_name");
 
-	add_cmd("GroundEdit", {
+	add_cmd("ground", {
 		impl->editor->ToggleGroundEditMode();
 	});
-	AddInfo("GroundEdit", "Toggles editor's ground edit mode", "Just type GroundEdit");
+	AddInfo("ground", "Toggles editor's ground edit mode", "Just type ground");
 
 	#define new_ent_usage "Usage:\n\
 NewEnt Type              Creates an entity of type [Type] at (0,0) with no flags (or with default flags)\n\
