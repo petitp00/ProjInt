@@ -109,7 +109,16 @@ void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
 
 GroundType Ground::getTileClicked(sf::Vector2f mpos)
 {
-	return GroundType();
+	sf::Vector2f tpos;
+	tpos.x = int(mpos.x / visual_tile_size);
+	tpos.y = int(mpos.y / visual_tile_size);
+
+	for (auto &t : tiles) {
+		if (t.getPos() == tpos) {
+			return t.getType();
+		}
+	}
+	return NONE;
 }
 
 float Ground::getVisualTileSize()

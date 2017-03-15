@@ -149,6 +149,13 @@ void Editor::Start()
 						}
 					}
 				}
+				else if (event.mouseButton.button == sf::Mouse::Right) {
+					if (ground_edit_mode) {
+						auto p = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
+						ground_type = int(world.ground.getTileClicked(p));
+						ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
+					}
+				}
 			}
 			if (event.type == sf::Event::MouseButtonReleased) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
