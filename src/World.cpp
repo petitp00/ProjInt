@@ -63,8 +63,6 @@ void Ground::ReloadTileMap()
 		for (unsigned i = 0; i != width; ++i) {
 			int tile_nb = tiles[i+j*width].getType();
 
-			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(float(i), float(j)));
-
 			int u, v = 0;
 			u = rng::rand_int(0, 2);
 			if (tile_nb == NONE) { u = 3; }
