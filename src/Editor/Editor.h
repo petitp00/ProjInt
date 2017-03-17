@@ -10,9 +10,6 @@ namespace ConsoleNamespace { class Console; };
 
 
 namespace EditorMode {
-	static const int WINDOW_W = 1280;
-	static const int WINDOW_H = 720;
-
 	static const int WORLD_W = 1280*3;
 	static const int WORLD_H = 1280*3;
 
@@ -42,32 +39,32 @@ namespace EditorMode {
 		~Editor();
 
 		void Start();
-		void Quit();
+		void Quit() { window.close(); }
 
-		sf::RenderWindow window;
+		void UpdateGameViewMinimapShape();
+		void ToggleGroundEditMode();
+		
 		ConsoleNamespace::Console* console;
 		Controls* controls;
 
 		World world;
 		bool world_init = false;
 
-		void UpdateGameViewMinimapShape();
-
-		void ToggleGroundEditMode();
-		
-
 	private:
 		sf::Clock quit_timer;
-
+		sf::RenderWindow window;
 		std::vector<GUIInfo*> gui_infos;
 
+		// Game view
 		sf::View game_view;
-		sf::View minimap_view;
 		sf::Vector2f game_view_size;
-		sf::Vector2f minimap_view_size;
 		float game_view_zoom = 1.0f;
+
+		// Minimap view
+		sf::View minimap_view;
 		sf::RectangleShape game_view_minimap_shape;
 
+		// Ground Edit mode
 		bool ground_edit_mode = false;
 		GUIInfo* ground_edit_info = nullptr;
 		int ground_type = NONE;

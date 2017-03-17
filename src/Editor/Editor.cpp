@@ -7,28 +7,37 @@
 using namespace EditorMode;
 using namespace std;
 
-Editor::Editor()
+// Vars
+static const sf::Vector2f game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
+
+static bool escape_pressed	= false;
+static bool middle_pressed	= false;
+static bool left_pressed	= false;
+static bool minimap_drag	= false;
+
+static sf::Vector2i mouse_pos;
+static sf::Vector2f mouse_pos_in_world;
+static sf::Vector2f drag_mouse_pos;
+static sf::Vector2f last_ground_edit{-1.f, -1.f};
+
+static Entity* selected_entity = nullptr;
+static sf::Vector2f selected_entity_click_offset;
+
+// Forward decl
+void InitMinimap(sf::RenderTexture& texture,
+				 sf::Sprite& sprite,
+				 sf::RectangleShape& border_shape,
+				 sf::RectangleShape& game_view_shape);
+
+Editor::Editor() :
+	game_view({0,0}, game_view_size),
+	minimap_view({0,0}, {float(WORLD_W), float(WORLD_H)})
 {
-	game_view_size ={float(WINDOW_W), float(WINDOW_H)};
-	minimap_view_size ={float(WORLD_W), float(WORLD_H)};
-	game_view.reset(sf::FloatRect({0, 0}, game_view_size));
-	minimap_view.reset(sf::FloatRect({0,0}, minimap_view_size));
-	//game_view.setViewport(sf::FloatRect(0, 0, 0.5f, 0.5f));
-	float sz = 200.f;
-	float vpw = sz/float(WINDOW_W);
-	float vph = sz/float(WINDOW_H);
-
-	//minimap_view.setViewport(sf::FloatRect(1.f-vpw, 0.f, vpw, vph));
-	game_view_minimap_shape.setFillColor(sf::Color::Transparent);
-	game_view_minimap_shape.setOutlineColor(sf::Color::Green);
-	game_view_minimap_shape.setOutlineThickness(2);
-
+	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Close);
 	controls = new Controls;
 	controls->LoadDefault(); 
 	world.controls = controls;
-
 	console = new ConsoleNamespace::Console(*this);
-	window.create(sf::VideoMode(WINDOW_W, WINDOW_H), "Editor", sf::Style::Close);
 }
 
 Editor::~Editor()
@@ -38,6 +47,7 @@ Editor::~Editor()
 
 void Editor::Start()
 {
+	// Framerate stuff
 	sf::Clock clock;
 	sf::Clock refresh_clock;
 	sf::Time refresh(sf::seconds(0.25f));
@@ -45,42 +55,30 @@ void Editor::Start()
 	sf::Clock dt_clock;
 	float dt = 0;
 
-	bool escape_pressed = false;
-
-	sf::Vector2f mpos;
-	ground_edit_info = make_info("ground_edit", false);
+	// Gui infos
+	ground_edit_info				= make_info("ground_edit", false);
+	auto fps_info					= make_info("fps");
+	auto gui_info_id				= make_info("id", false);
+	auto gui_info_zoom				= make_info("zoom", false);
+	auto selected_entity_pos_label	= make_info("");
 	gui_infos.push_back(ground_edit_info);
-	auto fps_info = make_info("fps");
 	gui_infos.push_back(fps_info);
 	gui_infos.push_back(make_info("mouse (world)"));
-	auto gui_info_id = make_info("id", false);
 	gui_infos.push_back(gui_info_id);
-	auto gui_info_zoom = make_info("zoom", false);
 	gui_infos.push_back(gui_info_zoom);
 
-	Entity* selected_entity = nullptr;
-	sf::Vector2f select_click_entity_offset;
-	auto selected_entity_pos_label = make_info("");
-
+	// Minimap
 	sf::RenderTexture minimap_texture;
-	minimap_texture.create(200, 200);
+	sf::Sprite minimap_sprite;
+	sf::RectangleShape minimap_border_shape;
+	InitMinimap(minimap_texture, minimap_sprite, minimap_border_shape,
+				game_view_minimap_shape);
 	minimap_texture.setView(minimap_view);
-	sf::Sprite minimap_sprite(minimap_texture.getTexture());
-	minimap_sprite.setColor(sf::Color(255, 255, 255, 128));
-	minimap_sprite.setPosition(WINDOW_W-204, 4);
-	sf::RectangleShape minimap_border_shape(sf::Vector2f(200, 200));
-	minimap_border_shape.setFillColor(sf::Color::Transparent);
-	minimap_border_shape.setOutlineColor(sf::Color::Black);
-	minimap_border_shape.setOutlineThickness(3);
-	minimap_border_shape.setPosition(WINDOW_W - 204, 4);
 
-	bool middle_pressed = false;
-	bool left_pressed = false;
-	bool minimap_drag = false;
-	sf::Vector2f drag_mouse_pos;
-	sf::Vector2f last_ground_edit{-1.f, -1.f};
 	
 	while (window.isOpen()) {
+
+		// FPS counter
 		if (refresh_clock.getElapsedTime() >= refresh) {
 			refresh_clock.restart();
 			float t = clock.restart().asMicroseconds() / 1000.f;
@@ -89,58 +87,62 @@ void Editor::Start()
 			frames = 0;
 		}
 
-		// Events
+		//		  //
+		// Events //
+		//		  //
+
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { Quit(); }
 
-			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::Escape) {
+			// KEYBOARD EVENTS
+			if (event.type == sf::Event::KeyPressed) { 
+				auto key = event.key.code;
+				if (key == sf::Keyboard::Escape) {
 					if (!escape_pressed) {
 						quit_timer.restart();
 						escape_pressed = true;
 					}
 				}
-				else if (event.key.code == sf::Keyboard::F1) {
+				else if (key == sf::Keyboard::LControl) {
+					gui_info_zoom->active = true;
+				}
+				else if (key == sf::Keyboard::F1) {
 					console->setActive(true);
 				}
-			}
-			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Escape) {
-				escape_pressed = false;
-			}
+			} 
 
-			if (event.type == sf::Event::MouseButtonPressed) {
-				if (event.mouseButton.button == sf::Mouse::Middle) {
-					auto p = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
-					auto e = world.FindEntityClicked(p);
-					if (e) {
-						console->PrintInfo("Entity clicked");
-						console->PrintInfo("ID: " + to_string(e->getId()));
-						console->PrintInfo("Type: " + to_string(e->getType()) + "   (" + getEntityTypeString(e->getType()) + ")");
-						console->PrintInfo("Pos: {" + to_string(e->getPos().x) + ", " + to_string(e->getPos().y) + "}");
-					}
-					
-					middle_pressed = true;
-					drag_mouse_pos = p;
+			else if (event.type == sf::Event::KeyReleased) {
+				auto key = event.key.code;
+				if (key == sf::Keyboard::Escape) {
+					escape_pressed = false;
 				}
-				else if (event.mouseButton.button == sf::Mouse::Left) {
+				else if (key == sf::Keyboard::LControl) {
+					gui_info_zoom->active = false;
+				}
+			}
+
+			// MOUSE EVENTS
+			else if (event.type == sf::Event::MouseButtonPressed) {
+				auto button = event.mouseButton.button;
+				if (button == sf::Mouse::Left) {
 					left_pressed = true;
-					auto mp = sf::Vector2f(sf::Mouse::getPosition(window));
+
+					// Check for minimap view drag
 					sf::FloatRect rect(minimap_border_shape.getPosition(), minimap_border_shape.getSize());
-					if (rect.contains(mp)) {
+					if (rect.contains(sf::Vector2f(mouse_pos))) {
 						minimap_drag = true;
-						drag_mouse_pos = mp - minimap_border_shape.getPosition();
+						drag_mouse_pos = sf::Vector2f(mouse_pos) - minimap_border_shape.getPosition();
 					}
-
-					auto p = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
-
-					if (ground_edit_mode) {
-						world.ground.setTileClicked(p, GroundType(ground_type));
+					// Change tile if ground edit mode
+					else if (ground_edit_mode) {
+						world.ground.setTileClicked(mouse_pos_in_world, GroundType(ground_type));
 					}
+					// Check if entity clicked
 					else {
-						auto e = world.FindEntityClicked(p);
+						auto e = world.FindEntityClicked(mouse_pos_in_world);
 						if (e) {
-							select_click_entity_offset = p - e->getPos();
+							selected_entity_click_offset = mouse_pos_in_world - e->getPos();
 							selected_entity = e;
 							gui_info_id->active = true;
 							gui_info_id->setVal(to_string(selected_entity->getId()));
@@ -149,111 +151,119 @@ void Editor::Start()
 						}
 					}
 				}
-				else if (event.mouseButton.button == sf::Mouse::Right) {
+				else if (button == sf::Mouse::Right) {
+					// Copy tile type if ground edit mode
 					if (ground_edit_mode) {
-						auto p = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
-						ground_type = int(world.ground.getTileClicked(p));
+						ground_type = int(world.ground.getTileClicked(mouse_pos_in_world));
 						ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
 					}
 				}
+				else if (button == sf::Mouse::Middle) {
+					auto e = world.FindEntityClicked(mouse_pos_in_world);
+					if (e) {
+						console->PrintInfo("Entity clicked");
+						console->PrintInfo("ID: " + to_string(e->getId()));
+						console->PrintInfo("Type: " + to_string(e->getType()) + "   (" + getEntityTypeString(e->getType()) + ")");
+						console->PrintInfo("Pos: {" + to_string(e->getPos().x) + ", " + to_string(e->getPos().y) + "}");
+					}
+					
+					middle_pressed = true;
+					drag_mouse_pos = mouse_pos_in_world;
+				}
 			}
-			if (event.type == sf::Event::MouseButtonReleased) {
-				if (event.mouseButton.button == sf::Mouse::Left) {
+			else if (event.type == sf::Event::MouseButtonReleased) {
+				auto button = event.mouseButton.button;
+				if (button == sf::Mouse::Left) {
 					minimap_drag = false;
 					left_pressed = false;
 					if (selected_entity) selected_entity = nullptr;
 				}
-				else if (event.mouseButton.button == sf::Mouse::Middle) {
+				else if (button == sf::Mouse::Middle) {
 					middle_pressed = false;
 				}
 			}
 
 			if (event.type == sf::Event::MouseWheelScrolled) {
+				auto delta = event.mouseWheelScroll.delta;
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
-					auto delta = event.mouseWheelScroll.delta;
+					// Zoom
 					float factor = 0.15f;
 					if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) factor = 0.45f;
-					if (delta < 0) { game_view_zoom += factor; }
-					else if (delta > 0) { game_view_zoom -= factor; }
+					if		(delta < 0) game_view_zoom += factor;
+					else if (delta > 0) game_view_zoom -= factor;
+
 					gui_info_zoom->setVal(to_string(game_view_zoom));
 					game_view.setSize(game_view_size * game_view_zoom);
 					UpdateGameViewMinimapShape();
 				}
 				else if (ground_edit_mode) {
-					auto delta = event.mouseWheelScroll.delta;
+					// Change tile type
 					if (delta > 0) {
 						if (ground_type != ground_type_max) ++ground_type;
-						else ground_type = 0;
+						else								ground_type = 0;
 					}
-					else {
-						if (ground_type != 0) --ground_type;
-						else ground_type = ground_type_max;
+					else if (delta < 0) {
+						if (ground_type != 0)				--ground_type;
+						else								ground_type = ground_type_max;
 					}
 					ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
 				}
 			}
 
 			if (event.type == sf::Event::MouseMoved) {
-				mpos = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
+				mouse_pos = sf::Mouse::getPosition(window);
+				mouse_pos_in_world = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
+
 				if (selected_entity) {
-					selected_entity->setPos(mpos - select_click_entity_offset);
+					// Move selected entity
+					selected_entity->setPos(mouse_pos_in_world - selected_entity_click_offset);
 					selected_entity_pos_label->setVal("{"+ to_string(int(selected_entity->getPos().x)) + ", " + to_string(int(selected_entity->getPos().y)) + "}");
-					selected_entity_pos_label->text_obj.setPosition(
-						sf::Vector2f(window.mapCoordsToPixel(selected_entity->getPos() + sf::Vector2f(0, selected_entity->getSize().y + 10.f),
-						game_view)));
+					selected_entity_pos_label->text_obj.setPosition( sf::Vector2f( window.mapCoordsToPixel(
+						selected_entity->getPos() + sf::Vector2f(0, selected_entity->getSize().y + 10.f), game_view)));
 
 				}
-				else {
-					if (left_pressed && ground_edit_mode) {
-						sf::Vector2f pi;
-						pi.x = float(int(mpos.x/Ground::getVisualTileSize()));
-						pi.y = float(int(mpos.y/Ground::getVisualTileSize()));
+				else if (left_pressed && ground_edit_mode) {
+					// Add tiles to ground
+					sf::Vector2f mouse_pos_in_tile_pos {
+						float(int(mouse_pos_in_world.x/Ground::getVisualTileSize())),
+						float(int(mouse_pos_in_world.y/Ground::getVisualTileSize()))
+					};
 
-						if (pi != last_ground_edit) {
-							last_ground_edit = pi;
-							world.ground.setTileClicked(mpos, GroundType(ground_type));
-						}
+					if (mouse_pos_in_tile_pos != last_ground_edit) {
+						last_ground_edit = mouse_pos_in_tile_pos;
+						world.ground.setTileClicked(mouse_pos_in_world, GroundType(ground_type));
+					}
+				}
+				else {
+					// Find if hover on entity
+					auto e = world.FindEntityClicked(mouse_pos_in_world);
+					if (e) {
+						gui_info_id->active = true;
+						gui_info_id->setVal(to_string(e->getId()));
 					}
 					else {
-						auto e = world.FindEntityClicked(mpos);
-						if (e) {
-							gui_info_id->active = true;
-							gui_info_id->setVal(to_string(e->getId()));
-						}
-						else {
-							gui_info_id->active = false;
-						}
+						gui_info_id->active = false;
 					}
 				}
 
 				if (middle_pressed) {
-					game_view.setCenter(game_view.getCenter() + drag_mouse_pos - mpos);
+					game_view.setCenter(game_view.getCenter() + drag_mouse_pos - mouse_pos_in_world);
 					UpdateGameViewMinimapShape();
 				}
 				if (minimap_drag) {
 					auto p = sf::Vector2f(sf::Mouse::getPosition(window)) - sf::Vector2f(minimap_border_shape.getPosition());
 					float mx = p.x/200.f * WORLD_W;
 					float my = p.y/200.f * WORLD_H;
-					mx = min(mx, float(WORLD_W + WINDOW_W/2.f));
-					mx = max(mx, float(-WINDOW_W/2.f));
-					my = min(my, float(WORLD_H + WINDOW_H/2.f));
-					my = max(my, float(-WINDOW_H/2.f));
+					mx = min(mx, float(WORLD_W + WINDOW_WIDTH/2.f));
+					mx = max(mx, float(-WINDOW_WIDTH/2.f));
+					my = min(my, float(WORLD_H + WINDOW_HEIGHT/2.f));
+					my = max(my, float(-WINDOW_HEIGHT/2.f));
 
 					game_view.setCenter({mx, my});
 					UpdateGameViewMinimapShape();
 				}
 			}
 
-			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::LControl) {
-					gui_info_zoom->active = true;
-				}
-			}
-			else if (event.type == sf::Event::KeyReleased) {
-				if (event.key.code == sf::Keyboard::LControl) {
-					gui_info_zoom->active = false;
-				}
-			}
 
 			if (console->getActive()) { if (console->HandleEvent(event)) continue; }
 
@@ -263,57 +273,63 @@ void Editor::Start()
 			Quit();
 		}
 
-		{
-			int i = 0;
-			for (auto gi : gui_infos) {
-				if (gi->active) {
-					gi->text_obj.setPosition(10.f, float(10 + 15*i));
-					++i;
-					if (gi->name == "mouse (world)") {
-						gi->setVal("{" + to_string(int(mpos.x)) + ", " + to_string(int(mpos.y)) + "}");
-					}
+		//		   //
+		// UPDATES //
+		//		   //
+
+		// Setting active gui_infos' position
+		int i = 0;
+		for (auto gi : gui_infos) {
+			if (gi->active) {
+				gi->text_obj.setPosition(10.f, float(10 + 15*i));
+				++i;
+				if (gi->name == "mouse (world)") {
+					gi->setVal("{" + to_string(int(mouse_pos_in_world.x)) + ", " + to_string(int(mouse_pos_in_world.y)) + "}");
 				}
 			}
 		}
 
-		if (world_init) world.Update(dt);
-		if (console->getActive()) { console->Update(); }
+		if (world_init)					world.Update(dt);
+		if (console->getActive())		console->Update();
+
+		//			 //
+		// RENDERING //
+		//			 //
 
 		window.clear(sf::Color::White);
 
 		window.setView(game_view);
-		world.Render(window);
-
-
-		window.setView(window.getDefaultView());
-		for (auto gi : gui_infos) {
-			if (gi->active) {
-				window.draw(gi->text_obj);
-			}
+		{
+			world.Render(window);
 		}
-		if (selected_entity) window.draw(selected_entity_pos_label->text_obj);
-		if (console->getActive()) { console->Render(window); }
-		window.draw(minimap_border_shape);
-
-		minimap_texture.clear();
-		world.Render(minimap_texture);
-		minimap_texture.display();
-		window.draw(minimap_sprite);
 
 		window.setView(window.getDefaultView());
-		window.draw(game_view_minimap_shape);
+		{
+			// gui infos
+			for (auto gi : gui_infos) {
+				if (gi->active)			window.draw(gi->text_obj);
+			}
+			if (selected_entity)		window.draw(selected_entity_pos_label->text_obj);
+
+			// minimap
+			window.draw(minimap_border_shape);
+			minimap_texture.clear();
+			world.Render(minimap_texture);
+			minimap_texture.display();
+			window.draw(minimap_sprite);
+			window.draw(game_view_minimap_shape);
+
+			// console
+			if (console->getActive())	console->Render(window);
+		}
 
 		window.display();
 
+		// FPS counter
 		dt = dt_clock.restart().asMicroseconds() / 1000.f;
 		++frames;
 	}
 
-}
-
-void Editor::Quit()
-{
-	window.close();
 }
 
 void Editor::UpdateGameViewMinimapShape()
@@ -324,7 +340,7 @@ void Editor::UpdateGameViewMinimapShape()
 	float sh = game_view.getSize().y / WORLD_H * 200.f;
 
 	game_view_minimap_shape.setSize({sw, sh});
-	game_view_minimap_shape.setPosition(WINDOW_W-204 + sx - sw/2.f, 4+sy-sh/2.f);
+	game_view_minimap_shape.setPosition(WINDOW_WIDTH-204 + sx - sw/2.f, 4+sy-sh/2.f);
 }
 
 void Editor::ToggleGroundEditMode()
@@ -332,11 +348,24 @@ void Editor::ToggleGroundEditMode()
 	ground_edit_mode = !ground_edit_mode;
 	ground_edit_info->active = ground_edit_mode;
 	ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
+}
 
-	if (ground_edit_mode) {
-		
-	}
-	else {
+// Functions
 
-	}
+void InitMinimap(sf::RenderTexture& texture,
+				 sf::Sprite& sprite,
+				 sf::RectangleShape& border_shape,
+				 sf::RectangleShape& game_view_shape) {
+	texture.create(200, 200);
+	sprite.setTexture(texture.getTexture());
+	sprite.setColor(sf::Color(255, 255, 255, 128));
+	sprite.setPosition(float(WINDOW_WIDTH-204), 4);
+	border_shape.setSize(sf::Vector2f(200, 200));
+	border_shape.setFillColor(sf::Color::Transparent);
+	border_shape.setOutlineColor(sf::Color::Black);
+	border_shape.setOutlineThickness(3);
+	border_shape.setPosition(float(WINDOW_WIDTH - 204), 4);
+	game_view_shape.setFillColor(sf::Color::Transparent);
+	game_view_shape.setOutlineColor(sf::Color::Green);
+	game_view_shape.setOutlineThickness(2);
 }
