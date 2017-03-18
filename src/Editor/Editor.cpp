@@ -30,8 +30,8 @@ void InitMinimap(sf::RenderTexture& texture,
 				 sf::RectangleShape& game_view_shape);
 
 Editor::Editor() :
-	game_view({0,0}, game_view_size),
-	minimap_view({0,0}, {float(WORLD_W), float(WORLD_H)})
+	game_view(sf::FloatRect({0,0}, game_view_size)),
+	minimap_view(sf::FloatRect({0,0}, {float(WORLD_W), float(WORLD_H)}))
 {
 	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Close);
 	controls = new Controls;
@@ -213,6 +213,8 @@ void Editor::Start()
 			if (event.type == sf::Event::MouseMoved) {
 				mouse_pos = sf::Mouse::getPosition(window);
 				mouse_pos_in_world = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
+
+				cout << sf::Vector2f(mouse_pos) << endl;
 
 				if (selected_entity) {
 					// Move selected entity

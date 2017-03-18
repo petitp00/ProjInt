@@ -57,7 +57,6 @@ namespace EditorMode {
 
 		// Game view
 		sf::View game_view;
-		sf::Vector2f game_view_size;
 		float game_view_zoom = 1.0f;
 
 		// Minimap view
