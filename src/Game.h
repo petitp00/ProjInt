@@ -14,8 +14,14 @@ namespace ConsoleNamespace { class Console; };
 class GameState;
 class MenuState;
 
+#ifndef EDITOR_MODE
 static int WINDOW_WIDTH = 1280;
 static int WINDOW_HEIGHT = 720;
+#endif
+#ifdef EDITOR_MODE
+static int WINDOW_WIDTH = 1800;
+static int WINDOW_HEIGHT = 900;
+#endif
 
 static sf::Time QUICK_EXIT_TIME = sf::seconds(0.3f);
 
