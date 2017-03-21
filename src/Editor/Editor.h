@@ -41,6 +41,7 @@ namespace EditorMode {
 		void Start();
 		void Quit() { window.close(); }
 
+		void UpdateAfterWindowResize();
 		void UpdateGameViewMinimapShape();
 		void ToggleGroundEditMode();
 		
@@ -55,12 +56,17 @@ namespace EditorMode {
 		sf::RenderWindow window;
 		std::vector<GUIInfo*> gui_infos;
 
+		sf::View window_view;
+
 		// Game view
 		sf::View game_view;
 		float game_view_zoom = 1.0f;
 
 		// Minimap view
 		sf::View minimap_view;
+		sf::RenderTexture minimap_texture;
+		sf::Sprite minimap_sprite;
+		sf::RectangleShape minimap_border_shape;
 		sf::RectangleShape game_view_minimap_shape;
 
 		// Ground Edit mode

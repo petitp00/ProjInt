@@ -36,7 +36,7 @@ namespace ConsoleNamespace {
 		ERROR,
 	};
 
-	static unsigned int MAX_AMOUNT_OF_LINES = 24;
+	static unsigned int MAX_AMOUNT_OF_LINES = 50;
 
 	struct CommandActionImpl {
 		CommandActionImpl(Console* console, EditorMode::Editor* editor) :
@@ -80,6 +80,8 @@ namespace ConsoleNamespace {
 		bool HandleEvent(const sf::Event& event);
 
 		void PrintInfo(const std::string& str);
+
+		void UpdateResize(); // For editor mode
 
 		// Getters
 		bool getActive() { return active; }

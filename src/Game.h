@@ -15,14 +15,25 @@ class GameState;
 class MenuState;
 
 #ifndef EDITOR_MODE
-static int WINDOW_WIDTH = 1280;
-static int WINDOW_HEIGHT = 720;
+extern int WINDOW_WIDTH;// = 1280;
+extern int WINDOW_HEIGHT;// = 720;
 #endif
 #ifdef EDITOR_MODE
-static int WINDOW_WIDTH = 1800;
-static int WINDOW_HEIGHT = 900;
+extern int WINDOW_WIDTH;// = 1800;
+extern int WINDOW_HEIGHT;// = 900;
 #endif
 
+//extern int WINDOW_W(int new_val = -1) {
+//	static int winw = WINDOW_WIDTH;
+//	if (new_val != -1) winw = new_val;
+//	return winw;
+//}
+//extern int WINDOW_H(int new_val = -1) {
+//	static int winh = WINDOW_HEIGHT;
+//	if (new_val != -1) winh = new_val;
+//	return winh;
+//}
+//
 static sf::Time QUICK_EXIT_TIME = sf::seconds(0.3f);
 
 static std::string BASE_FONT_NAME = "Cousine-Regular.ttf";

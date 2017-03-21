@@ -248,6 +248,12 @@ void Console::PrintInfo(const std::string & str)
 	AddLine(str, INFO);
 }
 
+void Console::UpdateResize()
+{
+	CONSOLE_HEIGHT = WINDOW_HEIGHT/3;
+	Init();
+}
+
 Command* Console::getCommand(const std::string & name)
 {
 	for (auto c : commands) {

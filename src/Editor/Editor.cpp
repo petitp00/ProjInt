@@ -8,7 +8,7 @@ using namespace EditorMode;
 using namespace std;
 
 // Vars
-static const sf::Vector2f game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
+static sf::Vector2f game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
 
 static bool escape_pressed	= false;
 static bool middle_pressed	= false;
@@ -33,11 +33,13 @@ Editor::Editor() :
 	game_view(sf::FloatRect({0,0}, game_view_size)),
 	minimap_view(sf::FloatRect({0,0}, {float(WORLD_W), float(WORLD_H)}))
 {
-	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Close);
+	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Default);
 	controls = new Controls;
 	controls->LoadDefault(); 
 	world.controls = controls;
 	console = new ConsoleNamespace::Console(*this);
+
+	window_view = window.getDefaultView();
 }
 
 Editor::~Editor()
@@ -66,13 +68,9 @@ void Editor::Start()
 	gui_infos.push_back(make_info("mouse (world)"));
 	gui_infos.push_back(gui_info_id);
 	gui_infos.push_back(gui_info_zoom);
-
+	
 	// Minimap
-	sf::RenderTexture minimap_texture;
-	sf::Sprite minimap_sprite;
-	sf::RectangleShape minimap_border_shape;
-	InitMinimap(minimap_texture, minimap_sprite, minimap_border_shape,
-				game_view_minimap_shape);
+	InitMinimap(minimap_texture, minimap_sprite, minimap_border_shape, game_view_minimap_shape);
 	minimap_texture.setView(minimap_view);
 
 	
@@ -268,6 +266,11 @@ void Editor::Start()
 					UpdateGameViewMinimapShape();
 				}
 			}
+			else if (event.type == sf::Event::Resized) {
+				WINDOW_WIDTH = event.size.width;
+				WINDOW_HEIGHT = event.size.height;
+				UpdateAfterWindowResize();
+			}
 
 
 			if (console->getActive()) { if (console->HandleEvent(event)) continue; }
@@ -308,7 +311,7 @@ void Editor::Start()
 			world.Render(window);
 		}
 
-		window.setView(window.getDefaultView());
+		window.setView(window_view);
 		{
 			// gui infos
 			for (auto gi : gui_infos) {
@@ -335,6 +338,21 @@ void Editor::Start()
 		++frames;
 	}
 
+}
+
+void Editor::UpdateAfterWindowResize()
+{
+	game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
+	game_view.reset(sf::FloatRect({0,0}, game_view_size));
+	game_view.setSize(game_view_size * game_view_zoom);
+
+	window_view.reset(sf::FloatRect(0, 0, float(WINDOW_WIDTH), float(WINDOW_HEIGHT)));
+
+	minimap_view.reset(sf::FloatRect({0,0}, {float(WORLD_W), float(WORLD_H)}));
+	InitMinimap(minimap_texture, minimap_sprite, minimap_border_shape, game_view_minimap_shape);
+	minimap_texture.setView(minimap_view);
+
+	console->UpdateResize();
 }
 
 void Editor::UpdateGameViewMinimapShape()

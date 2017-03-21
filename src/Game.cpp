@@ -11,6 +11,16 @@
 #include <iostream>
 using namespace std;
 
+
+#ifndef EDITOR_MODE
+int WINDOW_WIDTH = 1280;
+int WINDOW_HEIGHT = 720;
+#endif
+#ifdef EDITOR_MODE
+int WINDOW_WIDTH = 1800;
+int WINDOW_HEIGHT = 900;
+#endif
+
 // forward declaration of functions
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings);
 
