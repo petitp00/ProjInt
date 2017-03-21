@@ -60,8 +60,11 @@ public:
 	void ReloadTileMap();
 	void Clear();
 
+	void Fill(sf::Vector2f mpos, GroundType type);
 	void setTileClicked(sf::Vector2f mpos, GroundType type);
 	GroundType getTileClicked(sf::Vector2f mpos);
+	GroundTile& getTile(sf::Vector2f pos);
+	GroundTile& getTile(float x, float y);
 	std::vector<GroundTile>& getTiles() { return tiles; }
 	int getWidth() { return width; }
 	int getHeight() { return height; }

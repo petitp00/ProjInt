@@ -5,6 +5,7 @@
 #include "rng.h"
 #include "Editor/Editor.h"
 
+#include <deque>
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -40,15 +41,15 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 
 			sf::Vertex* quad = &vertices[(i+j*width) * 4];
 
-			quad[0].position = sf::Vector2f(float(i*visual_tile_size),		float(j*visual_tile_size));
-			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j*visual_tile_size));
-			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j+1)*visual_tile_size);
-			quad[3].position = sf::Vector2f(float(i*visual_tile_size),		float(j+1)*visual_tile_size);
+			quad[0].position = sf::Vector2f(float(i*visual_tile_size), float(j*visual_tile_size));
+			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size), float(j*visual_tile_size));
+			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size), float(j+1)*visual_tile_size);
+			quad[3].position = sf::Vector2f(float(i*visual_tile_size), float(j+1)*visual_tile_size);
 
-			quad[0].texCoords = sf::Vector2f(float(u*tile_size),		float(v*tile_size));
-			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v*tile_size));
-			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v+1)*tile_size);
-			quad[3].texCoords = sf::Vector2f(float(u*tile_size),		float(v+1)*tile_size);
+			quad[0].texCoords = sf::Vector2f(float(u*tile_size), float(v*tile_size));
+			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size), float(v*tile_size));
+			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size), float(v+1)*tile_size);
+			quad[3].texCoords = sf::Vector2f(float(u*tile_size), float(v+1)*tile_size);
 		}
 	}
 }
@@ -71,15 +72,15 @@ void Ground::ReloadTileMap()
 
 			sf::Vertex* quad = &vertices[(i+j*width) * 4];
 
-			quad[0].position = sf::Vector2f(float(i*visual_tile_size),		float(j*visual_tile_size));
-			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j*visual_tile_size));
-			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size),	float(j+1)*visual_tile_size);
-			quad[3].position = sf::Vector2f(float(i*visual_tile_size),		float(j+1)*visual_tile_size);
+			quad[0].position = sf::Vector2f(float(i*visual_tile_size), float(j*visual_tile_size));
+			quad[1].position = sf::Vector2f(float((i+1)*visual_tile_size), float(j*visual_tile_size));
+			quad[2].position = sf::Vector2f(float((i+1)*visual_tile_size), float(j+1)*visual_tile_size);
+			quad[3].position = sf::Vector2f(float(i*visual_tile_size), float(j+1)*visual_tile_size);
 
-			quad[0].texCoords = sf::Vector2f(float(u*tile_size),		float(v*tile_size));
-			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v*tile_size));
-			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size),	float(v+1)*tile_size);
-			quad[3].texCoords = sf::Vector2f(float(u*tile_size),		float(v+1)*tile_size);
+			quad[0].texCoords = sf::Vector2f(float(u*tile_size), float(v*tile_size));
+			quad[1].texCoords = sf::Vector2f(float((u+1)*tile_size), float(v*tile_size));
+			quad[2].texCoords = sf::Vector2f(float((u+1)*tile_size), float(v+1)*tile_size);
+			quad[3].texCoords = sf::Vector2f(float(u*tile_size), float(v+1)*tile_size);
 		}
 	}
 }
@@ -89,19 +90,69 @@ void Ground::Clear()
 	tiles.clear();
 }
 
+void Ground::Fill(sf::Vector2f mpos, GroundType type)
+{
+	sf::Vector2f tpos{
+		float(int(mpos.x / visual_tile_size)),
+		float(int(mpos.y / visual_tile_size))
+	};
+	GroundType target_type = getTile(tpos).getType();
+	if (type == target_type) return;
+
+	std::deque<sf::Vector2f> stack;
+	std::vector<int> to_remove;
+	stack.push_back(tpos);
+
+	int i = 0;
+	while (stack.size()) {
+		auto s = stack;
+		int _i = 0;
+		for (auto n : s) {
+			to_remove.push_back(_i);
+			auto w = n.x, e = n.x;
+			while (w >= 0) {
+				w -= 1;
+				if (getTile(w, n.y).getType() != target_type) break;
+			}
+			while (e < width) {
+				e += 1;
+				if (getTile(e, n.y).getType() != target_type) break;
+			}
+
+			bool check_north = (n.y > 0);
+			bool check_south = (n.y < height);
+
+			for (int i = w+1; i != e; ++i) {
+				getTile(i, n.y).setType(type);
+				if (check_north && getTile(i, n.y - 1).getType() == target_type) {
+					stack.push_back({float(i), n.y-1});
+				}
+				if (check_south && getTile(i, n.y + 1).getType() == target_type) {
+					stack.push_back({float(i), n.y+1});
+				}
+			}
+			++_i;
+		}
+
+		int nb_of_removals = 0;
+		for (auto t : to_remove) {
+			stack.erase(stack.begin() + t - nb_of_removals);
+			++nb_of_removals;
+		}
+		to_remove.clear();
+	}
+
+	ReloadTileMap();
+}
+
 void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
 {
 	sf::Vector2f tpos;
 	tpos.x = float(int(mpos.x / visual_tile_size));
 	tpos.y = float(int(mpos.y / visual_tile_size));
 
-	for (auto &t : tiles) {
-		if (t.getPos() == tpos) {
-			t.setType(type);
-			ReloadTileMap();
-			break;
-		}
-	}
+	getTile(tpos).setType(type);
+	ReloadTileMap();
 
 }
 
@@ -111,12 +162,27 @@ GroundType Ground::getTileClicked(sf::Vector2f mpos)
 	tpos.x = float(int(mpos.x / visual_tile_size));
 	tpos.y = float(int(mpos.y / visual_tile_size));
 
-	for (auto &t : tiles) {
-		if (t.getPos() == tpos) {
-			return t.getType();
-		}
-	}
+	return getTile(tpos).getType();
+
 	return NONE;
+}
+
+GroundTile & Ground::getTile(sf::Vector2f pos)
+{
+	int i = pos.x + pos.y*width;
+	if (i < tiles.size()) {
+		return tiles[i];
+	}
+	return GroundTile(NONE, {-1,-1});
+}
+
+GroundTile & Ground::getTile(float x, float y)
+{
+	int i = x + y*width;
+	if (i < tiles.size()) {
+		return tiles[i];
+	}
+	return GroundTile(NONE, {-1,-1});
 }
 
 float Ground::getVisualTileSize()

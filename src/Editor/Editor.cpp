@@ -110,6 +110,11 @@ void Editor::Start()
 				else if (key == sf::Keyboard::F1) {
 					console->setActive(true);
 				}
+				else if (key == sf::Keyboard::F) {
+					if (ground_edit_mode) {
+						world.ground.Fill(mouse_pos_in_world, GroundType(ground_type));
+					}
+				}
 			} 
 
 			else if (event.type == sf::Event::KeyReleased) {
@@ -213,8 +218,6 @@ void Editor::Start()
 			if (event.type == sf::Event::MouseMoved) {
 				mouse_pos = sf::Mouse::getPosition(window);
 				mouse_pos_in_world = window.mapPixelToCoords(sf::Mouse::getPosition(window), game_view);
-
-				cout << sf::Vector2f(mouse_pos) << endl;
 
 				if (selected_entity) {
 					// Move selected entity
