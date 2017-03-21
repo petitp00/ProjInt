@@ -122,7 +122,7 @@ void Ground::Fill(sf::Vector2f mpos, GroundType type)
 			bool check_north = (n.y > 0);
 			bool check_south = (n.y < height);
 
-			for (int i = w+1; i != e; ++i) {
+			for (float i = w+1; i != e; ++i) {
 				getTile(i, n.y).setType(type);
 				if (check_north && getTile(i, n.y - 1).getType() == target_type) {
 					stack.push_back({float(i), n.y-1});
@@ -170,20 +170,20 @@ GroundType Ground::getTileClicked(sf::Vector2f mpos)
 
 GroundTile & Ground::getTile(sf::Vector2f pos)
 {
-	int i = pos.x + pos.y*width;
+	uint i = uint(pos.x + pos.y*width);
 	if (i < tiles.size()) {
 		return tiles[i];
 	}
-	return GroundTile(NONE, {-1,-1});
+	return not_found;
 }
 
 GroundTile & Ground::getTile(float x, float y)
 {
-	int i = x + y*width;
+	uint i = uint(x + y*width);
 	if (i < tiles.size()) {
 		return tiles[i];
 	}
-	return GroundTile(NONE, {-1,-1});
+	return not_found;
 }
 
 float Ground::getVisualTileSize()

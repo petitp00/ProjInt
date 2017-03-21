@@ -78,6 +78,9 @@ private:
 	std::vector<GroundTile> tiles;
 	sf::Texture* tileset;
 	int width, height;
+
+	// returned when getTile receives bad pos
+	GroundTile not_found{NONE, {-1, -1}};
 };
 
 class World
