@@ -10,6 +10,7 @@
 #include <functional>
 
 #include "Entity.h"
+#include "Ground.h"
 
 namespace EditorMode { class Editor; }
 
@@ -22,66 +23,6 @@ What we need to save:
 
 class GameState;
 
-enum GroundType { 
-	NONE = 0,
-	GRASS = 1,
-	SAND = 2
-};
-
-static const int ground_type_max = SAND;
-static std::string getGroundTypeString(GroundType type) {
-	switch (type) {
-	case NONE: return "NONE";
-	case GRASS: return "GRASS";
-	case SAND: return "SAND";
-	default: return "???";
-	}
-}
-	
-class GroundTile {
-public:
-
-	GroundTile(GroundType type, sf::Vector2f pos);
-
-	void setType(GroundType type) { this->type = type; }
-
-	GroundType getType() { return type; }
-	sf::Vector2f getPos() { return pos; }
-
-private:
-	GroundType type;
-	sf::Vector2f pos;
-};
-
-class Ground : public sf::Drawable
-{
-public:
-	void LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height);
-	void ReloadTileMap();
-	void Clear();
-
-	void Fill(sf::Vector2f mpos, GroundType type);
-	void setTileClicked(sf::Vector2f mpos, GroundType type);
-	GroundType getTileClicked(sf::Vector2f mpos);
-	GroundTile& getTile(sf::Vector2f pos);
-	GroundTile& getTile(float x, float y);
-	std::vector<GroundTile>& getTiles() { return tiles; }
-	int getWidth() { return width; }
-	int getHeight() { return height; }
-	
-	static float getVisualTileSize();
-
-private:
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-	sf::VertexArray vertices;
-	std::vector<GroundTile> tiles;
-	sf::Texture* tileset;
-	int width, height;
-
-	// returned when getTile receives bad pos
-	GroundTile not_found{NONE, {-1, -1}};
-};
 
 class World
 {
