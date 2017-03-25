@@ -104,8 +104,10 @@ public:
 
 	sf::View& getGameView() { return game_view; }
 	Entity* FindEntityClicked(sf::Vector2f mpos);
+	Entity* getEntity(int id);
 
-	void AddEntity(Entity* e) { entities.push_back(e); }
+	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
+	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
 
 private:

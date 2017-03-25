@@ -197,6 +197,19 @@ private:
 	float walk_speed = 0.3f;
 };
 
+static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
+	Entity* e = nullptr;
+
+	if (type == ROCK) {
+		e = make_rock(pos);
+	}
+	else if (type == BUSH) {
+		e = make_bush(pos);
+	}
+
+	return e;
+}
+
 static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	auto rock = new GameObject("Placeholders/rock.png", SOLID|IMMORTAL);
 	rock->type = ROCK;

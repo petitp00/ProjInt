@@ -512,6 +512,30 @@ Entity * World::FindEntityClicked(sf::Vector2f mpos)
 	return nullptr;
 }
 
+Entity* World::getEntity(int id)
+{
+	int index = -1;
+	for (uint i = 0; i != entities.size(); ++i) {
+		if (entities[i]->getId() == id) {
+			index = i;
+			break;
+		}
+	}
+	if (index != -1) return entities[index];
+	return nullptr;
+}
+
+void World::DuplicateEntity(int id)
+{
+	auto e = getEntity(id);
+	if (e) {
+		auto type = e->getType();
+		auto p = e->getPos();
+		
+		AddEntity(make_entity(type, p));
+	}
+}
+
 void World::DeleteEntity(int id)
 {
 	int index = -1;

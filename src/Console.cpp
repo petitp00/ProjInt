@@ -486,12 +486,14 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
 		if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
 
-		if (type == ROCK) {
-			impl->editor->world.AddEntity(make_rock(pos));
-		}
-		else if (type == BUSH) {
-			impl->editor->world.AddEntity(make_bush(pos));
-		}
+		impl->editor->world.AddEntity(make_entity(type, pos));
+
+		//if (type == ROCK) {
+		//	impl->editor->world.AddEntity(make_rock(pos));
+		//}
+		//else if (type == BUSH) {
+		//	impl->editor->world.AddEntity(make_bush(pos));
+		//}
 
 	});
 	AddInfo("NewEnt", "Create a new entity",new_ent_usage);
@@ -510,6 +512,18 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		impl->console->ClearLines();
 	});
 	AddInfo("clear", "Clear the console", "Just write clear. No arguments needed.");
+
+	add_cmd("controls", {
+		impl->console->AddLine("\
+LCtrl + scroll                 Zoom\n\
+LeftMouseButton drag           Move entity under mouse\n\
+MidMouseButton drag            Move view\n\
+MidMouseButton press           Print info of entity under mouse in console\n\
+F                              Fill under mouse with tile type (when ground edit mode)\n\
+D                              Duplicate entity under mouse\n\
+Del                            Delete entity under mouse", RESULT);
+	});
+	AddInfo("controls", "Display keyboard + mouse controls", "Just write controls.");
 
 	add_cmd("help", {
 		if (!args.size()) {

@@ -108,9 +108,23 @@ void Editor::Start()
 				else if (key == sf::Keyboard::F1) {
 					console->setActive(true);
 				}
-				else if (key == sf::Keyboard::F) {
-					if (ground_edit_mode) {
-						world.ground.Fill(mouse_pos_in_world, GroundType(ground_type));
+				if (!console->getActive()) {
+					if (key == sf::Keyboard::F) {
+						if (ground_edit_mode) {
+							world.ground.Fill(mouse_pos_in_world, GroundType(ground_type));
+						}
+					}
+					else if (key == sf::Keyboard::D) {
+						auto e = world.FindEntityClicked(mouse_pos_in_world);
+						if (e) {
+							world.DuplicateEntity(e->getId());
+						}
+					}
+					else if (key == sf::Keyboard::Delete) {
+						auto e = world.FindEntityClicked(mouse_pos_in_world);
+						if (e) {
+							world.DeleteEntity(e->getId());
+						}
 					}
 				}
 			} 
