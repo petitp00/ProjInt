@@ -40,6 +40,19 @@ Editor::Editor() :
 	console = new ConsoleNamespace::Console(*this);
 
 	window_view = window.getDefaultView();
+
+
+	//grid
+	sf::Color grid_color(sf::Color::Magenta);
+	grid.setPrimitiveType(sf::Lines);
+	for (int x = 0; x < ((WORLD_W+1)/visual_tile_size); ++x) {
+		grid.append(sf::Vertex({float(x*visual_tile_size), 0}, grid_color));
+		grid.append(sf::Vertex({float(x*visual_tile_size), float(WORLD_H)}, grid_color));
+	}
+	for (int y = 0; y < ((WORLD_H+1)/visual_tile_size); ++y) {
+		grid.append(sf::Vertex({0, float(y*visual_tile_size)}, grid_color));
+		grid.append(sf::Vertex({float(WORLD_W), float(y*visual_tile_size)}, grid_color));
+	}
 }
 
 Editor::~Editor()
@@ -323,6 +336,10 @@ void Editor::Start()
 		window.setView(game_view);
 		{
 			world.Render(window);
+
+			if (ground_edit_mode) {
+				window.draw(grid);
+			}
 		}
 
 		window.setView(window_view);
@@ -344,6 +361,7 @@ void Editor::Start()
 			// console
 			if (console->getActive())	console->Render(window);
 		}
+
 
 		window.display();
 
