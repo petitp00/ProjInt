@@ -35,7 +35,7 @@ static std::string getGroundTypeString(GroundType type) {
 class Tileset {
 public:
 	Tileset(std::string filename);
-	std::vector<sf::Vector2i> getUV(GroundType main_type, GroundType second_type, unsigned long flags);
+	void getUV(std::vector<sf::Vector2i>* vec, GroundType main_type, GroundType second_type, unsigned long flags);
 	sf::Texture const& getTexture() const { return texture; }
 
 private:

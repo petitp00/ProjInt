@@ -23,10 +23,6 @@ Tileset::Tileset(std::string filename)
 	ott1.push_back({CORNER_TOP_RIGHT,	{3, 4}});
 	ott1.push_back({CORNER_DOWN_LEFT,	{4, 3}});
 	ott1.push_back({CORNER_DOWN_RIGHT,	{3, 3}});
-	//ott1[TOP | LEFT]		= {0, 3};
-	//ott1[TOP | RIGHT]		= {2, 3};
-	//ott1[DOWN | LEFT]		= {0, 5};
-	//ott1[DOWN | RIGHT]		= {2, 5};
 
 	sf::Image image;
 	image.create(uint(tile_size*16), uint(tile_size*16), sf::Color::Transparent);
@@ -66,31 +62,27 @@ Tileset::Tileset(std::string filename)
 	texture.loadFromImage(image);
 }
 
-std::vector<sf::Vector2i> Tileset::getUV(GroundType main_type, GroundType second_type, unsigned long flags)
+void Tileset::getUV(vector<sf::Vector2i>* vec, GroundType main_type, GroundType second_type, unsigned long flags)
 {
-	vector<sf::Vector2i> vec;
- 
 	if (main_type == NONE) {
-		vec.push_back({0, 0});
+		vec->push_back({0, 0});
 	}
 	else if (main_type == SAND) {
-		vec.push_back({2,0});
+		vec->push_back({2,0});
 	}
 	else if (main_type == GRASS) {
-		vec.push_back({1,0});
+		vec->push_back({1,0});
 		if (second_type == SAND) {
-			if ((flags & UP) != 0)					vec.push_back({3, 0});
-			if ((flags & DOWN) != 0)				vec.push_back({4, 0});
-			if ((flags & LEFT) != 0)				vec.push_back({5, 0});
-			if ((flags & RIGHT) != 0)				vec.push_back({6, 0});
-			if ((flags & CORNER_TOP_LEFT) != 0)		vec.push_back({7,0});
-			if ((flags & CORNER_TOP_RIGHT) != 0)	vec.push_back({8,0});
-			if ((flags & CORNER_DOWN_LEFT) != 0)	vec.push_back({9,0});
-			if ((flags & CORNER_DOWN_RIGHT) != 0)	vec.push_back({10,0});
+			if ((flags & UP) != 0)					vec->push_back({3, 0});
+			if ((flags & DOWN) != 0)				vec->push_back({4, 0});
+			if ((flags & LEFT) != 0)				vec->push_back({5, 0});
+			if ((flags & RIGHT) != 0)				vec->push_back({6, 0});
+			if ((flags & CORNER_TOP_LEFT) != 0)		vec->push_back({7,0});
+			if ((flags & CORNER_TOP_RIGHT) != 0)	vec->push_back({8,0});
+			if ((flags & CORNER_DOWN_LEFT) != 0)	vec->push_back({9,0});
+			if ((flags & CORNER_DOWN_RIGHT) != 0)	vec->push_back({10,0});
 		}
 	}
-
-	return vec;
 }
 
 GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
@@ -128,17 +120,22 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 
 void Ground::ReloadTileMap()
 {
+	static std::vector<float> times;
+	static sf::Clock clock;
+
+	clock.restart();
+
 	vector<sf::Vertex> verts;
+	verts.reserve(width*height);
+
+	float vts = visual_tile_size;
+	float ts = tile_size;
 
 	for (unsigned j = 0; j != height; ++j) {
 		for (unsigned i = 0; i != width; ++i) {
+			float fi = float(i);
+			float fj = float(j);
 			int tile_nb = tiles[i+j*width].getType();
-
-			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(float(i), float(j)));
-
-			int u, v = 0;
-			u = rng::rand_int(0, 2);
-			if (tile_nb == NONE) { u = 3; }
 
 			int up = 0, down = 0, left = 0, right = 0;
 			int up_left = 0, up_right = 0;
@@ -167,35 +164,24 @@ void Ground::ReloadTileMap()
 			if (down_left	== SAND) flags |= CORNER_DOWN_LEFT;
 			if (down_right	== SAND) flags |= CORNER_DOWN_RIGHT;
 
-			auto tnbvec = tileset.getUV(GroundType(tile_nb), SAND, flags);
+			vector<sf::Vector2i>* tnbvec = new vector<sf::Vector2i>;
+			tileset.getUV(tnbvec, GroundType(tile_nb), SAND, flags);
 
-			for (auto t: tnbvec) {
-				sf::Vertex quad0, quad1, quad2, quad3;
-				quad0.position = sf::Vector2f(float(i*visual_tile_size), float(j*visual_tile_size));
-				quad1.position = sf::Vector2f(float((i+1)*visual_tile_size), float(j*visual_tile_size));
-				quad2.position = sf::Vector2f(float((i+1)*visual_tile_size), float(j+1)*visual_tile_size);
-				quad3.position = sf::Vector2f(float(i*visual_tile_size), float(j+1)*visual_tile_size);
-
-				quad0.texCoords = sf::Vector2f(float(t.x*tile_size), float(t.y*tile_size));
-				quad1.texCoords = sf::Vector2f(float((t.x+1)*tile_size), float(t.y*tile_size));
-				quad2.texCoords = sf::Vector2f(float((t.x+1)*tile_size), float(t.y+1)*tile_size);
-				quad3.texCoords = sf::Vector2f(float(t.x*tile_size), float(t.y+1)*tile_size);
-
-				verts.push_back(quad0);
-				verts.push_back(quad1);
-				verts.push_back(quad2);
-				verts.push_back(quad3);
+			for (auto& t: *tnbvec) {
+				verts.emplace_back(sf::Vector2f(fi*vts, fj*vts), sf::Vector2f(t.x*ts, t.y*ts) );
+				verts.emplace_back(sf::Vector2f((fi+1)*vts, fj*vts), sf::Vector2f((t.x+1)*ts, t.y*ts) );
+				verts.emplace_back(sf::Vector2f((fi+1)*vts, (fj+1)*vts), sf::Vector2f((t.x+1)*ts, (t.y+1)*ts) );
+				verts.emplace_back(sf::Vector2f(fi*vts, (fj+1)*vts), sf::Vector2f(t.x*ts, (t.y+1)*ts) );
 			}
+			delete tnbvec;
 		}
 	}
 
+	vertices.clear();
 	vertices.resize(verts.size());
 
-	uint index = 0;
-	for (auto v : verts) {
-		vertices[index].position = v.position;
-		vertices[index].texCoords = v.texCoords;
-		++index;
+	for (uint i = 0; i < verts.size(); ++i) {
+		vertices[i] = verts[i];
 	}
 }
 
