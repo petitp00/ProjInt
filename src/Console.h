@@ -73,7 +73,7 @@ namespace ConsoleNamespace {
 		Console(EditorMode::Editor& editor);
 		~Console();
 
-		void Init();
+		void Init(bool reset_input_string = true);
 		void Update();
 		void Render(sf::RenderTarget& target);
 		void ParseAndExecute();

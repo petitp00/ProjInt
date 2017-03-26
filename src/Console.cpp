@@ -35,7 +35,7 @@ Console::~Console()
 	commands.clear();
 }
 
-void Console::Init()
+void Console::Init(bool reset_input_string)
 {
 	if (big_mode) CONSOLE_HEIGHT = WINDOW_HEIGHT;
 	else CONSOLE_HEIGHT = WINDOW_HEIGHT/2;
@@ -62,11 +62,13 @@ void Console::Init()
 	caret_shape.setSize({2, input_height-8.f});
 	caret_shape.setOrigin(0, -float(CONSOLE_HEIGHT - input_height +4.f));
 
-	caret_pos = 0;
-	input_string = " ";
-	UpdateInputTextObj();
-	UpdateInputCaret(true);
-	input_string = "";
+	if (reset_input_string) {
+		caret_pos = 0;
+		input_string = " ";
+		UpdateInputTextObj();
+		UpdateInputCaret(true);
+		input_string = "";
+	}
 	UpdateInputTextObj();
 
 	UpdateLinesOrigin();
@@ -251,7 +253,7 @@ void Console::PrintInfo(const std::string & str)
 void Console::UpdateResize()
 {
 	CONSOLE_HEIGHT = WINDOW_HEIGHT/3;
-	Init();
+	Init(false);
 }
 
 Command* Console::getCommand(const std::string & name)
@@ -274,7 +276,7 @@ void Console::setActive(bool active)
 	else if (active && this->active) {
 		big_mode = !big_mode;
 		this->typing_active = true;
-		Init();
+		Init(false);
 		ypos_tw.Reset(TweenType::QuartInOut, ypos, 0, sf::seconds(0.3f));
 	}
 	else {
