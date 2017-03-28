@@ -146,6 +146,11 @@ void World::LoadWorld(std::string const & filename)
 			case BUSH:
 				go = make_bush(p);
 				entities.push_back(go);
+				break;
+			case TREE:
+				go = make_tree(p);
+				entities.push_back(go);
+				break;
 			default:
 				break;
 			}

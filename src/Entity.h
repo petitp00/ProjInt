@@ -27,6 +27,19 @@ Entity Saving:
 		+ the vector would be passed as an argument in the entity's ctor
 */
 
+/*
+NEW GAME OBJECT CHECKLIST
+
+- add to Type enum
+- add to getEntityTypeString
+- add to getEntityTypeFromString
+- make friend function in GameObject
+- create make_<type>()
+- add to make_entity
+- add to World::LoadWorld
+
+*/
+
 enum Type {
 	ERROR = 0,
 	ENTITY = 1,
@@ -34,6 +47,7 @@ enum Type {
 	GAME_OBJECT = 3,
 	ROCK = 4,
 	BUSH = 5,
+	TREE = 6,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -44,6 +58,7 @@ static std::string getEntityTypeString(Type t) {
 	case GAME_OBJECT: return "GAME_OBJECT";
 	case ROCK: return "ROCK";
 	case BUSH: return "BUSH";
+	case TREE: return "TREE";
 	case Type::ERROR: return "ERROR";
 	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -55,6 +70,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "GAME_OBJECT") return GAME_OBJECT;
 	if (str == "ROCK") return ROCK;
 	if (str == "BUSH") return BUSH;
+	if (str == "TREE") return TREE;
 	return Type::ERROR;
 }
 
@@ -115,6 +131,7 @@ class GameObject : public Entity
 {
 	friend GameObject* make_rock(sf::Vector2f pos);
 	friend GameObject* make_bush(sf::Vector2f pos);
+	friend GameObject* make_tree(sf::Vector2f pos);
 public:
 	GameObject()=default;
 	GameObject(std::string texture_name, unsigned long flags=NO_FLAG,
@@ -206,6 +223,9 @@ static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
 	else if (type == BUSH) {
 		e = make_bush(pos);
 	}
+	else if (type == TREE) {
+		e = make_tree(pos);
+	}
 
 	return e;
 }
@@ -233,3 +253,16 @@ static GameObject* make_bush(sf::Vector2f pos ={0,0}) {
 	bush->Init();
 	return bush;
 }
+
+static GameObject* make_tree(sf::Vector2f pos= {0,0}) {
+	auto tree = new GameObject("Placeholders/tree.png", SOLID);
+	tree->type = TREE;
+	tree->pos = pos;
+	tree->sprite_origin = {53,100};
+	auto scale = 4.f;
+	tree->size = {13*scale,9*scale};
+	tree->scale = scale;
+	tree->Init();
+	return tree;
+}
+

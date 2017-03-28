@@ -268,7 +268,7 @@ GroundType Ground::getTileClicked(sf::Vector2f mpos)
 	return NONE;
 }
 
-GroundTile & Ground::getTile(sf::Vector2f pos)
+GroundTile& Ground::getTile(sf::Vector2f pos)
 {
 	uint i = uint(pos.x + pos.y*width);
 	if (i < tiles.size()) {
@@ -277,7 +277,7 @@ GroundTile & Ground::getTile(sf::Vector2f pos)
 	return not_found;
 }
 
-GroundTile & Ground::getTile(float x, float y)
+GroundTile& Ground::getTile(float x, float y)
 {
 	uint i = uint(x + y*width);
 	if (i < tiles.size()) {
