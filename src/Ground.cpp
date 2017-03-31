@@ -15,45 +15,55 @@ Tileset::Tileset(std::string filename)
 	sf::Image original_texture(tiletexture.copyToImage());
 
 	vector<pair<unsigned long, sf::Vector2i>> ott1;
-	ott1.push_back({UP,				{1, 3}});
-	ott1.push_back({DOWN,				{1, 5}});
-	ott1.push_back({LEFT,				{0, 4}});
-	ott1.push_back({RIGHT,				{2, 4}});
-	ott1.push_back({CORNER_TOP_LEFT,	{4, 4}});
-	ott1.push_back({CORNER_TOP_RIGHT,	{3, 4}});
-	ott1.push_back({CORNER_DOWN_LEFT,	{4, 3}});
-	ott1.push_back({CORNER_DOWN_RIGHT,	{3, 3}});
+	ott1.push_back({UP,					{5, 6}});
+	ott1.push_back({DOWN,				{4, 6}});
+	ott1.push_back({LEFT,				{4, 7}});
+	ott1.push_back({RIGHT,				{5, 7}});
+	ott1.push_back({CORNER_TOP_LEFT,	{7, 7}});
+	ott1.push_back({CORNER_TOP_RIGHT,	{6, 7}});
+	ott1.push_back({CORNER_DOWN_LEFT,	{7, 6}});
+	ott1.push_back({CORNER_DOWN_RIGHT,	{6, 6}});
+
+	vector<pair<GroundType, vector<sf::Vector2i>>> types;
+	types.push_back({NONE,				{{0,0}}});
+	types.push_back({GRASS,				{{1,0}}});
+	types.push_back({SAND,				{{2,0}, {3,0}}});
+	types.push_back({STONES,			{{4,0}}});
+	types.push_back({DRY_DIRT,			{{5,0}}});
 
 	sf::Image image;
 	image.create(uint(tile_size*16), uint(tile_size*16), sf::Color::Transparent);
 
-	int imgx = 0;
-	int imgy = 0;
+	auto ts = tile_size;
 
-	image.copy(original_texture, imgx*tile_size, imgy*tile_size, {3*tile_size, 0, tile_size, tile_size}, true);
-	++imgx;
-	image.copy(original_texture, imgx*tile_size, imgy*tile_size, {0, 0, tile_size, tile_size}, true);
-	++imgx;
-	image.copy(original_texture, imgx*tile_size, imgy*tile_size, {0, tile_size, tile_size, tile_size}, true);
-	++imgx;
-
-	for (auto t : ott1) {
-		int ix = 0;
-		int iy = 0;
-		for (int i = 0; i != tile_size * tile_size; ++i) {
-			auto mask_pixel = original_texture.getPixel(ix + t.second.x*tile_size, iy + t.second.y*tile_size);
-			if (mask_pixel.a != 0) {
-				auto sand_pixel = original_texture.getPixel(ix, iy + tile_size);
-				image.setPixel(imgx*tile_size + ix, imgy*tile_size + iy, sand_pixel);
-			}
-			
-			if (ix != tile_size-1) ++ix;
-			else { ix = 0; ++iy; }
+	for (auto t : types) {
+		int imgx = 0;
+		int imgy = t.first;
+		for (auto tp : t.second) { // copying full textures
+			image.copy(original_texture, imgx*ts, imgy*ts, {tp.x*ts, tp.y*ts, ts, ts});
+			++imgx;
 		}
+		
+		if (t.first != NONE) {
+			imgx = 15;
+			for (int i = ott1.size()-1; i > -1; --i) {
+				int px = 0, py = 0; // pixel pos in tile
+				for (int p = 0; p != ts*ts; ++p) {
+					auto mask_pixel = original_texture.getPixel(px + ott1[i].second.x*ts, py + ott1[i].second.y*ts);
+					if (mask_pixel.a != 0) {
+						auto col = original_texture.getPixel(px + t.second[0].x*ts, py + t.second[0].y*ts);
+						image.setPixel(imgx*ts + px, imgy*ts + py, col);
+					}
 
-		if (imgx != tile_size-1) ++imgx;
-		else { imgx = 0; ++imgy; }
+					if (px != tile_size-1) ++px;
+					else { px = 0; ++py; }
+				}
+				--imgx;
+			}
+		}
+		++imgy;
 	}
+
 
 	if (!image.saveToFile("Resources/test.png")) {
 		cerr << "FAILED TO SAVE"<< endl;
@@ -62,33 +72,19 @@ Tileset::Tileset(std::string filename)
 	texture.loadFromImage(image);
 }
 
-void Tileset::getUV(vector<sf::Vector2i>* vec, GroundType main_type, GroundType second_type, unsigned long flags)
+void Tileset::getUV(vector<sf::Vector3i>* vec, GroundType main_type, vector<Overlap>& overlaps)
 {
-	if (main_type == NONE) {
-		vec->push_back({0, 0});
-	}
-	else if (main_type == SAND) {
-		vec->push_back({2,0});
-	}
-	else if (main_type == GRASS) {
-		vec->push_back({1,0});
-		if (second_type == SAND) {
-			if ((flags & UP) != 0)					vec->push_back({3, 0});
-			if ((flags & DOWN) != 0)				vec->push_back({4, 0});
-			if ((flags & LEFT) != 0)				vec->push_back({5, 0});
-			if ((flags & RIGHT) != 0)				vec->push_back({6, 0});
-			if ((flags & CORNER_TOP_LEFT) != 0)		vec->push_back({7,0});
-			if ((flags & CORNER_TOP_RIGHT) != 0)	vec->push_back({8,0});
-			if ((flags & CORNER_DOWN_LEFT) != 0)	vec->push_back({9,0});
-			if ((flags & CORNER_DOWN_RIGHT) != 0)	vec->push_back({10,0});
-		}
+	vec->push_back({0, main_type, type_overlap_val[main_type]});
+
+	for (auto o : overlaps) {
+		vec->push_back({o.dir, o.type, type_overlap_val[o.type]});
 	}
 }
 
 GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
 
 Ground::Ground() :
-	tileset("Placeholders/Ground.png")
+	tileset("Ground.png")
 {
 }
 
@@ -99,7 +95,7 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 	this->width = width;
 	this->height = height;
 
-	tileset_texture = &ResourceManager::getTexture("Placeholders/Ground.png");
+	tileset_texture = &ResourceManager::getTexture("Ground.png");
 
 	vertices.setPrimitiveType(sf::Quads);
 	vertices.resize(width*height*4);
@@ -118,6 +114,11 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 	ReloadTileMap();
 }
 
+struct QuadH {
+	vector<sf::Vertex> verts;
+	int h;
+};
+
 void Ground::ReloadTileMap()
 {
 	static std::vector<float> times;
@@ -125,8 +126,8 @@ void Ground::ReloadTileMap()
 
 	clock.restart();
 
-	vector<sf::Vertex> verts;
-	verts.reserve(width*height);
+	vector<QuadH> quadhs;
+	quadhs.reserve(width*height);
 
 	float vts = visual_tile_size;
 	float ts = tile_size;
@@ -154,34 +155,51 @@ void Ground::ReloadTileMap()
 			if (i != 0) { left = tiles[i-1+j*width].getType(); }
 			if (i != width - 1) { right = tiles[i+1+j*width].getType(); }
 
-			unsigned long flags = 0;
-			if (up			== SAND) flags |= UP;
-			if (down		== SAND) flags |= DOWN;
-			if (left		== SAND) flags |= LEFT;
-			if (right		== SAND) flags |= RIGHT;
-			if (up_left		== SAND) flags |= CORNER_TOP_LEFT;
-			if (up_right	== SAND) flags |= CORNER_TOP_RIGHT;
-			if (down_left	== SAND) flags |= CORNER_DOWN_LEFT;
-			if (down_right	== SAND) flags |= CORNER_DOWN_RIGHT;
+			vector<Overlap> overlaps;
 
-			vector<sf::Vector2i>* tnbvec = new vector<sf::Vector2i>;
-			tileset.getUV(tnbvec, GroundType(tile_nb), SAND, flags);
+			unsigned long flags = 0;
+			if (getTypeDominant(tile_nb, up)) overlaps.push_back({GroundType(up), UP});
+			if (getTypeDominant(tile_nb, down)) overlaps.push_back({GroundType(down), DOWN});
+			if (getTypeDominant(tile_nb, left)) overlaps.push_back({GroundType(left), LEFT});
+			if (getTypeDominant(tile_nb, right)) overlaps.push_back({GroundType(right), RIGHT});
+
+			if (getTypeDominant(tile_nb, up_left) && getTypeDominant(up, up_left, true) && getTypeDominant(left, up_left, true))
+					overlaps.push_back({GroundType(up_left), CORNER_TOP_LEFT});
+			if (getTypeDominant(tile_nb, up_right) && getTypeDominant(up, up_right, true) && getTypeDominant(right, up_right, true))
+					overlaps.push_back({GroundType(up_right), CORNER_TOP_RIGHT});
+			if (getTypeDominant(tile_nb, down_left) && getTypeDominant(down, down_left, true) && getTypeDominant(left, down_left, true))
+					overlaps.push_back({GroundType(down_left), CORNER_DOWN_LEFT});
+			if (getTypeDominant(tile_nb, down_right) && getTypeDominant(down, down_right, true) && getTypeDominant(right, down_right, true))
+					overlaps.push_back({GroundType(down_right), CORNER_DOWN_RIGHT});
+
+			vector<sf::Vector3i>* tnbvec = new vector<sf::Vector3i>;
+			tileset.getUV(tnbvec, GroundType(tile_nb), overlaps);
 
 			for (auto& t: *tnbvec) {
-				verts.emplace_back(sf::Vector2f(fi*vts, fj*vts), sf::Vector2f(t.x*ts, t.y*ts) );
-				verts.emplace_back(sf::Vector2f((fi+1)*vts, fj*vts), sf::Vector2f((t.x+1)*ts, t.y*ts) );
-				verts.emplace_back(sf::Vector2f((fi+1)*vts, (fj+1)*vts), sf::Vector2f((t.x+1)*ts, (t.y+1)*ts) );
-				verts.emplace_back(sf::Vector2f(fi*vts, (fj+1)*vts), sf::Vector2f(t.x*ts, (t.y+1)*ts) );
+				QuadH q;
+				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, fj*vts), sf::Vector2f(t.x*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, fj*vts), sf::Vector2f((t.x+1)*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, (fj+1)*vts), sf::Vector2f((t.x+1)*ts, (t.y+1)*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, (fj+1)*vts), sf::Vector2f(t.x*ts, (t.y+1)*ts)));
+				q.h = t.z;
+				quadhs.push_back(q);
 			}
 			delete tnbvec;
 		}
 	}
 
 	vertices.clear();
-	vertices.resize(verts.size());
+	vertices.resize(quadhs.size()*4+1);
 
-	for (uint i = 0; i < verts.size(); ++i) {
-		vertices[i] = verts[i];
+	sort(quadhs.begin(), quadhs.end(), [](auto a, auto b) {return a.h < b.h;});
+
+	int i2 = 0;
+	for (uint i = 0; i != quadhs.size(); ++i) {
+		vertices[i2+0] = quadhs[i].verts[0];
+		vertices[i2+1] = quadhs[i].verts[1];
+		vertices[i2+2] = quadhs[i].verts[2];
+		vertices[i2+3] = quadhs[i].verts[3];
+		i2 += 4;
 	}
 }
 

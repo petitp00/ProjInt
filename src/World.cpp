@@ -13,7 +13,7 @@ using namespace std;
 World::World():
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
-	Tileset t("Placeholders/Ground.png");
+	Tileset t("Ground.png");
 }
 
 World::World(Controls* controls) :
