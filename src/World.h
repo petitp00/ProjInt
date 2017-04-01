@@ -39,8 +39,8 @@ public:
 	void Save(const std::string& filename ="");
 
 	void Update(float dt);
+	void UpdateView();
 	void Render(sf::RenderTarget& target);
-
 	bool HandleEvent(sf::Event const& event);
 
 	sf::View& getGameView() { return game_view; }

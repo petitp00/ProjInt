@@ -13,7 +13,8 @@ using namespace std;
 World::World():
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
-	Tileset t("Ground.png");
+	game_view.setSize(WINDOW_WIDTH*0.85f, WINDOW_HEIGHT*0.85f);
+	cout << "ww" << endl;
 }
 
 World::World(Controls* controls) :
@@ -21,6 +22,7 @@ World::World(Controls* controls) :
 	controls(controls)
 
 {
+	//game_view.setSize(float(WINDOW_WIDTH), float(WINDOW_HEIGHT));
 
 }
 
@@ -239,6 +241,18 @@ void World::Update(float dt)
 
 	player->DoCollisions(entities);
 	player->DoMovement(dt);
+
+	UpdateView();
+}
+
+void World::UpdateView()
+{
+	//auto ppos = player->getPos();
+
+	float vx = float(int(player->getPos().x + player->getSize().x/2.f));
+	float vy = float(int(player->getPos().y + player->getSize().y/2.f));
+	
+	game_view.setCenter(vx, vy);
 }
 
 void World::Render(sf::RenderTarget & target)
@@ -291,25 +305,25 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
-		if (event.mouseButton.button == sf::Mouse::Button::Middle) {
+		if (false && event.mouseButton.button == sf::Mouse::Button::Middle) {
 			middle_pressed = true;
 			drag_mouse_pos ={event.mouseButton.x, event.mouseButton.y};
 		}
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
-		if (event.mouseButton.button == sf::Mouse::Button::Middle) {
+		if (false && event.mouseButton.button == sf::Mouse::Button::Middle) {
 			middle_pressed = false;
 		}
 	}
 	if (event.type == sf::Event::MouseMoved) {
-		if (middle_pressed) {
+		if (false && middle_pressed) {
 			sf::Vector2i m ={event.mouseMove.x, event.mouseMove.y};
 			game_view.move(-sf::Vector2f(m - drag_mouse_pos));
 			drag_mouse_pos = m;
 		}
 	}
 
-	if (event.type == sf::Event::MouseWheelScrolled) {
+	if (false && event.type == sf::Event::MouseWheelScrolled) {
 		auto d = event.mouseWheelScroll.delta;
 		game_view.zoom(1 + -d * 0.1f);
 	}
