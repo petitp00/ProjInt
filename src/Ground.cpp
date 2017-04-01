@@ -50,8 +50,12 @@ Tileset::Tileset(std::string filename)
 				int px = 0, py = 0; // pixel pos in tile
 				for (int p = 0; p != ts*ts; ++p) {
 					auto mask_pixel = original_texture.getPixel(px + ott1[i].second.x*ts, py + ott1[i].second.y*ts);
+					auto add = mask_pixel.g/3;
 					if (mask_pixel.a != 0) {
 						auto col = original_texture.getPixel(px + t.second[0].x*ts, py + t.second[0].y*ts);
+						col.r = max(col.r-add, 0);
+						col.g = max(col.g-add, 0);
+						col.b = max(col.b-add, 0);
 						image.setPixel(imgx*ts + px, imgy*ts + py, col);
 					}
 

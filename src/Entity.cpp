@@ -83,9 +83,6 @@ Player::Player(sf::Vector2f pos, sf::Vector2f size, unsigned long flags, std::ve
 
 void Player::Init()
 {
-	sprite.setTexture(ResourceManager::getTexture("box3.png"));
-	sprite.setPosition(pos);
-
 	float scale(1.5f);
 
 	size= sf::Vector2f(36, 36) * scale;

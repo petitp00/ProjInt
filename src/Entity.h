@@ -208,7 +208,6 @@ private:
 	Controls* controls = nullptr;
 
 	AnimationComponent anim_comp;
-	sf::Sprite sprite; // replace with animation component
 
 	sf::Vector2f movement;
 	float walk_speed = 0.3f;

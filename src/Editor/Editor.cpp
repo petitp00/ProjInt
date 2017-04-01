@@ -362,7 +362,6 @@ void Editor::Start()
 			if (console->getActive())	console->Render(window);
 		}
 
-
 		window.display();
 
 		// FPS counter

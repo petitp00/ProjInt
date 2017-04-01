@@ -30,8 +30,8 @@ static std::map<GroundType, int> type_overlap_val = {
 	{NONE, 0},
 	{STONES, 10},
 	{DRY_DIRT, 20},
-	{GRASS, 30},
-	{SAND, 40}
+	{SAND, 30},
+	{GRASS, 40}
 };
 
 // returns true if t2 overlaps on t1
