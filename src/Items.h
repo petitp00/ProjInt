@@ -24,5 +24,5 @@ namespace Item
 	extern any Wood;
 
 	void Init();
-
+	any getItemByName(std::string name);
 }

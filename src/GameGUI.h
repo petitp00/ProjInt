@@ -26,25 +26,26 @@ public:
 	void Render(sf::RenderTarget& target);
 	bool HandleEvents(sf::Event const& event);
 	void ResetItemDescription();
+	void AddItem(Item::any item);
 
 	bool getActive() { return active; }
+	std::vector<Item::any>& getItems() { return items; }
 
 	void setActive(bool active);
 
 private:
 	Controls* controls;
-
 	bool active = false;
+
+	std::vector<Item::any> items;
 
 	sf::RenderTexture tooltip_render_target; // on top
 	sf::Sprite tooltip_render_target_sprite;
 
 	std::vector<GUIObject*> gui_objects;
 	std::vector<InvItemButton*> inv_buttons;
-
 	sf::RectangleShape window_shape;
 	PosTweener window_tw;
-
 	sf::RectangleShape item_desc_shape;
 	TextBox* item_desc_obj;
 

@@ -22,7 +22,7 @@ What we need to save:
 */
 
 class GameState;
-
+class Inventory;
 
 class World
 {
@@ -32,6 +32,7 @@ public:
 	World(Controls* controls);
 	~World();
 
+	void Init(Inventory* inventory);
 	void Clear();
 	void CreateAndSaveWorld(const std::string& filename);
 	void CreateNewBlank(const std::string& filename);
@@ -52,7 +53,8 @@ public:
 	void DeleteEntity(int id);
 
 private:
-	Controls* controls;
+	Controls* controls = nullptr;
+	Inventory* inventory = nullptr;
 	std::string name;
 
 	sf::View game_view;

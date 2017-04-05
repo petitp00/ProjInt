@@ -30,6 +30,12 @@ Inventory::~Inventory()
 
 void Inventory::Init()
 {
+	inv_buttons.clear();
+	for (int i = 0; i != gui_objects.size(); ++i) {
+		delete gui_objects[i];
+	}
+	gui_objects.clear();
+
 	window_shape.setSize({INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT});
 	window_shape.setFillColor(INV_WINDOW_COLOR);
 
@@ -46,16 +52,8 @@ void Inventory::Init()
 
 	gui_objects.push_back(item_desc_obj);
 
-	vector<Item::any> inv = {
-		Item::Banana,
-		Item::Wood,
-		Item::Banana
-	};
-
-	// items butt
-
 	int iy = 0;
-	for (auto i : inv) {
+	for (auto i : items) {
 		InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - mm - ms);
 		ib1->setOrigin({-ms, -(ms*(iy+1) + 2*(Item::items_texture_size + 16.f)*iy)});
 		gui_objects.push_back(ib1);
@@ -155,6 +153,13 @@ bool Inventory::HandleEvents(sf::Event const & event)
 void Inventory::ResetItemDescription()
 {
 	item_desc_obj->setTextString("Description: " + selected_item.desc);
+}
+
+void Inventory::AddItem(Item::any item)
+{
+	items.push_back(item);
+
+	Init();
 }
 
 void Inventory::setActive(bool active)

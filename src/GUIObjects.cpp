@@ -220,12 +220,12 @@ void TextButton::UpdateTextButton(bool set_params) {
 		std::string upper_string;
 		for (auto c : text_string) {
 			if (c == 'Q' || c == 'q') c = 'o';
-			if (c == 'É' || c == 'é') c = 'e';
-			if (c == 'È' || c == 'è') c = 'e';
-			if (c == 'Ê' || c == 'ê') c = 'e';
-			if (c == 'À' || c == 'à') c = 'a';
-			if (c == 'Â' || c == 'â') c = 'a';
-			if (c == 'Ô' || c == 'ô') c = 'o';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'e';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'e';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'e';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'a';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'a';
+			if (c == 'ï¿½' || c == 'ï¿½') c = 'o';
 			upper_string += toupper(c);
 		}
 		text_obj.setString(upper_string);
@@ -976,7 +976,7 @@ void InvItemButton::Init()
 	float ts = Item::items_texture_size;
 
 	icon_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
-	icon_sprite.setTextureRect(sf::IntRect(ts * item.pos_in_texture_map.x, ts * item.pos_in_texture_map.y, ts, ts));
+	icon_sprite.setTextureRect(sf::IntRect(int(ts * item.pos_in_texture_map.x), int(ts * item.pos_in_texture_map.y), int(ts), int(ts)));
 	icon_sprite.setOrigin(origin);
 	icon_sprite.setScale(icon_scale, icon_scale);
 
@@ -997,4 +997,3 @@ void InvItemButton::UpdateButtonParams()
 
 	text_obj.setPosition(pos.x + margin*3.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 4 - origin.y);
 }
-

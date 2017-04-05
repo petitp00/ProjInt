@@ -9,10 +9,11 @@ using namespace std;
 
 GameState::GameState(Game& game) :
 	game(game),
-	world(&game.getControls()),
-	inventory(&game.getControls())
+	inventory(&game.getControls()),
+	world(&game.getControls())
 {
 	inventory.Init();
+	world.Init(&inventory);
 }
 
 GameState::~GameState()

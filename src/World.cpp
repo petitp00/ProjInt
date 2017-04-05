@@ -4,31 +4,33 @@
 #include "ResourceManager.h"
 #include "rng.h"
 #include "Editor/Editor.h"
+#include "GameGUI.h"
 
 #include <deque>
 #include <fstream>
 #include <iostream>
 using namespace std;
 
-World::World():
+World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
 	game_view.setSize(WINDOW_WIDTH*0.85f, WINDOW_HEIGHT*0.85f);
-	cout << "ww" << endl;
 }
 
 World::World(Controls* controls) :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)})),
-	controls(controls)
-
+	controls(controls), inventory(inventory)
 {
-	//game_view.setSize(float(WINDOW_WIDTH), float(WINDOW_HEIGHT));
 
 }
-
 World::~World()
 {
 	Clear();
+}
+
+void World::Init(Inventory* inventory)
+{
+	this->inventory = inventory;
 }
 
 void World::Clear()
@@ -164,13 +166,21 @@ void World::LoadWorld(std::string const & filename)
 			s >> width;
 			s >> height;
 			while (s >> w) {
+				if (w == "[END]") break;
 				tiles.push_back(stoi(w));
 			}
 
 			ground.LoadTileMap(tiles, width, height);
 		}
+		else if (w == "[INVENTORY]") {
+			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl << "loading inventory...";
+			while (s >> w) {
+				if (w == "[END]") break;
+				inventory->AddItem(Item::getItemByName(w));
+			}
+			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
+		}
 	}
-	cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
 	player->setControls(controls);
 
 }
@@ -204,7 +214,7 @@ void World::Save(const string& filename)
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
 	}
-	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;;
+	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
 
 	clock.restart();
 
@@ -214,8 +224,19 @@ void World::Save(const string& filename)
 	for (auto t : ground.getTiles()) {
 		s << t.getType() << " ";
 	}
-	s << endl;
-	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;;
+	s << endl << "[END]" << endl;
+	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
+
+	clock.restart();
+
+	cout << "saving inventory...";
+	s << "[INVENTORY]" << endl;
+	auto items = inventory->getItems();
+	for (auto i : items) {
+		s << i.name << endl;
+	}
+	s << "[END]" << endl;
+	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
 
 	if (!file_existed) {
 		std::ofstream stream("Resources/Data/Saves/all_saves", std::ios_base::app);

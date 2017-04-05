@@ -1,5 +1,7 @@
 #include "Items.h"
 
+#include <iostream>
+
 using namespace Item;
 
 any Item::Banana;
@@ -16,4 +18,14 @@ void Item::Init()
 	Wood.desc = "Combustible. Utilisé pour faire d'autres objets.";
 	Wood.pos_in_texture_map = {1, 0};
 	Wood.edible = false;
+}
+
+any Item::getItemByName(std::string name)
+{
+	if (name == "Banane") return Item::Banana;
+	if (name == "Bois") return Item::Wood;
+
+	else std::cerr << "Item \"" << name << "\" does not exist" << std::endl;
+
+	return any();
 }
