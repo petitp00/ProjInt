@@ -44,8 +44,8 @@ void GUIObject::UpdateHoveredMousePos(sf::Vector2i mouse_pos) {
 }
 
 bool GUIObject::isMouseIn(sf::Vector2i mouse_pos) {
-	if (mouse_pos.x >= pos.x && mouse_pos.x <= pos.x + size.x) {
-		if (mouse_pos.y >= pos.y && mouse_pos.y <= pos.y + size.y) {
+	if (mouse_pos.x >= pos.x - origin.x && mouse_pos.x <= pos.x + size.x - origin.x) {
+		if (mouse_pos.y >= pos.y - origin.y && mouse_pos.y <= pos.y + size.y - origin.y) {
 			return true;
 		}
 	}
@@ -55,12 +55,15 @@ bool GUIObject::isMouseIn(sf::Vector2i mouse_pos) {
 // TEXTBOX //
 
 TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font * font, sf::Color color, unsigned int character_size) :
-	GUIObject(pos, sf::Vector2f(width, 0)), font(font), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string) {
+	GUIObject(pos, sf::Vector2f(width, 0)), font(font), color(color),
+	character_size(character_size), text_string(text_string), original_text_string(text_string), width(width) {
+	size.x = width;
 	UpdateTextBox();
 }
 
 TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, std::string const& font_name, sf::Color color, unsigned int character_size) :
-	GUIObject(pos, sf::Vector2f(width, 0)), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string) {
+	GUIObject(pos, sf::Vector2f(width, 0)), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string), width(width) {
+	size.x = width;
 	UpdateTextBox();
 }
 
@@ -75,6 +78,12 @@ void TextBox::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render
 void TextBox::setPos(sf::Vector2f pos, bool update) {
 	this->pos = pos;
 	if (update) UpdateTextBox();
+}
+
+void TextBox::setOrigin(sf::Vector2f origin)
+{
+	this->origin = origin;
+	text_obj.setOrigin(origin);
 }
 
 void TextBox::setWidth(float width, bool update) {
@@ -103,6 +112,7 @@ void TextBox::setCharacterSize(unsigned int character_size, bool update) {
 }
 
 void TextBox::setTextString(std::string const& text_string, bool update) {
+	original_text_string = text_string;
 	this->text_string = text_string;
 	if (update) UpdateTextBox();
 }
@@ -118,7 +128,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 
 	text_obj.setString(text_string);
 
-	if (text_obj.getLocalBounds().width <= size.x) {
+	if (text_obj.getLocalBounds().width <= width) {
 		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
 		return;
 	}
@@ -133,7 +143,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 			continue;
 		}
 		float x = text_obj.findCharacterPos(i).x;
-		if (x >= pos.x + size.x && last_space != -1) {
+		if (x >= pos.x + width - origin.x && last_space != -1) {
 			text_string[last_space] = '\n';
 			changed = true;
 			break;
@@ -875,3 +885,116 @@ void TextInputBox::UpdateCursorPos()
 	if (cursor_pos > text_string.size()) cursor_pos =text_string.size()-1;
 	cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
 }
+
+InvItemButton::InvItemButton(Item::any item, sf::Vector2f pos,
+							 float width, unsigned int character_size,
+							 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, sf::Color background_color_selected) :
+	GUIObject(pos, {0,0}),
+	item(item),
+	width(width),
+	character_size(character_size),
+	text_color(text_color),
+	background_color(background_color),
+	background_color_hover(background_color_hover),
+	background_color_selected(background_color_selected)
+{
+	Init();
+	color_tw.Reset(TweenType::Linear, 1, 0, sf::milliseconds(1));
+}
+
+void InvItemButton::Update()
+{
+	GUIObject::Update();
+
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
+}
+
+void InvItemButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(rect_shape);
+	target.draw(icon_sprite);
+	target.draw(text_obj);
+
+	GUIObject::Render(target, tooltip_render_target);
+}
+
+bool InvItemButton::onClick(sf::Vector2i mouse_pos)
+{
+	onHoverOut();
+	setSelected(true);
+	if (action) {
+		(*action)(button_action_impl);
+		return true;
+	}
+	return false;
+}
+
+bool InvItemButton::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+	return false;
+}
+
+bool InvItemButton::onHoverOut()
+{
+	GUIObject::onHoverOut();
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+	return false;
+}
+
+void InvItemButton::setSelected(bool selected)
+{
+	this->selected = selected;
+	if (selected) rect_shape.setOutlineColor(sf::Color::White);
+	else rect_shape.setOutlineColor(sf::Color::Transparent);
+}
+
+void InvItemButton::setPos(sf::Vector2f pos)
+{
+	this->pos = pos;
+	UpdateButtonParams();
+}
+
+void InvItemButton::setOrigin(sf::Vector2f origin)
+{
+	this->origin = origin;
+	UpdateButtonParams();
+}
+
+void InvItemButton::Init()
+{
+	float icon_scale = 2.f;
+	float icon_size = icon_scale*Item::items_texture_size;
+	rect_shape.setFillColor(background_color);
+	rect_shape.setSize({width, icon_size + 2*margin});
+	rect_shape.setOutlineColor(sf::Color::Transparent);
+	rect_shape.setOutlineThickness(3);
+
+	size = {width, icon_size + 2*margin};
+
+	float ts = Item::items_texture_size;
+
+	icon_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
+	icon_sprite.setTextureRect(sf::IntRect(ts * item.pos_in_texture_map.x, ts * item.pos_in_texture_map.y, ts, ts));
+	icon_sprite.setOrigin(origin);
+	icon_sprite.setScale(icon_scale, icon_scale);
+
+	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	text_obj.setCharacterSize(FontSize::NORMAL);
+	text_obj.setFillColor(text_color);
+	text_obj.setString(item.name);
+	
+	UpdateButtonParams();
+}
+
+void InvItemButton::UpdateButtonParams()
+{
+	rect_shape.setPosition(pos);
+	rect_shape.setOrigin(origin);
+
+	icon_sprite.setPosition(pos.x + margin - origin.x, pos.y + margin - origin.y);
+
+	text_obj.setPosition(pos.x + margin*3.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 4 - origin.y);
+}
+

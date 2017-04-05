@@ -9,8 +9,10 @@ using namespace std;
 
 GameState::GameState(Game& game) :
 	game(game),
-	world(&game.getControls())
+	world(&game.getControls()),
+	inventory(&game.getControls())
 {
+	inventory.Init();
 }
 
 GameState::~GameState()
@@ -21,6 +23,7 @@ void GameState::Update(float dt)
 {
 	if (!game.getConsole().getActive())
 	world.Update(dt);
+	inventory.Update();
 }
 
 void GameState::Render(sf::RenderTarget & target)
@@ -28,6 +31,9 @@ void GameState::Render(sf::RenderTarget & target)
 	target.clear(sf::Color::White);
 
 	world.Render(target);
+
+	inventory.Render(target);
+
 }
 
 bool GameState::HandleEvent(sf::Event const & event)
@@ -42,6 +48,17 @@ bool GameState::HandleEvent(sf::Event const & event)
 					game.getConsole().PrintInfo("ID: " + to_string(e->getId()));
 					game.getConsole().PrintInfo("Type: " + to_string(e->getType()) + "   (" + getEntityTypeString(e->getType()) + ")");
 				}
+			}
+		}
+	}
+	else if (inventory.getActive()) {
+		if (inventory.HandleEvents(event)) return true;
+	}
+	else {
+		if (event.type == sf::Event::KeyPressed) {
+			if (event.key.code == game.getControls().get("Inventaire")) {
+				inventory.setActive(true);
+				return true;
 			}
 		}
 	}

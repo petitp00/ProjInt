@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 static const int tile_size = 32;
-static const int visual_tile_size = int(64*1.5);
+static const int visual_tile_size = int(64);
 
 enum GroundType { 
 	NONE = 0,

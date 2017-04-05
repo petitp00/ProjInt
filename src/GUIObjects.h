@@ -10,6 +10,8 @@
 
 #include "Game.h"
 #include "Tweener.h"
+#include "Items.h"
+#include "GameGUI.h"
 
 static sf::Color BG_COLOR = sf::Color(139, 146, 158);
 static sf::Color BG_HOVER = sf::Color(41, 48, 61);
@@ -68,6 +70,7 @@ public:
 	bool isClicked() { return clicked; }
 
 	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
+	virtual void setOrigin(sf::Vector2f origin) { this->origin = origin; }
 	virtual void setSize(sf::Vector2f size) { this->size = size; }
 	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
 	virtual void setOnClickAction(action_t action, ButtonActionImpl* impl) {
@@ -76,12 +79,14 @@ public:
 	virtual void setActive(bool active) { this->active = active; }
 
 	sf::Vector2f getPos() { return pos; }
+	sf::Vector2f getOrigin() { return origin; }
 	sf::Vector2f getSize() { return size; }
 	bool getHovered() { return hovered; }
 	bool getActive() { return active; }
 
 protected:
 	sf::Vector2f pos;
+	sf::Vector2f origin;
 	sf::Vector2f size;
 
 	bool clicked = false;
@@ -114,6 +119,7 @@ public:
 
 	void setPos(sf::Vector2f pos) override { setPos(pos, true); }
 	void setPos(sf::Vector2f pos, bool update);
+	void setOrigin(sf::Vector2f origin) override;
 	void setWidth(float width, bool update=true);
 	void setFont(sf::Font* font, bool update=true);
 	void setFont(std::string const& font_name, bool update=true);
@@ -132,6 +138,7 @@ private:
 	sf::Font* font;
 	sf::Color color;
 	unsigned int character_size;
+	float width;
 
 	std::string text_string;
 	std::string original_text_string;
@@ -438,4 +445,56 @@ private:
 	sf::Clock clock;
 	sf::Time cursor_blink_time = sf::seconds(0.5f);
 	bool show_cursor = true;
+};
+
+class InvItemButton : public GUIObject {
+public:
+	InvItemButton()=default;
+	InvItemButton(
+		Item::any item, sf::Vector2f pos, float width,
+		unsigned int character_size = FontSize::NORMAL,
+		sf::Color text_color = INV_TEXT_COLOR,
+		sf::Color background_color = INV_ACCENT_COLOR,
+		sf::Color background_color_hover = INV_ACCENT_COLOR2,
+		sf::Color background_color_selected = INV_ACCENT_COLOR3
+	);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	bool onClick(sf::Vector2i mouse_pos) override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
+
+	void setSelected(bool selected);
+	void setPos(sf::Vector2f pos) override;
+	void setOrigin(sf::Vector2f origin) override;
+
+	bool getSelected() { return selected; }
+	Item::any getItem() { return item; }
+
+private:
+	void Init();
+	void UpdateButtonParams();
+
+	bool selected = false;
+
+	sf::Font* font;
+	uint character_size;
+	float width = 0;
+	float margin = 16.f;
+
+	sf::RectangleShape rect_shape;
+	sf::Sprite icon_sprite;
+	sf::Text text_obj;
+
+	sf::Color text_color;
+	sf::Color background_color;
+	sf::Color background_color_hover;
+	sf::Color background_color_selected;
+	Tweener color_tw;
+
+	Item::any item;
 };

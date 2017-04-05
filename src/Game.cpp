@@ -3,6 +3,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "Console.h"
+#include "Items.h"
 #include "GameState.h"
 #include "MenuState.h"
 #include "ResourceManager.h"
@@ -70,6 +71,8 @@ Game::Game()
 	CreateWindowWithSettings(window, game_settings);
 
 	game_settings.controls.LoadUserControls();
+
+	Item::Init();
 
 	// game_state must be initialized before menu_state (because of button_action_impl)
 	game_state = new GameState(*this);

@@ -247,7 +247,6 @@ void World::Update(float dt)
 
 void World::UpdateView()
 {
-	//auto ppos = player->getPos();
 
 	float vx = float(int(player->getPos().x + player->getSize().x/2.f));
 	float vy = float(int(player->getPos().y + player->getSize().y/2.f));

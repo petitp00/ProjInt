@@ -4,10 +4,10 @@
 
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Keyboard.hpp>
-
 #include <SFML/Graphics/Text.hpp>
 
 #include "World.h"
+#include "GameGUI.h"
 
 class GameState
 {
@@ -32,5 +32,6 @@ private:
 	Game& game;
 
 	World world;
+	Inventory inventory;
 
 };
