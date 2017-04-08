@@ -15,6 +15,7 @@ public:
 	GameState(Game& game);
 	~GameState();
 
+	void Init(ButtonActionImpl* button_action_impl);
 	void Update(float dt);
 	void Render(sf::RenderTarget& target);
 
@@ -23,6 +24,8 @@ public:
 	void StartNewGame(std::string const& name);
 	void LoadGame(std::string const& name);
 
+	Inventory* getInventory() { return &inventory; }
+	World& getWorld() { return world; }
 	bool getActive() { return active; }
 	void setActive(bool active) { this->active = active; }
 

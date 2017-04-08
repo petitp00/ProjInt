@@ -18,6 +18,10 @@ namespace Item
 		sf::Vector2i pos_in_texture_map;
 
 		bool edible;
+
+		bool operator==(any& b) {
+			return this->name == b.name;
+		}
 	};
 
 	extern any Banana;

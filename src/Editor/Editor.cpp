@@ -324,7 +324,7 @@ void Editor::Start()
 			}
 		}
 
-		if (world_init)					world.Update(dt);
+		if (world_init)					world.Update(dt, mouse_pos_in_world);
 		if (console->getActive())		console->Update();
 
 		//			 //

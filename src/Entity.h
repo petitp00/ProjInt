@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "Items.h"
+
 struct Controls;
 
 // FLAGS
@@ -48,6 +50,7 @@ enum Type {
 	ROCK = 4,
 	BUSH = 5,
 	TREE = 6,
+	ITEM = 7,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -59,6 +62,7 @@ static std::string getEntityTypeString(Type t) {
 	case ROCK: return "ROCK";
 	case BUSH: return "BUSH";
 	case TREE: return "TREE";
+	case ITEM: return "ITEM";
 	case Type::ERROR: return "ERROR";
 	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -71,6 +75,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "ROCK") return ROCK;
 	if (str == "BUSH") return BUSH;
 	if (str == "TREE") return TREE;
+	if (str == "ITEM") return ITEM;
 	return Type::ERROR;
 }
 
@@ -106,6 +111,7 @@ public:
 
 	virtual std::vector<std::string> getSavedData();
 	sf::Vector2f const& getPos() { return pos; }
+	virtual sf::Vector2f getOrigin() { return {0,0}; }
 	sf::Vector2f const& getSize() { return size; }
 	sf::FloatRect const getCollisionBox() { return {pos,size}; }
 	bool getDead() { return dead; }
@@ -144,6 +150,8 @@ public:
 	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
 
 	void setPos(sf::Vector2f pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
+	
+	sf::Vector2f getOrigin() override { return sprite_origin*scale; }
 
 	std::vector<std::string> getSavedData() override {
 		return {
@@ -156,11 +164,39 @@ public:
 		};
 	}
 
-private:
+protected:
 	sf::Sprite sprite;
 	sf::Vector2f sprite_origin ={0,0};
 	std::string texture_name = "";
 	float scale = 1.f;
+};
+
+class ItemObject : public GameObject
+{
+	friend ItemObject* make_item(Item::any item, sf::Vector2f pos);
+public:
+	ItemObject()=default;
+	ItemObject(Item::any item, std::string texture_name, unsigned long flags=NO_FLAG,
+					  std::vector<std::string> const& saved_data={});
+	
+	ItemObject(unsigned long flags,
+					  std::vector<std::string> const& saved_data={}) = delete; // for loading
+
+	std::vector<std::string> getSavedData() override {
+		return {
+			item.name,
+			std::to_string(pos.x) +" "+ std::to_string(pos.y),
+			std::to_string(size.x) +" "+ std::to_string(size.y),
+			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
+			texture_name,
+
+
+		};
+	}
+
+private:
+	Item::any item;
+
 };
 
 class AnimationComponent
@@ -225,6 +261,9 @@ static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
 	else if (type == TREE) {
 		e = make_tree(pos);
 	}
+	else if (type == ITEM) {
+		e = make_tree(pos);
+	}
 
 	return e;
 }
@@ -265,3 +304,18 @@ static GameObject* make_tree(sf::Vector2f pos= {0,0}) {
 	return tree;
 }
 
+static ItemObject* make_item(Item::any item, sf::Vector2f pos = {0,0}) {
+	float ts = Item::items_texture_size;
+	auto i = new ItemObject(item, Item::texture_map_file, SOLID);
+	i->type = ITEM;
+	i->pos = pos;
+	//i->sprite_origin = {item.pos_in_texture_map.x * ts, item.pos_in_texture_map.y * ts};
+	auto scale = 3.f;
+	i->size = {ts*scale, ts*scale};
+	i->scale = scale;
+	i->Init();
+	i->sprite.setTextureRect(
+		{int(item.pos_in_texture_map.x*ts), int(item.pos_in_texture_map.y*ts), int(ts), int(ts)});
+	return i;
+}
+	

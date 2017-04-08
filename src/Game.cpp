@@ -74,10 +74,16 @@ Game::Game()
 
 	Item::Init();
 
+	ButtonActionImpl* impl = new ButtonActionImpl(this, nullptr, nullptr);
+
 	// game_state must be initialized before menu_state (because of button_action_impl)
 	game_state = new GameState(*this);
+	impl->game_state = game_state;
+	game_state->Init(impl);
 
 	menu_state = new MenuState(*this);
+	impl->menu_state = menu_state;
+	menu_state->Init(impl);
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 

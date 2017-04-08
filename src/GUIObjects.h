@@ -23,11 +23,11 @@ class MenuPage;
 
 class ButtonActionImpl {
 public:
-	ButtonActionImpl(Game& game, MenuState& menu_state, GameState& game_state);
+	ButtonActionImpl(Game* game, MenuState* menu_state, GameState* game_state);
 
-	Game& game;
-	MenuState& menu_state;
-	GameState& game_state;
+	Game* game;
+	MenuState* menu_state;
+	GameState* game_state;
 
 	// variable refs
 	bool* mute_active_ref;
@@ -35,6 +35,7 @@ public:
 	std::vector<sf::Keyboard::Key*> controls_values;
 	std::string* world_name_ref;
 	std::string load_world_name;
+	Item::any item;
 };
 
 using action_t = std::function<void(ButtonActionImpl*)>*;
@@ -168,6 +169,7 @@ public:
 	bool onHoverOut() override;
 
 	void setPos(sf::Vector2f pos) override;
+	void setOrigin(sf::Vector2f origin) override;
 
 protected:
 	void UpdateTextButton(bool set_params = true);
@@ -235,6 +237,7 @@ public:
 private:
 	std::string world_name;
 };
+
 
 class Tooltip : public GUIObject {
 public:
@@ -498,3 +501,22 @@ private:
 
 	Item::any item;
 };
+
+class InvActionButton : public TextButton
+{
+public:
+	InvActionButton()=default;
+	InvActionButton(std::string const& text_string, Item::any item, sf::Vector2f pos, float width,
+					   unsigned int character_size = FontSize::NORMAL,
+					   sf::Color text_color = INV_TEXT_COLOR,
+					   sf::Color background_color = INV_ACCENT_COLOR,
+					   sf::Color background_color_hover = INV_ACCENT_COLOR2,
+					   std::string const& font_name=BASE_FONT_NAME);
+
+	bool onClick(sf::Vector2i mouse_pos) override;
+
+	void setWorldName(Item::any item) { this->item = item; }
+private:
+	Item::any item;
+};
+

@@ -10,7 +10,7 @@
 #include <iostream>
 using namespace std;
 
-ButtonActionImpl::ButtonActionImpl(Game & game, MenuState& menu_state, GameState& game_state) : game(game), menu_state(menu_state), game_state(game_state) {}
+ButtonActionImpl::ButtonActionImpl(Game* game, MenuState* menu_state, GameState* game_state) : game(game), menu_state(menu_state), game_state(game_state) {}
 
 GUIObject::GUIObject(sf::Vector2f pos, sf::Vector2f size) : pos(pos), size(size) {}
 
@@ -215,43 +215,48 @@ void TextButton::setPos(sf::Vector2f pos) {
 	UpdateTextButton(false);
 }
 
+void TextButton::setOrigin(sf::Vector2f origin) {
+	GUIObject::setOrigin(origin);
+	UpdateTextButton(false);
+}
+
 void TextButton::UpdateTextButton(bool set_params) {
+	static float hhh;
 	if (set_params) {
 		std::string upper_string;
 		for (auto c : text_string) {
-			if (c == 'Q' || c == 'q') c = 'o';
-			if (c == '�' || c == '�') c = 'e';
-			if (c == '�' || c == '�') c = 'e';
-			if (c == '�' || c == '�') c = 'e';
-			if (c == '�' || c == '�') c = 'a';
-			if (c == '�' || c == '�') c = 'a';
-			if (c == '�' || c == '�') c = 'o';
-			upper_string += toupper(c);
+			upper_string += toupper('o');
 		}
 		text_obj.setString(upper_string);
 
 		text_obj.setFont(*font);
 		text_obj.setCharacterSize(character_size);
 		text_obj.setFillColor(text_color);
+
+		hhh = text_obj.getLocalBounds().height;
 	}
 
 	auto text_rect = text_obj.getLocalBounds();
+	float height;
+	if (set_params) height = text_rect.height;
+	else height = hhh;
 
 	if (width == 0.f) {
-		rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, text_rect.height + margin*2.f));
+		rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, height + margin*2.f));
 
-		text_obj.setOrigin(text_rect.width / 2.f, text_rect.height);
+		text_obj.setOrigin(text_rect.width / 2.f + origin.x, height + origin.y);
 		text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width / 2.f + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
 	}
 	else {
-		rect_shape.setSize(sf::Vector2f(width, text_rect.height + margin*2.f));
+		rect_shape.setSize(sf::Vector2f(width, height + margin*2.f));
 
-		text_obj.setOrigin(0, text_rect.height);
+		text_obj.setOrigin(origin.x, height + origin.y);
 		text_obj.setPosition(sf::Vector2f(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
 	}
 
 	text_obj.setString(text_string);
 
+	rect_shape.setOrigin(origin);
 	rect_shape.setPosition(pos);
 	rect_shape.setFillColor(background_color);
 	setSize(rect_shape.getSize());
@@ -996,4 +1001,21 @@ void InvItemButton::UpdateButtonParams()
 	icon_sprite.setPosition(pos.x + margin - origin.x, pos.y + margin - origin.y);
 
 	text_obj.setPosition(pos.x + margin*3.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 4 - origin.y);
+}
+
+InvActionButton::InvActionButton(std::string const & text_string, Item::any item, sf::Vector2f pos, float width, unsigned int character_size,
+								 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) : 
+	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name), item(item)
+{
+}
+
+bool InvActionButton::onClick(sf::Vector2i mouse_pos)
+{
+	onHoverOut();
+	if (action) {
+		button_action_impl->item = item;
+		(*action)(button_action_impl);
+		return true;
+	}
+	return false;
 }

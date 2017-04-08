@@ -7,23 +7,29 @@
 #include <iostream>
 using namespace std;
 
+static sf::Vector2f mouse_pos_in_world = {-1, -1};
+
 GameState::GameState(Game& game) :
 	game(game),
 	inventory(&game.getControls()),
 	world(&game.getControls())
 {
-	inventory.Init();
-	world.Init(&inventory);
 }
 
 GameState::~GameState()
 {
 }
 
+void GameState::Init(ButtonActionImpl * button_action_impl)
+{
+	inventory.Init(button_action_impl);
+	world.Init(&inventory);
+}
+
 void GameState::Update(float dt)
 {
 	if (!game.getConsole().getActive())
-	world.Update(dt);
+	world.Update(dt, mouse_pos_in_world);
 	inventory.Update();
 }
 
@@ -39,6 +45,8 @@ void GameState::Render(sf::RenderTarget & target)
 
 bool GameState::HandleEvent(sf::Event const & event)
 {
+	mouse_pos_in_world = game.getWindow().mapPixelToCoords(sf::Mouse::getPosition(game.getWindow()), world.getGameView());
+
 	if (game.getConsole().getActive()) {
 		if (event.type == sf::Event::MouseButtonPressed) {
 			if (event.mouseButton.button == sf::Mouse::Middle) {

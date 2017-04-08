@@ -9,46 +9,46 @@ using namespace std;
 
 
 static void start_game(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+	impl->game->ChangeActiveState(State::Game, State::MainMenu);
 }
 
 static void quit_game(ButtonActionImpl* impl) {
-	impl->game.Quit();
+	impl->game->Quit();
 }
 
 // GO TO X MENU //
 static void go_to_main_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::MainMenu, State::PauseMenu);
+	impl->game->ChangeActiveState(State::MainMenu, State::PauseMenu);
 }
 
 static void go_to_new_game_menu(ButtonActionImpl* impl) {
-	impl->menu_state.ResetNewGame();
-	impl->game.ChangeActiveState(State::NewGameMenu, State::MainMenu);
+	impl->menu_state->ResetNewGame();
+	impl->game->ChangeActiveState(State::NewGameMenu, State::MainMenu);
 }
 
 static void go_to_load_game_menu(ButtonActionImpl* impl) {
-	impl->menu_state.ResetLoadGame();
-	impl->game.ChangeActiveState(State::LoadGameMenu, State::MainMenu);
+	impl->menu_state->ResetLoadGame();
+	impl->game->ChangeActiveState(State::LoadGameMenu, State::MainMenu);
 }
 
 static void go_to_info_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::InfoMenu, State::MainMenu);
+	impl->game->ChangeActiveState(State::InfoMenu, State::MainMenu);
 }
 
 static void go_to_options_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::OptionsMenu, impl->game.getActiveState());
+	impl->game->ChangeActiveState(State::OptionsMenu, impl->game->getActiveState());
 }
 
 static void go_to_audio_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::AudioOptionsMenu, State::OptionsMenu);
+	impl->game->ChangeActiveState(State::AudioOptionsMenu, State::OptionsMenu);
 }
 
 static void go_to_controls_menu(ButtonActionImpl* impl) {
-	impl->game.ChangeActiveState(State::ControlsOptionsMenu, State::OptionsMenu);
+	impl->game->ChangeActiveState(State::ControlsOptionsMenu, State::OptionsMenu);
 }
 
 static void return_to_last_state(ButtonActionImpl* impl) {
-	impl->game.ReturnToLastState();
+	impl->game->ReturnToLastState();
 }
 
 // AUDIO STUFF //
@@ -57,13 +57,13 @@ static void change_volume(ButtonActionImpl* impl) { }
 
 // CONTROLS STUFF //
 static void reset_default_controls(ButtonActionImpl* impl) {
-	impl->game.getControls().LoadDefault();
-	impl->menu_state.ResetControls(impl->game.getControls());
-	impl->game.getControls().SaveUserControls();
+	impl->game->getControls().LoadDefault();
+	impl->menu_state->ResetControls(impl->game->getControls());
+	impl->game->getControls().SaveUserControls();
 }
 
 static void set_new_controls(ButtonActionImpl* impl) {
-	auto& c = impl->game.getControls();
+	auto& c = impl->game->getControls();
 
 	for (int i = 0; i != impl->controls_values.size(); ++i) {
 		c.keys[i].second = *impl->controls_values[i];
@@ -74,19 +74,19 @@ static void set_new_controls(ButtonActionImpl* impl) {
 
 // GENERAL STUFF //
 static void toggle_fps_checkbox(ButtonActionImpl* impl) {
-	impl->game.ToggleFpsCounter();
+	impl->game->ToggleFpsCounter();
 }
 
 static void create_new_world(ButtonActionImpl* impl) {
-	impl->game.ReturnToLastState();
-	impl->game_state.StartNewGame(*impl->world_name_ref);
-	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+	impl->game->ReturnToLastState();
+	impl->game_state->StartNewGame(*impl->world_name_ref);
+	impl->game->ChangeActiveState(State::Game, State::MainMenu);
 }
 
 static void load_world(ButtonActionImpl* impl) {
-	impl->game.ReturnToLastState();
-	impl->game_state.LoadGame(impl->load_world_name);
-	impl->game.ChangeActiveState(State::Game, State::MainMenu);
+	impl->game->ReturnToLastState();
+	impl->game_state->LoadGame(impl->load_world_name);
+	impl->game->ChangeActiveState(State::Game, State::MainMenu);
 }
 
 static void delete_world(ButtonActionImpl* impl) {
@@ -124,7 +124,7 @@ static void delete_world(ButtonActionImpl* impl) {
 		system(ssss.c_str());
 	}
 
-	impl->menu_state.ResetLoadGame();
+	impl->menu_state->ResetLoadGame();
 }
 
 // MENU PAGE
@@ -227,21 +227,26 @@ bool MenuPage::KeyPressedEvent(sf::Event::KeyEvent e)
 
 // MENU STATE
 MenuState::MenuState(Game& game) :
-	button_action_impl(game, *this, game.getGameState()),
+	//button_action_impl(game, *this, game.getGameState()),
 	active_page(&main_menu)
 {
+}
+
+MenuState::~MenuState()
+{
+}
+
+void MenuState::Init(ButtonActionImpl * button_action_impl)
+{
+	this->button_action_impl = button_action_impl;
 	InitMainMenu();
 	InitNewGameMenu();
 	InitLoadGameMenu();
 	InitInfoMenu();
 	InitOptionsMenu();
 	InitAudioMenu();
-	InitControlsMenu(game.getControls());
+	InitControlsMenu(button_action_impl->game->getControls());
 	InitPauseMenu();
-}
-
-MenuState::~MenuState()
-{
 }
 
 void MenuState::Update()
@@ -288,27 +293,27 @@ void MenuState::InitMainMenu()
 	float button_width = title->getSize().x;
 
 	auto play_button = new TextButton("Nouvelle partie", {100, 250}, button_width);
-	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_new_game_menu), &button_action_impl);
+	play_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_new_game_menu), button_action_impl);
 	play_button->setTooltip(new Tooltip("Commencer une partie", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(play_button);
 
 	auto load_button = new TextButton("Charger une partie", {100, 350}, button_width);
-	load_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_load_game_menu), &button_action_impl);
+	load_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_load_game_menu), button_action_impl);
 	load_button->setTooltip(new Tooltip("Charger une partie sauvegardée", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(load_button);
 
 	auto options_button = new TextButton("Options", {100, 450}, button_width / 2.f - 20.f);
-	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_options_menu), &button_action_impl);
+	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_options_menu), button_action_impl);
 	options_button->setTooltip(new Tooltip("Accéder aux options", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(options_button);
 
 	auto info_button = new TextButton("Informations", {100 + button_width / 2.f + 20.f, 450}, button_width / 2.f - 20.f);
-	info_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_info_menu), &button_action_impl);
+	info_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_info_menu), button_action_impl);
 	info_button->setTooltip(new Tooltip("Informations sur le projet et ses créateurs", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(info_button);
 
 	auto quit_button = new TextButton("Quitter", {100, 550}, button_width);
-	quit_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(quit_game), &button_action_impl);
+	quit_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(quit_game), button_action_impl);
 	quit_button->setTooltip(new Tooltip("Quitter le jeu", sf::seconds(0.55f)));
 	main_menu.AddGUIObject(quit_button);
 }
@@ -323,17 +328,17 @@ void MenuState::InitNewGameMenu()
 
 	float px = name_label->getPos().x + name_label->getSize().x + 40.f;
 	auto name_input = new TextInputBox({px, 355.f}, float(WINDOW_WIDTH)- px - 80.f - 65.f);
-	name_input->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
+	name_input->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), button_action_impl);
 	name_input->setActive(true);
-	button_action_impl.world_name_ref = name_input->getStringRef();
+	button_action_impl->world_name_ref = name_input->getStringRef();
 	new_game_menu.AddGUIObject(name_input);
 
 	auto ok_button = new TextButton("Ok", {float(WINDOW_WIDTH) - 65.f -60.f, 347.f}, 65.f, FontSize::SMALL);
-	ok_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), &button_action_impl);
+	ok_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(create_new_world), button_action_impl);
 	new_game_menu.AddGUIObject(ok_button);
 
 	auto return_button = new TextButton("Annuler", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	new_game_menu.AddGUIObject(return_button);
 }
 
@@ -369,12 +374,12 @@ void MenuState::InitLoadGameMenu()
 
 		auto butt = new WorldSelectButton("Jouer", {650.f, float(26 + 100*i)}, 130.f, FontSize::SMALL, sf::Color::Black);
 		butt->setWorldName(sv);
-		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(load_world), &button_action_impl);
+		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(load_world), button_action_impl);
 		container->AddObject(butt);
 
 		auto butt2 = new WorldSelectButton("Supprimer", {130.f + 20.f + 650.f, float(26 + 100*i)}, 200.f, FontSize::SMALL, sf::Color::Black);
 		butt2->setWorldName(sv);
-		butt2->setOnClickAction(new std::function<void(ButtonActionImpl*)>(delete_world), &button_action_impl);
+		butt2->setOnClickAction(new std::function<void(ButtonActionImpl*)>(delete_world), button_action_impl);
 		container->AddObject(butt2);
 
 		++i;
@@ -383,7 +388,7 @@ void MenuState::InitLoadGameMenu()
 	load_game_menu.AddGUIObject(container);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	load_game_menu.AddGUIObject(return_button);
 }
 
@@ -393,7 +398,7 @@ void MenuState::InitInfoMenu()
 	info_menu.AddGUIObject(title);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	info_menu.AddGUIObject(return_button);
 }
 
@@ -403,23 +408,23 @@ void MenuState::InitOptionsMenu()
 	options_menu.AddGUIObject(title);
 
 	auto audio_button = new TextButton("Audio", {100, 250}, 744);
-	audio_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_audio_menu), &button_action_impl);
+	audio_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_audio_menu), button_action_impl);
 	options_menu.AddGUIObject(audio_button);
 
 	auto controls_button = new TextButton("Contrôles", {100, 350}, 744);
-	controls_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_controls_menu), &button_action_impl);
+	controls_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_controls_menu), button_action_impl);
 	options_menu.AddGUIObject(controls_button);
 
 	auto fps_label = new TextBox("Compteur de FPS:", {100, 450}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
 	options_menu.AddGUIObject(fps_label);
 
 	auto fps_checkbox = new Checkbox(true, {804, 455});
-	fps_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_fps_checkbox), &button_action_impl);
+	fps_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_fps_checkbox), button_action_impl);
 	fps_checkbox->setTooltip(new Tooltip("Affiche le nombre d'images par secondes. (Coin supérieur gauche)", sf::seconds(0.55f)));
 	options_menu.AddGUIObject(fps_checkbox);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	options_menu.AddGUIObject(return_button);
 }
 
@@ -432,33 +437,33 @@ void MenuState::InitAudioMenu()
 	audio_menu.AddGUIObject(mute_label);
 
 	auto mute_checkbox = new Checkbox(false, {375, 255});
-	mute_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_mute_checkbox), &button_action_impl);
-	button_action_impl.mute_active_ref = mute_checkbox->getActiveRef();
+	mute_checkbox->setOnClickAction(new std::function<void(ButtonActionImpl*)>(toggle_mute_checkbox), button_action_impl);
+	button_action_impl->mute_active_ref = mute_checkbox->getActiveRef();
 	audio_menu.AddGUIObject(mute_checkbox);
 
 	auto volume_label = new TextBox("Volume:", {100, 350}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
 	audio_menu.AddGUIObject(volume_label);
 
 	auto volume_slider = new Slider({300, 355}, 500, 75, 0, 100);
-	button_action_impl.volume_slider_ref = volume_slider->getValueRef();
-	volume_slider->setOnClickAction(new std::function<void(ButtonActionImpl*)>(change_volume), &button_action_impl);
+	button_action_impl->volume_slider_ref = volume_slider->getValueRef();
+	volume_slider->setOnClickAction(new std::function<void(ButtonActionImpl*)>(change_volume), button_action_impl);
 	audio_menu.AddGUIObject(volume_slider);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	audio_menu.AddGUIObject(return_button);
 }
 
 void MenuState::InitControlsMenu(Controls& controls)
 {
-	button_action_impl.controls_values.clear();
+	button_action_impl->controls_values.clear();
 
 	auto title = new TextBox("Options > Contrôles", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
 	controls_menu.AddGUIObject(title);
 
 	auto reset_button = new TextButton("Réinitialiser", {700, float(WINDOW_HEIGHT - 100)}, 0);
 	reset_button->setTooltip(new Tooltip("Réinitialiser aux valeur par défaut", sf::seconds(0.55f)));
-	reset_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(reset_default_controls), &button_action_impl);
+	reset_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(reset_default_controls), button_action_impl);
 	controls_menu.AddGUIObject(reset_button);
 
 	float w = float(WINDOW_WIDTH - 200);
@@ -470,9 +475,9 @@ void MenuState::InitControlsMenu(Controls& controls)
 		container->AddObject(label);
 
 		auto butt = new ControlsTextButton(getKeyString(k.second), {40 + w/2.f, float(20+100*i)}, w/2.f - 160.f, 40);
-		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(set_new_controls), &button_action_impl);
+		butt->setOnClickAction(new std::function<void(ButtonActionImpl*)>(set_new_controls), button_action_impl);
 		butt->setKey(k.second);
-		button_action_impl.controls_values.push_back(butt->getKeyRef());
+		button_action_impl->controls_values.push_back(butt->getKeyRef());
 
 		container->AddObject(butt);
 
@@ -482,7 +487,7 @@ void MenuState::InitControlsMenu(Controls& controls)
 	controls_menu.AddGUIObject(container);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
-	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	controls_menu.AddGUIObject(return_button);
 }
 
@@ -492,14 +497,14 @@ void MenuState::InitPauseMenu()
 	pause_menu.AddGUIObject(title);
 
 	auto resume_button = new TextButton("Retour au jeu", {100, 250}, 744);
-	resume_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), &button_action_impl);
+	resume_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	pause_menu.AddGUIObject(resume_button);
 
 	auto options_button = new TextButton("Options", {100, 350}, 744);
-	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_options_menu), &button_action_impl);
+	options_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_options_menu), button_action_impl);
 	pause_menu.AddGUIObject(options_button);
 
 	auto menu_button = new TextButton("Retour au menu principal", {100, 450}, 744);
-	menu_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_main_menu), &button_action_impl);
+	menu_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(go_to_main_menu), button_action_impl);
 	pause_menu.AddGUIObject(menu_button);
 }

@@ -7,6 +7,9 @@
 class GUIObject;
 class InvItemButton;
 class TextBox;
+class TextButton;
+class InvActionButton;
+class ButtonActionImpl;
 struct Controls;
 
 static sf::Color INV_WINDOW_COLOR(115, 106, 91);
@@ -20,13 +23,17 @@ class Inventory
 public:
 	Inventory(Controls* controls);
 	~Inventory();
-	void Init();
+	void Init(ButtonActionImpl* button_action_impl);
 
 	void Update();
 	void Render(sf::RenderTarget& target);
 	bool HandleEvents(sf::Event const& event);
-	void ResetItemDescription();
+	void ResetItemButtons();
+	void ResetItemDescription(bool item_selected = true);
 	void AddItem(Item::any item);
+	void RemoveItem(Item::any item);
+	void EatItem(Item::any item);
+	void PutDownItem(Item::any item);
 
 	bool getActive() { return active; }
 	std::vector<Item::any>& getItems() { return items; }
@@ -35,6 +42,7 @@ public:
 
 private:
 	Controls* controls;
+	ButtonActionImpl* button_action_impl;
 	bool active = false;
 
 	std::vector<Item::any> items;
@@ -44,6 +52,7 @@ private:
 
 	std::vector<GUIObject*> gui_objects;
 	std::vector<InvItemButton*> inv_buttons;
+	std::vector<InvActionButton*> actions_buttons;
 	sf::RectangleShape window_shape;
 	PosTweener window_tw;
 	sf::RectangleShape item_desc_shape;

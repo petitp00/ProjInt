@@ -11,6 +11,8 @@
 #include <iostream>
 using namespace std;
 
+sf::Vector2f mouse_pos = {-1, -1};
+
 World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
@@ -155,6 +157,10 @@ void World::LoadWorld(std::string const & filename)
 				go = make_tree(p);
 				entities.push_back(go);
 				break;
+			case ITEM:
+				go = make_item(Item::getItemByName(vec[0]), p);
+				entities.push_back(go);
+				break;
 			default:
 				break;
 			}
@@ -246,7 +252,7 @@ void World::Save(const string& filename)
 	cout << "World saved to \"Resources/Data/Saves/" << name << "\"" << endl;
 }
 
-void World::Update(float dt)
+void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
 {
 	for (auto i = entities.begin(); i != entities.end();) {
 		auto e = *i;
@@ -262,6 +268,8 @@ void World::Update(float dt)
 
 	player->DoCollisions(entities);
 	player->DoMovement(dt);
+
+	if (entity_place) entity_place->setPos(mouse_pos_in_world - entity_place->getSize()/2.f + entity_place->getOrigin());
 
 	UpdateView();
 }
@@ -304,6 +312,8 @@ void World::Render(sf::RenderTarget & target)
 				e->Render(target);
 			}
 		}
+
+		if (entity_place) entity_place->Render(target);
 	}
 	else {
 		for (auto e : entities) {
@@ -329,6 +339,12 @@ bool World::HandleEvent(sf::Event const & event)
 			middle_pressed = true;
 			drag_mouse_pos ={event.mouseButton.x, event.mouseButton.y};
 		}
+		if (event.mouseButton.button == sf::Mouse::Button::Left) {
+			if (entity_place) {
+				entities.push_back(entity_place);
+				entity_place = nullptr;
+			}
+		}
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
 		if (false && event.mouseButton.button == sf::Mouse::Button::Middle) {
@@ -337,9 +353,9 @@ bool World::HandleEvent(sf::Event const & event)
 	}
 	if (event.type == sf::Event::MouseMoved) {
 		if (false && middle_pressed) {
-			sf::Vector2i m ={event.mouseMove.x, event.mouseMove.y};
-			game_view.move(-sf::Vector2f(m - drag_mouse_pos));
-			drag_mouse_pos = m;
+			//sf::Vector2i m ={event.mouseMove.x, event.mouseMove.y};
+			//game_view.move(-sf::Vector2f(m - drag_mouse_pos));
+			//drag_mouse_pos = m;
 		}
 	}
 
@@ -403,4 +419,9 @@ void World::DeleteEntity(int id)
 		delete entities[index];
 		entities.erase(entities.begin() + index);
 	}
+}
+
+void World::StartPlaceEntity(Entity * entity)
+{
+	entity_place = entity;
 }

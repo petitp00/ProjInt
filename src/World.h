@@ -39,7 +39,7 @@ public:
 	void LoadWorld(const std::string& filename);
 	void Save(const std::string& filename ="");
 
-	void Update(float dt);
+	void Update(float dt, sf::Vector2f mouse_pos_in_world);
 	void UpdateView();
 	void Render(sf::RenderTarget& target);
 	bool HandleEvent(sf::Event const& event);
@@ -51,6 +51,7 @@ public:
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
+	void StartPlaceEntity(Entity* entity);
 
 private:
 	Controls* controls = nullptr;
@@ -62,4 +63,6 @@ private:
 	Ground ground;
 	Player* player = nullptr;
 	std::vector<Entity*> entities;
+
+	Entity* entity_place = nullptr;
 };

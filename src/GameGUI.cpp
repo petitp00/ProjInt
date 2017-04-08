@@ -1,9 +1,19 @@
 #include "GameGUI.h"
 #include "Game.h"
 #include "GUIObjects.h"
+#include "GameState.h"
 
 #include <iostream>
 using namespace std;
+
+
+static void eat(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->EatItem(impl->item);
+}
+
+static void put_down(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->PutDownItem(impl->item);
+}
 
 static bool go_up_then_not_active = false;
 
@@ -28,8 +38,13 @@ Inventory::~Inventory()
 	}
 }
 
-void Inventory::Init()
+void Inventory::Init(ButtonActionImpl* button_action_impl)
 {
+	this->button_action_impl = button_action_impl;
+
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
 	inv_buttons.clear();
 	for (int i = 0; i != gui_objects.size(); ++i) {
 		delete gui_objects[i];
@@ -52,14 +67,7 @@ void Inventory::Init()
 
 	gui_objects.push_back(item_desc_obj);
 
-	int iy = 0;
-	for (auto i : items) {
-		InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - mm - ms);
-		ib1->setOrigin({-ms, -(ms*(iy+1) + 2*(Item::items_texture_size + 16.f)*iy)});
-		gui_objects.push_back(ib1);
-		inv_buttons.push_back(ib1);
-		++iy;
-	}
+	ResetItemButtons();
 }
 
 void Inventory::Update()
@@ -78,6 +86,18 @@ void Inventory::Update()
 			}
 			o->Update();
 		}
+		for (auto o : inv_buttons) {
+			if (!window_tw.getEnded()) {
+				o->setPos(window_tw.Tween());
+			}
+			o->Update();
+		}
+		for (auto o : actions_buttons) {
+			if (!window_tw.getEnded()) {
+				o->setPos(window_tw.Tween());
+			}
+			o->Update();
+		}
 	}
 }
 
@@ -91,6 +111,12 @@ void Inventory::Render(sf::RenderTarget & target)
 		tooltip_render_target.clear(sf::Color::Transparent);
 
 		for (auto o : gui_objects)
+			o->Render(target, tooltip_render_target);
+
+		for (auto o : inv_buttons)
+			o->Render(target, tooltip_render_target);
+
+		for (auto o : actions_buttons)
 			o->Render(target, tooltip_render_target);
 
 		tooltip_render_target.display();
@@ -125,24 +151,85 @@ bool Inventory::HandleEvents(sf::Event const & event)
 			else if (o->getHovered())
 				if (o->onHoverOut()) ret = true;
 		}
+		for (auto o : inv_buttons) {
+			if (o->isClicked())
+				o->UpdateClickDrag(mouse);
+
+			if (o->isMouseIn(mouse)) {
+				if (!o->getHovered())
+					if (o->onHoverIn(mouse)) ret = true;
+				else 
+					o->UpdateHoveredMousePos(mouse);
+			}
+
+			else if (o->getHovered())
+				if (o->onHoverOut()) ret = true;
+		}
+		for (auto o : actions_buttons) {
+			if (o->isClicked())
+				o->UpdateClickDrag(mouse);
+
+			if (o->isMouseIn(mouse)) {
+				if (!o->getHovered())
+					if (o->onHoverIn(mouse)) ret = true;
+				else 
+					o->UpdateHoveredMousePos(mouse);
+			}
+
+			else if (o->getHovered())
+				if (o->onHoverOut()) ret = true;
+		}
 	}
 
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
-		for (auto o : inv_buttons) o->setSelected(false);
-		for (auto o : gui_objects) {
-			if (o->getHovered())
-				if (o->onClick(mouse)) return true;
+
+		InvItemButton* old_selected = nullptr;
+		for (auto o : inv_buttons) {
+			if (o->getSelected()) {
+				old_selected = o;
+				break;
+			}
 		}
+		for (auto o : inv_buttons) o->setSelected(false);
+
+		bool clicked = false;
+		for (auto o : gui_objects) {
+			if (o->getHovered()) {
+				clicked = true;
+				if (o->onClick(mouse)) { return true; }
+			}
+		}
+		for (auto o : inv_buttons) {
+			if (o->getHovered()) {
+				clicked = true;
+				if (o->onClick(mouse)) { return true; }
+			}
+		}
+		for (auto o : actions_buttons) {
+			if (o->getHovered()) {
+				clicked = true;
+				for (auto o : inv_buttons) o->setSelected(false);
+				if (o->onClick(mouse)) { 
+					ResetItemDescription(false);
+					return true;
+				}
+			}
+		}
+
+		ResetItemDescription(false);
+
 		for (auto o : inv_buttons) {
 			if (o->getSelected()) {
 				selected_item = o->getItem();
 				ResetItemDescription();
 			}
 		}
-	}
-	else if (event.type == sf::Event::MouseButtonReleased) {
+	} else if (event.type == sf::Event::MouseButtonReleased) {
 		for (auto o : gui_objects)
+			if (o->isClicked())
+				if (o->onClickRelease()) ret = true;
+		for (auto o : actions_buttons)
 			if (o->isClicked())
 				if (o->onClickRelease()) ret = true;
 	}
@@ -150,16 +237,99 @@ bool Inventory::HandleEvents(sf::Event const & event)
 	return ret;
 }
 
-void Inventory::ResetItemDescription()
+void Inventory::ResetItemButtons()
 {
-	item_desc_obj->setTextString("Description: " + selected_item.desc);
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
+	
+	inv_buttons.clear();
+
+	int iy = 0;
+	for (auto i : items) {
+		InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
+		ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 16.f)*iy)});
+		inv_buttons.push_back(ib1);
+		++iy;
+	}
+
+	for (auto o : inv_buttons) {
+		o->setPos(window_tw.Tween());
+	}
+}
+
+void Inventory::ResetItemDescription(bool item_selected)
+{
+	if (item_selected) {
+		item_desc_obj->setTextString("Description: " + selected_item.desc);
+
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+
+		int i = 0;
+		float width = INV_WINDOW_WIDTH/2.f - margin_middle*2.f - margin_sides*2.f;
+		float height = 0;
+		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
+		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
+
+		auto b1 = new InvActionButton("Déposer", selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
+		b1->setOrigin({-(ox), -(oy)});
+		b1->setPos(window_tw.Tween());
+		height = b1->getSize().y;
+		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
+		actions_buttons.push_back(b1);
+		++i;
+
+		if (selected_item.edible) {
+			auto b = new InvActionButton("Manger", selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
+			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
+			b->setPos(window_tw.Tween());
+			b->setOnClickAction(new function<void(ButtonActionImpl*)>(eat), button_action_impl);
+			actions_buttons.push_back(b);
+			++i;
+		}
+	}
+	else {
+		item_desc_obj->setTextString("Description: ");
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+	}
 }
 
 void Inventory::AddItem(Item::any item)
 {
 	items.push_back(item);
 
-	Init();
+	ResetItemButtons();
+}
+
+void Inventory::RemoveItem(Item::any item)
+{
+	for (uint i = 0; i != items.size(); ++i) {
+		if (items[i] == item) {
+			items.erase(items.begin() + i);
+			break;
+		}
+	}
+
+	ResetItemButtons();
+}
+
+void Inventory::EatItem(Item::any item)
+{
+	RemoveItem(item);
+}
+
+void Inventory::PutDownItem(Item::any item)
+{
+	RemoveItem(item);
+	Entity* e = make_item(item);
+	button_action_impl->game_state->getWorld().StartPlaceEntity(e);
+	setActive(false);
 }
 
 void Inventory::setActive(bool active)

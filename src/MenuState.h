@@ -43,6 +43,7 @@ public:
 	MenuState(Game& game);
 	~MenuState();
 
+	void Init(ButtonActionImpl* button_action_impl);
 	void Update();
 	void Render(sf::RenderTarget& target);
 
@@ -79,7 +80,7 @@ public:
 	}
 
 private:
-	ButtonActionImpl button_action_impl;
+	ButtonActionImpl* button_action_impl;
 
 	bool active = false;
 	State active_state = State::MainMenu;
