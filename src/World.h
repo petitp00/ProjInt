@@ -11,6 +11,7 @@
 
 #include "Entity.h"
 #include "Ground.h"
+#include "GameGUI.h"
 
 namespace EditorMode { class Editor; }
 
@@ -32,7 +33,7 @@ public:
 	World(Controls* controls);
 	~World();
 
-	void Init(Inventory* inventory);
+	void Init(Inventory* inventory, InventoryButton* inv_butt);
 	void Clear();
 	void CreateAndSaveWorld(const std::string& filename);
 	void CreateNewBlank(const std::string& filename);
@@ -47,15 +48,18 @@ public:
 	sf::View& getGameView() { return game_view; }
 	Entity* FindEntityClicked(sf::Vector2f mpos);
 	Entity* getEntity(int id);
+	ItemObject* FindItem(int id);
 
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
-	void StartPlaceEntity(Entity* entity);
+	void DeleteItem(int id);
+	void StartPlaceItem(ItemObject* item);
 
 private:
 	Controls* controls = nullptr;
 	Inventory* inventory = nullptr;
+	InventoryButton* inv_butt;
 	std::string name;
 
 	sf::View game_view;
@@ -63,6 +67,9 @@ private:
 	Ground ground;
 	Player* player = nullptr;
 	std::vector<Entity*> entities;
+	std::vector<ItemObject*> items; // also in entities
 
-	Entity* entity_place = nullptr;
+	Entity* entity_hovered = nullptr;
+	ItemObject* item_place = nullptr;
+	ItemObject* item_move = nullptr;
 };

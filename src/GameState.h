@@ -36,5 +36,6 @@ private:
 
 	World world;
 	Inventory inventory;
+	InventoryButton inv_butt;
 
 };

@@ -23,7 +23,8 @@ GameState::~GameState()
 void GameState::Init(ButtonActionImpl * button_action_impl)
 {
 	inventory.Init(button_action_impl);
-	world.Init(&inventory);
+	inv_butt.Init(&inventory);
+	world.Init(&inventory, &inv_butt);
 }
 
 void GameState::Update(float dt)
@@ -38,6 +39,9 @@ void GameState::Render(sf::RenderTarget & target)
 	target.clear(sf::Color::White);
 
 	world.Render(target);
+
+	target.setView(target.getDefaultView());
+	inv_butt.Render(target);
 
 	inventory.Render(target);
 
@@ -62,6 +66,10 @@ bool GameState::HandleEvent(sf::Event const & event)
 	}
 	else if (inventory.getActive()) {
 		if (inventory.HandleEvents(event)) return true;
+		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+			inventory.setActive(false);
+			return true;
+		}
 	}
 	else {
 		if (event.type == sf::Event::KeyPressed) {
@@ -70,6 +78,7 @@ bool GameState::HandleEvent(sf::Event const & event)
 				return true;
 			}
 		}
+		inv_butt.HandleEvent(event);
 	}
 	return world.HandleEvent(event);
 }

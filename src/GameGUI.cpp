@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "GUIObjects.h"
 #include "GameState.h"
+#include "ResourceManager.h"
 
 #include <iostream>
 using namespace std;
@@ -327,8 +328,8 @@ void Inventory::EatItem(Item::any item)
 void Inventory::PutDownItem(Item::any item)
 {
 	RemoveItem(item);
-	Entity* e = make_item(item);
-	button_action_impl->game_state->getWorld().StartPlaceEntity(e);
+	ItemObject* i = make_item(item);
+	button_action_impl->game_state->getWorld().StartPlaceItem(i);
 	setActive(false);
 }
 
@@ -343,3 +344,59 @@ void Inventory::setActive(bool active)
 		window_tw.Reset(TweenType::QuintInOut, {WINDOW_X, WINDOW_ENDY}, {WINDOW_X, WINDOW_STARTY},  sf::seconds(0.2f));
 	}
 }
+
+InventoryButton::InventoryButton()
+{
+}
+
+void InventoryButton::Init(Inventory* inventory)
+{
+	this->inventory = inventory;
+
+	float scale = 3;
+	size = {32 * scale, 32*scale};
+	pos = {10, WINDOW_HEIGHT - 10 - size.y};
+	sprite.setTexture(ResourceManager::getTexture("InventoryBagButton.png"));
+	sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	sprite.setScale(scale, scale);
+	sprite.setPosition(pos);
+}
+
+void InventoryButton::Render(sf::RenderTarget & target)
+{
+	target.draw(sprite);
+}
+
+void InventoryButton::HandleEvent(sf::Event const & event)
+{
+	if (event.type == sf::Event::MouseMoved) {
+		sf::Vector2f mouse = sf::Vector2f(float(event.mouseMove.x), float(event.mouseMove.y));
+
+		if (mouse.x >= pos.x && mouse.x <= pos.x + size.x && mouse.y >= pos.y && mouse.y <= pos.y + size.y) {
+			if (!open) {
+				open = true;
+				UpdateOpen();
+			}
+		}
+		else if (open) {
+			open = false;
+			UpdateOpen();
+		}
+	}
+	else if (event.type == sf::Event::MouseButtonPressed) {
+		if (open && event.mouseButton.button == sf::Mouse::Left) {
+			inventory->setActive(true);
+		}
+	}
+}
+
+void InventoryButton::UpdateOpen()
+{
+	if (open) {
+		sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
+	}
+	else {
+		sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	}
+}
+

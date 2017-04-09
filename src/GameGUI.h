@@ -60,3 +60,25 @@ private:
 
 	Item::any selected_item;
 };
+
+class InventoryButton
+{
+public:
+	InventoryButton();
+	void Init(Inventory* inventory);
+
+	void Render(sf::RenderTarget& target);
+	void HandleEvent(sf::Event const& event);
+
+	bool getOpen() { return open; }
+
+private:
+	Inventory* inventory;
+
+	sf::Sprite sprite;
+	sf::Vector2f pos;
+	sf::Vector2f size;
+
+	void UpdateOpen();
+	bool open = false;
+};

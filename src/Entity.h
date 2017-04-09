@@ -194,6 +194,8 @@ public:
 		};
 	}
 
+	Item::any getItem() { return item; }
+
 private:
 	Item::any item;
 

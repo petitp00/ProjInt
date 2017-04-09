@@ -41,7 +41,7 @@ Editor::Editor() :
 
 	controls->LoadDefault(); 
 	world.controls = controls;
-	world.Init(&inventory);
+	world.Init(&inventory, nullptr);
 
 	console = new ConsoleNamespace::Console(*this);
 

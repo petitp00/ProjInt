@@ -30,9 +30,10 @@ World::~World()
 	Clear();
 }
 
-void World::Init(Inventory* inventory)
+void World::Init(Inventory* inventory, InventoryButton* inv_butt)
 {
 	this->inventory = inventory;
+	this->inv_butt = inv_butt;
 }
 
 void World::Clear()
@@ -41,6 +42,7 @@ void World::Clear()
 		delete entities[i];
 	}
 	entities.clear();
+	items.clear();
 	ground.Clear();
 }
 
@@ -133,6 +135,7 @@ void World::LoadWorld(std::string const & filename)
 
 			Player* pl;
 			GameObject* go;
+			ItemObject* io;
 
 			switch (t)
 			{
@@ -159,8 +162,9 @@ void World::LoadWorld(std::string const & filename)
 				entities.push_back(go);
 				break;
 			case ITEM:
-				go = make_item(Item::getItemByName(vec[0]), p);
-				entities.push_back(go);
+				io = make_item(Item::getItemByName(vec[0]), p);
+				entities.push_back(io);
+				items.push_back(io);
 				break;
 			default:
 				break;
@@ -255,12 +259,26 @@ void World::Save(const string& filename)
 
 void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
 {
+	auto mpw = mouse_pos_in_world;
+
+	entity_hovered = nullptr;
+
 	for (auto i = entities.begin(); i != entities.end();) {
 		auto e = *i;
 		if (!e->getDead()) {
 			e->Update(dt);
+			
+			if (!item_move && !item_place) {
+				if (mpw.x >= e->getPos().x && mpw.x <= e->getPos().x + e->getSize().x &&
+					mpw.y >= e->getPos().y && mpw.y <= e->getPos().y + e->getSize().y) {
+					entity_hovered = e;
+				}
+			}
 		}
 		else {
+			if (e->getType() == ITEM) {
+				DeleteItem(e->getId());
+			}
 			i = entities.erase(i);
 			continue;
 		}
@@ -270,7 +288,8 @@ void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
 	player->DoCollisions(entities);
 	player->DoMovement(dt);
 
-	if (entity_place) entity_place->setPos(mouse_pos_in_world - entity_place->getSize()/2.f + entity_place->getOrigin());
+	if (item_place) item_place->setPos(mouse_pos_in_world - item_place->getSize()/2.f + item_place->getOrigin());
+	if (item_move) item_move->setPos(mouse_pos_in_world - item_move->getSize()/2.f + item_move->getOrigin());
 
 	UpdateView();
 }
@@ -314,7 +333,7 @@ void World::Render(sf::RenderTarget & target)
 			}
 		}
 
-		if (entity_place) entity_place->Render(target);
+		if (item_place) item_place->Render(target);
 	}
 	else {
 		for (auto e : entities) {
@@ -336,34 +355,32 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
-		if (false && event.mouseButton.button == sf::Mouse::Button::Middle) {
-			middle_pressed = true;
-			drag_mouse_pos ={event.mouseButton.x, event.mouseButton.y};
-		}
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
-			if (entity_place) {
-				entities.push_back(entity_place);
-				entity_place = nullptr;
+			if (item_place) {
+				entities.push_back(item_place);
+				items.push_back(item_place);
+				item_place = nullptr;
+			}
+			else if (entity_hovered) {
+				if (entity_hovered->getType() == ITEM) {
+					item_move = FindItem(entity_hovered->getId());
+				}
+				entity_hovered = nullptr;
 			}
 		}
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
-		if (false && event.mouseButton.button == sf::Mouse::Button::Middle) {
-			middle_pressed = false;
+		if (item_move) {
+			if (inv_butt && inv_butt->getOpen()) {
+				inventory->AddItem(item_move->getItem());
+				DeleteEntity(item_move->getId());
+			}
+			item_move = nullptr;
 		}
 	}
 	if (event.type == sf::Event::MouseMoved) {
-		if (false && middle_pressed) {
-			//sf::Vector2i m ={event.mouseMove.x, event.mouseMove.y};
-			//game_view.move(-sf::Vector2f(m - drag_mouse_pos));
-			//drag_mouse_pos = m;
-		}
 	}
 
-	if (false && event.type == sf::Event::MouseWheelScrolled) {
-		auto d = event.mouseWheelScroll.delta;
-		game_view.zoom(1 + -d * 0.1f);
-	}
 
 	return false;
 }
@@ -396,6 +413,16 @@ Entity* World::getEntity(int id)
 	return nullptr;
 }
 
+ItemObject * World::FindItem(int id)
+{
+	for (auto i : items) {
+		if (i->getId() == id) {
+			return i;
+		}
+	}
+	return nullptr;
+}
+
 void World::DuplicateEntity(int id)
 {
 	auto e = getEntity(id);
@@ -422,7 +449,22 @@ void World::DeleteEntity(int id)
 	}
 }
 
-void World::StartPlaceEntity(Entity * entity)
+void World::DeleteItem(int id)
 {
-	entity_place = entity;
+	int index = -1;
+	for (uint i = 0; i != items.size(); ++i) {
+		if (items[i]->getId() == id) {
+			index = i;
+			break;
+		}
+	}
+	if (index != -1) {
+		items.erase(items.begin() + index);
+	}
+
+}
+
+void World::StartPlaceItem(ItemObject* item)
+{
+	item_place = item;
 }
