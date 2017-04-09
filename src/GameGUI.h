@@ -36,6 +36,7 @@ public:
 	void PutDownItem(Item::any item);
 
 	bool getActive() { return active; }
+	bool IsMouseIn(sf::Vector2i mpos);
 	std::vector<Item::any>& getItems() { return items; }
 
 	void setActive(bool active);

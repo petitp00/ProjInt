@@ -455,7 +455,7 @@ public:
 	InvItemButton()=default;
 	InvItemButton(
 		Item::any item, sf::Vector2f pos, float width,
-		unsigned int character_size = FontSize::NORMAL,
+		unsigned int character_size = FontSize::SMALL,
 		sf::Color text_color = INV_TEXT_COLOR,
 		sf::Color background_color = INV_ACCENT_COLOR,
 		sf::Color background_color_hover = INV_ACCENT_COLOR2,
@@ -487,7 +487,7 @@ private:
 	sf::Font* font;
 	uint character_size;
 	float width = 0;
-	float margin = 16.f;
+	float margin = 10.f;
 
 	sf::RectangleShape rect_shape;
 	sf::Sprite icon_sprite;

@@ -252,7 +252,7 @@ void Inventory::ResetItemButtons()
 	int iy = 0;
 	for (auto i : items) {
 		InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
-		ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 16.f)*iy)});
+		ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
 		inv_buttons.push_back(ib1);
 		++iy;
 	}
@@ -306,7 +306,9 @@ void Inventory::ResetItemDescription(bool item_selected)
 
 void Inventory::AddItem(Item::any item)
 {
-	items.push_back(item);
+	if (items.size() < INV_MAX) {
+		items.push_back(item);
+	}
 
 	ResetItemButtons();
 }
@@ -334,6 +336,13 @@ void Inventory::PutDownItem(Item::any item)
 	ItemObject* i = make_item(item);
 	button_action_impl->game_state->getWorld().StartPlaceItem(i);
 	setActive(false);
+}
+
+bool Inventory::IsMouseIn(sf::Vector2i mpos)
+{
+	auto p = window_tw.Tween();
+	auto s = sf::Vector2f(INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT);
+	return (mpos.x >= p.x && mpos.x <= p.x + s.x && mpos.y >= p.y && mpos.y <= p.y + s.y);
 }
 
 void Inventory::setActive(bool active)

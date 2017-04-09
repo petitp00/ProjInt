@@ -65,6 +65,13 @@ bool GameState::HandleEvent(sf::Event const & event)
 		}
 	}
 	else if (inventory.getActive()) {
+		if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.mouseButton.button == sf::Mouse::Left) {
+				if (!inventory.IsMouseIn(sf::Mouse::getPosition(game.getWindow()))) {
+					inventory.setActive(false);
+				}
+			}
+		}
 		if (inventory.HandleEvents(event)) return true;
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 			inventory.setActive(false);

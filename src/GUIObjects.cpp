@@ -986,7 +986,7 @@ void InvItemButton::Init()
 	icon_sprite.setScale(icon_scale, icon_scale);
 
 	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
-	text_obj.setCharacterSize(FontSize::NORMAL);
+	text_obj.setCharacterSize(character_size);
 	text_obj.setFillColor(text_color);
 	text_obj.setString(item.name);
 	
@@ -1000,7 +1000,7 @@ void InvItemButton::UpdateButtonParams()
 
 	icon_sprite.setPosition(pos.x + margin - origin.x, pos.y + margin - origin.y);
 
-	text_obj.setPosition(pos.x + margin*3.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 4 - origin.y);
+	text_obj.setPosition(pos.x + margin*5.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 6 - origin.y);
 }
 
 InvActionButton::InvActionButton(std::string const & text_string, Item::any item, sf::Vector2f pos, float width, unsigned int character_size,

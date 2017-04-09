@@ -23,6 +23,8 @@ extern int WINDOW_WIDTH;// = 1800;
 extern int WINDOW_HEIGHT;// = 900;
 #endif
 
+static const int INV_MAX = 7;
+
 //extern int WINDOW_W(int new_val = -1) {
 //	static int winw = WINDOW_WIDTH;
 //	if (new_val != -1) winw = new_val;

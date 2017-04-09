@@ -34,7 +34,9 @@ any Item::getItemByName(std::string name)
 	if (name == "Bois") {
 		return Item::Wood;
 	}
-	if (name == "Pelure de banane")
+	if (name == "Pelure de banane") {
+		return Item::BananaPeel;
+	}
 
 	std::cerr << "Item \"" << name << "\" does not exist" << std::endl;
 

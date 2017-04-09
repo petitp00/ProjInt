@@ -357,8 +357,13 @@ bool World::HandleEvent(sf::Event const & event)
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
 			if (item_place) {
-				entities.push_back(item_place);
-				items.push_back(item_place);
+				if (inv_butt && inv_butt->getOpen()) {
+					inventory->AddItem(item_place->getItem());
+				}
+				else {
+					entities.push_back(item_place);
+					items.push_back(item_place);
+				}
 				item_place = nullptr;
 			}
 			else if (entity_hovered) {

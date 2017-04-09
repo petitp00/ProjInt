@@ -365,8 +365,28 @@ void Console::InitCommands()
 	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([](CommandActionImpl* impl, const vector<string>& args) func )));
 
 	add_cmd("give", {
-		if (args.size() == 1) {
+		if (args.size() >= 1) {
 			auto name = args[0];
+			if (name[0] == '"') {
+				name = name.substr(1, name.size());
+				if (name[name.size()-1] == '"') {
+					name = name.substr(0, name.size()-1);
+				}
+				else {
+					for (int i = 1; i != args.size(); ++i) {
+						name += ' ';
+						auto n = args[i];
+						if (n[n.size()-1] == '"') {
+							name += n.substr(0, n.size()-1);
+							break;
+						}
+						else {
+							name += args[i];
+						}
+					}
+				}
+
+			}
 			auto i = Item::getItemByName(name);
 			if (i.name == "") {
 				impl->console->AddLine("\"" + name + "\" is not an item", ERROR);
