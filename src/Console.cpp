@@ -1,10 +1,14 @@
 #include "Console.h"
 
 #include "ResourceManager.h"
+#include "GameGUI.h"
+#include "GameState.h"
 
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+
 using namespace std;
 using namespace ConsoleNamespace;
 
@@ -360,13 +364,18 @@ void Console::InitCommands()
 {
 	#define add_cmd(name, func) commands.push_back(new Command(name, caction_t([](CommandActionImpl* impl, const vector<string>& args) func )));
 
-	add_cmd("list_args", {
-		if (args.size()) {
-			impl->console->AddLine("Here are the arguments:", RESULT);
-			for (auto & a : args) impl->console->AddLine(a, INFO);
+	add_cmd("give", {
+		if (args.size() == 1) {
+			auto name = args[0];
+			auto i = Item::getItemByName(name);
+			if (i.name == "") {
+				impl->console->AddLine("\"" + name + "\" is not an item", ERROR);
+				return;
+			}
+			impl->game_state->getInventory()->AddItem(i);
 		}
 		else {
-			impl->console->AddLine("No arguments given", RESULT);
+			impl->console->AddLine("Usage: give \"item_name\"", ERROR);
 		}
 	});
 

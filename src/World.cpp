@@ -80,6 +80,7 @@ void World::CreateNewBlank(const std::string & filename)
 
 void World::LoadWorld(std::string const & filename)
 {
+	cout << "[Load Started]" << endl;
 	Clear();
 	name = filename;
 	std::ifstream s("Resources/Data/Saves/" + filename);
@@ -188,7 +189,7 @@ void World::LoadWorld(std::string const & filename)
 		}
 	}
 	player->setControls(controls);
-
+	cout << "[Load Ended]" << endl;
 }
 
 void World::Save(const string& filename)

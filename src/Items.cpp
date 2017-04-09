@@ -22,10 +22,14 @@ void Item::Init()
 
 any Item::getItemByName(std::string name)
 {
-	if (name == "Banane") return Item::Banana;
-	if (name == "Bois") return Item::Wood;
+	if (name == "Banane") {
+		return Item::Banana;
+	}
+	if (name == "Bois") {
+		return Item::Wood;
+	}
 
-	else std::cerr << "Item \"" << name << "\" does not exist" << std::endl;
+	std::cerr << "Item \"" << name << "\" does not exist" << std::endl;
 
 	return any();
 }

@@ -5,6 +5,7 @@
 #include "../World.h"
 #include "../Game.h"
 #include "../ResourceManager.h"
+#include "../GameGUI.h"
 
 namespace ConsoleNamespace { class Console; };
 
@@ -49,6 +50,7 @@ namespace EditorMode {
 		Controls* controls;
 
 		World world;
+		Inventory inventory;
 		bool world_init = false;
 
 	private:

@@ -31,12 +31,18 @@ void InitMinimap(sf::RenderTexture& texture,
 
 Editor::Editor() :
 	game_view(sf::FloatRect({0,0}, game_view_size)),
-	minimap_view(sf::FloatRect({0,0}, {float(WORLD_W), float(WORLD_H)}))
+	minimap_view(sf::FloatRect({0,0}, {float(WORLD_W), float(WORLD_H)})),
+	controls(new Controls),
+	inventory(controls)
 {
 	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Default);
-	controls = new Controls;
+	
+	Item::Init();
+
 	controls->LoadDefault(); 
 	world.controls = controls;
+	world.Init(&inventory);
+
 	console = new ConsoleNamespace::Console(*this);
 
 	window_view = window.getDefaultView();
