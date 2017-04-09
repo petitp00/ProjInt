@@ -26,6 +26,7 @@ namespace Item
 
 	extern any Banana;
 	extern any Wood;
+	extern any BananaPeel;
 
 	void Init();
 	any getItemByName(std::string name);

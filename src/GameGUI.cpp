@@ -9,6 +9,9 @@ using namespace std;
 
 
 static void eat(ButtonActionImpl* impl) {
+	if (impl->item.name == "Banane") {
+		impl->game_state->getInventory()->AddItem(Item::BananaPeel);
+	}
 	impl->game_state->getInventory()->EatItem(impl->item);
 }
 

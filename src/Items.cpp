@@ -6,6 +6,7 @@ using namespace Item;
 
 any Item::Banana;
 any Item::Wood;
+any Item::BananaPeel;
 
 void Item::Init()
 {
@@ -18,6 +19,11 @@ void Item::Init()
 	Wood.desc = "Combustible. Utilisé pour faire d'autres objets.";
 	Wood.pos_in_texture_map = {1, 0};
 	Wood.edible = false;
+
+	BananaPeel.name = "Pelure de banane";
+	BananaPeel.desc = "Déchet bio. Compostable.";
+	BananaPeel.pos_in_texture_map = {2, 0};
+	BananaPeel.edible = false;
 }
 
 any Item::getItemByName(std::string name)
@@ -28,6 +34,7 @@ any Item::getItemByName(std::string name)
 	if (name == "Bois") {
 		return Item::Wood;
 	}
+	if (name == "Pelure de banane")
 
 	std::cerr << "Item \"" << name << "\" does not exist" << std::endl;
 

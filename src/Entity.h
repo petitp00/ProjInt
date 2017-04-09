@@ -311,7 +311,6 @@ static ItemObject* make_item(Item::any item, sf::Vector2f pos = {0,0}) {
 	auto i = new ItemObject(item, Item::texture_map_file, SOLID);
 	i->type = ITEM;
 	i->pos = pos;
-	//i->sprite_origin = {item.pos_in_texture_map.x * ts, item.pos_in_texture_map.y * ts};
 	auto scale = 3.f;
 	i->size = {ts*scale, ts*scale};
 	i->scale = scale;
