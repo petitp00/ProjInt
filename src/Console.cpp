@@ -516,8 +516,8 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 			type = getEntityTypeFromString(type_str);
 		}
 		if (args.size() >= 3) { pos = sf::Vector2f(float(atof(args[1].c_str())), float(atof(args[2].c_str()))); }
-		if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
-		if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
+		//if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
+		//if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
 
 		impl->editor->world.AddEntity(make_entity(type, pos));
 	});

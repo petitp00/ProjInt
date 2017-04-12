@@ -57,33 +57,28 @@ enum Type {
 static std::string getEntityTypeString(Type t) {
 	switch (t)
 	{
-	case ENTITY: return "ENTITY";
-	case PLAYER: return "PLAYER";
-	case GAME_OBJECT: return "GAME_OBJECT";
-	case ROCK: return "ROCK";
-	case BUSH: return "BUSH";
-	case TREE: return "TREE";
-	case ITEM: return "ITEM";
-	case Type::ERROR: return "ERROR";
-	default: return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
+	case ENTITY:		return "ENTITY";
+	case PLAYER:		return "PLAYER";
+	case GAME_OBJECT:	return "GAME_OBJECT";
+	case ROCK:			return "ROCK";
+	case BUSH:			return "BUSH";
+	case TREE:			return "TREE";
+	case ITEM:			return "ITEM";
+	case Type::ERROR:	return "ERROR";
+	default:			return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
 }
 
 static Type getEntityTypeFromString(const std::string& str) {
-	if (str == "ENTITY") return ENTITY;
-	if (str == "PLAYER") return PLAYER;
-	if (str == "GAME_OBJECT") return GAME_OBJECT;
-	if (str == "ROCK") return ROCK;
-	if (str == "BUSH") return BUSH;
-	if (str == "TREE") return TREE;
-	if (str == "ITEM") return ITEM;
+	if (str == "ENTITY")		return ENTITY;
+	if (str == "PLAYER")		return PLAYER;
+	if (str == "GAME_OBJECT")	return GAME_OBJECT;
+	if (str == "ROCK")			return ROCK;
+	if (str == "BUSH")			return BUSH;
+	if (str == "TREE")			return TREE;
+	if (str == "ITEM")			return ITEM;
 	return Type::ERROR;
 }
-
-static unsigned long getFlagsFromString(const std::string& str) {
-	return 0;
-}
-
 
 class Entity
 {
@@ -114,7 +109,7 @@ public:
 	sf::Vector2f const& getPos() { return pos; }
 	virtual sf::Vector2f getOrigin() { return {0,0}; }
 	sf::Vector2f const& getSize() { return size; }
-	sf::FloatRect const getCollisionBox() { return {pos,size}; }
+	virtual sf::FloatRect const getCollisionBox() { return {pos,size}; }
 	bool getDead() { return dead; }
 	Type getType() { return type; }
 	unsigned long getFlags() { return flags; }
@@ -143,7 +138,6 @@ public:
 	GameObject()=default;
 	GameObject(std::string texture_name, unsigned long flags=NO_FLAG,
 					  std::vector<std::string> const& saved_data={});
-	
 	GameObject(unsigned long flags,
 					  std::vector<std::string> const& saved_data={}); // for loading
 
@@ -151,20 +145,13 @@ public:
 	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
 
 	void setPos(sf::Vector2f pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
-	
 	sf::Vector2f getOrigin() override { return sprite_origin*scale; }
-
-	std::vector<std::string> getSavedData() override {
-		return {
+	std::vector<std::string> getSavedData() override { return {
 			std::to_string(pos.x) +" "+ std::to_string(pos.y),
 			std::to_string(size.x) +" "+ std::to_string(size.y),
 			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
 			texture_name,
-
-
-		};
-	}
-
+		}; }
 protected:
 	sf::Sprite sprite;
 	sf::Vector2f sprite_origin ={0,0};
@@ -186,7 +173,7 @@ public:
 	std::vector<std::string> getSavedData() override {
 		auto item = Item::Manager::getAny(item_id);
 		return { // save with item id (referring to another part of the save file) ???????
-			/*"\"" + */item->name/* + "\""*/,
+			item->name,
 			std::to_string(pos.x) +" "+ std::to_string(pos.y),
 			std::to_string(size.x) +" "+ std::to_string(size.y),
 			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
@@ -195,7 +182,7 @@ public:
 
 		};
 	}
-
+	sf::FloatRect const getCollisionBox() override { return {pos+size/4.f,size/2.f}; }
 	int getItemId() { return item_id; }
 
 private:
@@ -234,13 +221,10 @@ public:
 		   std::vector<std::string> const& saved_data={});
 
 	void Init();
-
 	void Update(float dt) override;
 	void Render(sf::RenderTarget& target) override;
-
 	void DoCollisions(std::vector<Entity*>& entities);
 	void DoMovement(float dt);
-
 	void setControls(Controls* controls) { this->controls = controls; }
 	void setPos(sf::Vector2f pos) override;
 
@@ -253,21 +237,16 @@ private:
 	float walk_speed = 0.3f;
 };
 
+/*
+	--- ### --- ### --- MAKE ENTITY FUNCTIONS --- ### --- ### --- ### ---
+*/
+
 static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
 	Entity* e = nullptr;
 
-	if (type == ROCK) {
-		e = make_rock(pos);
-	}
-	else if (type == BUSH) {
-		e = make_bush(pos);
-	}
-	else if (type == TREE) {
-		e = make_tree(pos);
-	}
-	else if (type == ITEM) {
-		std::cout << "EWHA" << std::endl;
-	}
+	if		(type == ROCK)	e = make_rock(pos);
+	else if (type == BUSH)	e = make_bush(pos);
+	else if (type == TREE)	e = make_tree(pos);
 
 	return e;
 }

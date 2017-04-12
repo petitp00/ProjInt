@@ -38,7 +38,7 @@ Food* make_food(ItemType type) {
 		return f;
 	}
 	if (type == carrot) {
-		f->name == "Carotte";
+		f->name = "Carotte";
 		f->desc = "Légume. Mangeable. Laisse un bout et des graines.";
 		f->pos_in_texture_map = {4,1};
 		f->junk_created = carrot_top;
