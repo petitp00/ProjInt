@@ -35,7 +35,7 @@ public:
 	std::vector<sf::Keyboard::Key*> controls_values;
 	std::string* world_name_ref;
 	std::string load_world_name;
-	Item::any item;
+	int item;
 };
 
 using action_t = std::function<void(ButtonActionImpl*)>*;
@@ -454,7 +454,7 @@ class InvItemButton : public GUIObject {
 public:
 	InvItemButton()=default;
 	InvItemButton(
-		Item::any item, sf::Vector2f pos, float width,
+		int item, sf::Vector2f pos, float width,
 		unsigned int character_size = FontSize::SMALL,
 		sf::Color text_color = INV_TEXT_COLOR,
 		sf::Color background_color = INV_ACCENT_COLOR,
@@ -476,7 +476,7 @@ public:
 	void setOrigin(sf::Vector2f origin) override;
 
 	bool getSelected() { return selected; }
-	Item::any getItem() { return item; }
+	int getItem() { return item; }
 
 private:
 	void Init();
@@ -499,14 +499,14 @@ private:
 	sf::Color background_color_selected;
 	Tweener color_tw;
 
-	Item::any item;
+	int item;
 };
 
 class InvActionButton : public TextButton
 {
 public:
 	InvActionButton()=default;
-	InvActionButton(std::string const& text_string, Item::any item, sf::Vector2f pos, float width,
+	InvActionButton(std::string const& text_string, int item, sf::Vector2f pos, float width,
 					   unsigned int character_size = FontSize::NORMAL,
 					   sf::Color text_color = INV_TEXT_COLOR,
 					   sf::Color background_color = INV_ACCENT_COLOR,
@@ -515,8 +515,7 @@ public:
 
 	bool onClick(sf::Vector2i mouse_pos) override;
 
-	void setWorldName(Item::any item) { this->item = item; }
 private:
-	Item::any item;
+	int item;
 };
 

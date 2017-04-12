@@ -891,7 +891,7 @@ void TextInputBox::UpdateCursorPos()
 	cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
 }
 
-InvItemButton::InvItemButton(Item::any item, sf::Vector2f pos,
+InvItemButton::InvItemButton(int item, sf::Vector2f pos,
 							 float width, unsigned int character_size,
 							 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, sf::Color background_color_selected) :
 	GUIObject(pos, {0,0}),
@@ -980,15 +980,17 @@ void InvItemButton::Init()
 
 	float ts = Item::items_texture_size;
 
+	auto item_obj = Item::Manager::getAny(item);
+
 	icon_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
-	icon_sprite.setTextureRect(sf::IntRect(int(ts * item.pos_in_texture_map.x), int(ts * item.pos_in_texture_map.y), int(ts), int(ts)));
+	icon_sprite.setTextureRect(sf::IntRect(int(ts * item_obj->pos_in_texture_map.x), int(ts * item_obj->pos_in_texture_map.y), int(ts), int(ts)));
 	icon_sprite.setOrigin(origin);
 	icon_sprite.setScale(icon_scale, icon_scale);
 
 	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
 	text_obj.setCharacterSize(character_size);
 	text_obj.setFillColor(text_color);
-	text_obj.setString(item.name);
+	text_obj.setString(item_obj->name);
 	
 	UpdateButtonParams();
 }
@@ -1003,7 +1005,7 @@ void InvItemButton::UpdateButtonParams()
 	text_obj.setPosition(pos.x + margin*5.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 6 - origin.y);
 }
 
-InvActionButton::InvActionButton(std::string const & text_string, Item::any item, sf::Vector2f pos, float width, unsigned int character_size,
+InvActionButton::InvActionButton(std::string const & text_string, int item, sf::Vector2f pos, float width, unsigned int character_size,
 								 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) : 
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name), item(item)
 {

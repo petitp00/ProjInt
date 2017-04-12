@@ -9,8 +9,13 @@ using namespace std;
 
 
 static void eat(ButtonActionImpl* impl) {
-	if (impl->item.name == "Banane") {
-		impl->game_state->getInventory()->AddItem(Item::BananaPeel);
+	auto item = Item::Manager::getAny(impl->item);
+	if (Item::IsFood(Item::getItemTypeByName(item->name))) {
+		auto food = Item::Manager::getFood(impl->item);
+		if (food->junk_created != Item::none) {
+			auto bp = Item::Manager::CreateItem(food->junk_created);
+			impl->game_state->getInventory()->AddItem(bp);
+		}
 	}
 	impl->game_state->getInventory()->EatItem(impl->item);
 }
@@ -265,7 +270,10 @@ void Inventory::ResetItemButtons()
 void Inventory::ResetItemDescription(bool item_selected)
 {
 	if (item_selected) {
-		item_desc_obj->setTextString("Description: " + selected_item.desc);
+		auto si = Item::Manager::getAny(selected_item);
+		auto sit = Item::getItemTypeByName(si->name);
+
+		item_desc_obj->setTextString("Description: " + si->desc);
 
 		for (int i = 0; i != actions_buttons.size(); ++i) {
 			delete actions_buttons[i];
@@ -286,7 +294,7 @@ void Inventory::ResetItemDescription(bool item_selected)
 		actions_buttons.push_back(b1);
 		++i;
 
-		if (selected_item.edible) {
+		if (Item::IsFood(sit)) {
 			auto b = new InvActionButton("Manger", selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
 			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
 			b->setPos(window_tw.Tween());
@@ -304,16 +312,22 @@ void Inventory::ResetItemDescription(bool item_selected)
 	}
 }
 
-void Inventory::AddItem(Item::any item)
+void Inventory::AddItem(int id)
 {
 	if (items.size() < INV_MAX) {
-		items.push_back(item);
+		items.push_back(id);
 	}
 
 	ResetItemButtons();
 }
 
-void Inventory::RemoveItem(Item::any item)
+void Inventory::AddNewItem(Item::ItemType type)
+{
+	int item = Item::Manager::CreateItem(type);
+	AddItem(item);
+}
+
+void Inventory::RemoveItem(int item)
 {
 	for (uint i = 0; i != items.size(); ++i) {
 		if (items[i] == item) {
@@ -325,12 +339,12 @@ void Inventory::RemoveItem(Item::any item)
 	ResetItemButtons();
 }
 
-void Inventory::EatItem(Item::any item)
+void Inventory::EatItem(int item)
 {
 	RemoveItem(item);
 }
 
-void Inventory::PutDownItem(Item::any item)
+void Inventory::PutDownItem(int item)
 {
 	RemoveItem(item);
 	ItemObject* i = make_item(item);

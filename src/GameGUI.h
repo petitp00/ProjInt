@@ -30,14 +30,15 @@ public:
 	bool HandleEvents(sf::Event const& event);
 	void ResetItemButtons();
 	void ResetItemDescription(bool item_selected = true);
-	void AddItem(Item::any item);
-	void RemoveItem(Item::any item);
-	void EatItem(Item::any item);
-	void PutDownItem(Item::any item);
+	void AddItem(int id);
+	void AddNewItem(Item::ItemType type);
+	void RemoveItem(int id);
+	void EatItem(int id);
+	void PutDownItem(int id);
 
 	bool getActive() { return active; }
 	bool IsMouseIn(sf::Vector2i mpos);
-	std::vector<Item::any>& getItems() { return items; }
+	std::vector<int>& getItemsId() { return items; }
 
 	void setActive(bool active);
 
@@ -46,7 +47,7 @@ private:
 	ButtonActionImpl* button_action_impl;
 	bool active = false;
 
-	std::vector<Item::any> items;
+	std::vector<int> items;
 
 	sf::RenderTexture tooltip_render_target; // on top
 	sf::Sprite tooltip_render_target_sprite;
@@ -59,7 +60,7 @@ private:
 	sf::RectangleShape item_desc_shape;
 	TextBox* item_desc_obj;
 
-	Item::any selected_item;
+	int selected_item;
 };
 
 class InventoryButton

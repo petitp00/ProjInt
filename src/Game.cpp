@@ -72,7 +72,7 @@ Game::Game()
 
 	game_settings.controls.LoadUserControls();
 
-	Item::Init();
+	//Item::Init();
 
 	ButtonActionImpl* impl = new ButtonActionImpl(this, nullptr, nullptr);
 

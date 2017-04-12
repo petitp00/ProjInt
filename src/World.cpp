@@ -136,6 +136,7 @@ void World::LoadWorld(std::string const & filename)
 			Player* pl;
 			GameObject* go;
 			ItemObject* io;
+			int id;
 
 			switch (t)
 			{
@@ -162,7 +163,8 @@ void World::LoadWorld(std::string const & filename)
 				entities.push_back(go);
 				break;
 			case ITEM:
-				io = make_item(Item::getItemByName(vec[0]), p);
+				id = Item::Manager::CreateItem(Item::getItemTypeByName(vec[0]));
+				io = make_item(id, p);
 				entities.push_back(io);
 				items.push_back(io);
 				break;
@@ -187,7 +189,21 @@ void World::LoadWorld(std::string const & filename)
 			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl << "loading inventory...";
 			while (s >> w) {
 				if (w == "[END]") break;
-				inventory->AddItem(Item::getItemByName(w));
+				
+				if (w[0] == '"') { // remove ""
+					w = w.substr(1, w.size());
+					if (w[w.size()-1] == '"') {
+						w = w.substr(0, w.size()-1);
+					}
+					else {
+						char c;
+						while (s.get(c)) {
+							if (c == '"') break;
+							w += c;
+						}
+					}
+				}
+				inventory->AddNewItem(Item::getItemTypeByName(w));
 			}
 			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
 		}
@@ -242,9 +258,10 @@ void World::Save(const string& filename)
 
 	cout << "saving inventory...";
 	s << "[INVENTORY]" << endl;
-	auto items = inventory->getItems();
+	auto items = inventory->getItemsId();
 	for (auto i : items) {
-		s << i.name << endl;
+		auto item = Item::Manager::getAny(i);
+		s << "\"" << item->name << "\"" << endl;
 	}
 	s << "[END]" << endl;
 	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
@@ -277,7 +294,7 @@ void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
 		}
 		else {
 			if (e->getType() == ITEM) {
-				DeleteItem(e->getId());
+				DeleteItemObj(e->getId());
 			}
 			i = entities.erase(i);
 			continue;
@@ -358,7 +375,7 @@ bool World::HandleEvent(sf::Event const & event)
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
 			if (item_place) {
 				if (inv_butt && inv_butt->getOpen()) {
-					inventory->AddItem(item_place->getItem());
+					inventory->AddItem(item_place->getItemId());
 				}
 				else {
 					entities.push_back(item_place);
@@ -377,7 +394,7 @@ bool World::HandleEvent(sf::Event const & event)
 	if (event.type == sf::Event::MouseButtonReleased) {
 		if (item_move) {
 			if (inv_butt && inv_butt->getOpen()) {
-				inventory->AddItem(item_move->getItem());
+				inventory->AddItem(item_move->getItemId());
 				DeleteEntity(item_move->getId());
 			}
 			item_move = nullptr;
@@ -454,7 +471,7 @@ void World::DeleteEntity(int id)
 	}
 }
 
-void World::DeleteItem(int id)
+void World::DeleteItemObj(int id)
 {
 	int index = -1;
 	for (uint i = 0; i != items.size(); ++i) {
@@ -464,12 +481,14 @@ void World::DeleteItem(int id)
 		}
 	}
 	if (index != -1) {
+		cout << "index: " << index << endl;
+		//Item::Manager::DeleteItem(items[index]->getItemId());
 		items.erase(items.begin() + index);
+	}
+	else {
+		cerr << "Could not find item " << id << endl;
 	}
 
 }
 
-void World::StartPlaceItem(ItemObject* item)
-{
-	item_place = item;
-}
+void World::StartPlaceItem(ItemObject* item) { item_place = item; }

@@ -179,7 +179,7 @@ void Player::setPos(sf::Vector2f pos)
 	anim_comp.Update();
 }
 
-ItemObject::ItemObject(Item::any item, std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data) :
-	item(item), GameObject(texture_name, flags, saved_data)
+ItemObject::ItemObject(int item_id, std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data) :
+	item_id(item_id), GameObject(texture_name, flags, saved_data)
 {
 }

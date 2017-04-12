@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "Items.h"
 
@@ -173,18 +174,19 @@ protected:
 
 class ItemObject : public GameObject
 {
-	friend ItemObject* make_item(Item::any item, sf::Vector2f pos);
+	friend ItemObject* make_item(int id, sf::Vector2f pos);
 public:
 	ItemObject()=default;
-	ItemObject(Item::any item, std::string texture_name, unsigned long flags=NO_FLAG,
+	ItemObject(int item_id, std::string texture_name, unsigned long flags=NO_FLAG,
 					  std::vector<std::string> const& saved_data={});
 	
 	ItemObject(unsigned long flags,
 					  std::vector<std::string> const& saved_data={}) = delete; // for loading
 
 	std::vector<std::string> getSavedData() override {
-		return {
-			item.name,
+		auto item = Item::Manager::getAny(item_id);
+		return { // save with item id (referring to another part of the save file) ???????
+			/*"\"" + */item->name/* + "\""*/,
 			std::to_string(pos.x) +" "+ std::to_string(pos.y),
 			std::to_string(size.x) +" "+ std::to_string(size.y),
 			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
@@ -194,10 +196,10 @@ public:
 		};
 	}
 
-	Item::any getItem() { return item; }
+	int getItemId() { return item_id; }
 
 private:
-	Item::any item;
+	int item_id;
 
 };
 
@@ -264,7 +266,7 @@ static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
 		e = make_tree(pos);
 	}
 	else if (type == ITEM) {
-		e = make_tree(pos);
+		std::cout << "EWHA" << std::endl;
 	}
 
 	return e;
@@ -306,17 +308,20 @@ static GameObject* make_tree(sf::Vector2f pos= {0,0}) {
 	return tree;
 }
 
-static ItemObject* make_item(Item::any item, sf::Vector2f pos = {0,0}) {
+static ItemObject* make_item(int id, sf::Vector2f pos = {0,0}) {
 	float ts = Item::items_texture_size;
-	auto i = new ItemObject(item, Item::texture_map_file, SOLID);
+	auto i = new ItemObject(id, Item::texture_map_file, SOLID);
 	i->type = ITEM;
 	i->pos = pos;
 	auto scale = 3.f;
 	i->size = {ts*scale, ts*scale};
 	i->scale = scale;
 	i->Init();
+
+	auto item = Item::Manager::getAny(id);
+
 	i->sprite.setTextureRect(
-		{int(item.pos_in_texture_map.x*ts), int(item.pos_in_texture_map.y*ts), int(ts), int(ts)});
+		{int(item->pos_in_texture_map.x*ts), int(item->pos_in_texture_map.y*ts), int(ts), int(ts)});
 	return i;
 }
 	

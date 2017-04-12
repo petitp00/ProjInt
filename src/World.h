@@ -53,7 +53,7 @@ public:
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
-	void DeleteItem(int id);
+	void DeleteItemObj(int id);
 	void StartPlaceItem(ItemObject* item);
 
 private:

@@ -37,7 +37,7 @@ Editor::Editor() :
 {
 	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Editor", sf::Style::Default);
 	
-	Item::Init();
+	//Item::Init();
 
 	controls->LoadDefault(); 
 	world.controls = controls;

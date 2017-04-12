@@ -387,12 +387,14 @@ void Console::InitCommands()
 				}
 
 			}
-			auto i = Item::getItemByName(name);
-			if (i.name == "") {
-				impl->console->AddLine("\"" + name + "\" is not an item", ERROR);
-				return;
+			auto it = Item::getItemTypeByName(name);
+			if (it != -1) {
+				auto i = Item::Manager::CreateItem(it);
+				impl->game_state->getInventory()->AddItem(i);
 			}
-			impl->game_state->getInventory()->AddItem(i);
+			else {
+				impl->console->AddLine("\"" + name + "\" is not an item", ERROR);
+			}
 		}
 		else {
 			impl->console->AddLine("Usage: give \"item_name\"", ERROR);
