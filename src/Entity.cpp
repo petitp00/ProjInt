@@ -109,7 +109,7 @@ void Player::Update(float dt)
 
 	if (movement != sf::Vector2f(0, 0)) {
 		movement = normalize(movement);
-		movement.y *= 0.85f;
+		movement.y *= 0.92f;
 		anim_comp.Update();
 	}
 

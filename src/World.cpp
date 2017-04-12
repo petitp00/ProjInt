@@ -316,6 +316,12 @@ void World::UpdateView()
 
 	float vx = float(int(player->getPos().x + player->getSize().x/2.f));
 	float vy = float(int(player->getPos().y + player->getSize().y/2.f));
+	auto vs = game_view.getSize();
+
+	if (vx - vs.x/2.f <= 0)			vx = vs.x/2.f;
+	if (vx + vs.x/2.f >= WORLD_W)	vx = WORLD_W - vs.x/2.f;
+	if (vy - vs.y/2.f <= 0)			vy = vs.y/2.f;
+	if (vy + vs.y/2.f >= WORLD_H)	vy = WORLD_H - vs.y/2.f;
 	
 	game_view.setCenter(vx, vy);
 }
@@ -480,14 +486,8 @@ void World::DeleteItemObj(int id)
 			break;
 		}
 	}
-	if (index != -1) {
-		cout << "index: " << index << endl;
-		//Item::Manager::DeleteItem(items[index]->getItemId());
-		items.erase(items.begin() + index);
-	}
-	else {
-		cerr << "Could not find item " << id << endl;
-	}
+	if (index != -1) { items.erase(items.begin() + index); }
+	else { cerr << "Could not find item " << id << endl; }
 
 }
 

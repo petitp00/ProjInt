@@ -17,6 +17,8 @@ class MenuState;
 #ifndef EDITOR_MODE
 extern int WINDOW_WIDTH;// = 1280;
 extern int WINDOW_HEIGHT;// = 720;
+static const int WORLD_W = 1280*3;
+static const int WORLD_H = 1280*3;
 #endif
 #ifdef EDITOR_MODE
 extern int WINDOW_WIDTH;// = 1800;
