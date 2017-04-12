@@ -127,10 +127,10 @@ void Player::Render(sf::RenderTarget & target)
 	target.draw(anim_comp.sprite);
 }
 
-void Player::DoCollisions(std::vector<Entity*>& entities)
+void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 {
 	for (auto e : entities) {
-		if (e->HasFlag(SOLID)) {
+		if (e->HasFlag(SOLID) && e->getId() != entity_move_id) {
 			auto ebox = e->getCollisionBox();
 			sf::Vector2f epos = {ebox.left, ebox.top};
 			sf::Vector2f esize ={ebox.width, ebox.height};

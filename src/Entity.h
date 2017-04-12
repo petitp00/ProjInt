@@ -223,7 +223,7 @@ public:
 	void Init();
 	void Update(float dt) override;
 	void Render(sf::RenderTarget& target) override;
-	void DoCollisions(std::vector<Entity*>& entities);
+	void DoCollisions(std::vector<Entity*>& entities, int entity_move_id = -1);
 	void DoMovement(float dt);
 	void setControls(Controls* controls) { this->controls = controls; }
 	void setPos(sf::Vector2f pos) override;

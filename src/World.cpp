@@ -302,7 +302,11 @@ void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
 		++i;
 	}
 
-	player->DoCollisions(entities);
+	int no_collision_id = -1; // this entity won't have collision (because it is picked up)
+	if (item_place) no_collision_id = item_place->getId();
+	if (item_move) no_collision_id = item_move->getId();
+
+	player->DoCollisions(entities, no_collision_id);
 	player->DoMovement(dt);
 
 	if (item_place) item_place->setPos(mouse_pos_in_world - item_place->getSize()/2.f + item_place->getOrigin());
