@@ -305,6 +305,10 @@
     <ClInclude Include="src\Tweener.h" />
     <ClInclude Include="src\World.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\TileShader.frag" />
+    <None Include="Resources\Shaders\TileShader.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

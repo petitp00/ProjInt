@@ -74,8 +74,8 @@ void World::CreateNewBlank(const std::string & filename)
 	player->setControls(controls);
 	entities.push_back(player);
 
-	vector<int> t(EditorMode::WORLD_W/visual_tile_size * EditorMode::WORLD_H/visual_tile_size, NONE);
-	ground.LoadTileMap(t, EditorMode::WORLD_W/visual_tile_size, EditorMode::WORLD_H/visual_tile_size);
+	vector<int> t(WORLD_W/visual_tile_size * WORLD_H/visual_tile_size, NONE);
+	ground.LoadTileMap(t, WORLD_W/visual_tile_size, WORLD_H/visual_tile_size);
 
 	Save();
 }

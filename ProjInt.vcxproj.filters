@@ -105,4 +105,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\TileShader.frag" />
+    <None Include="Resources\Shaders\TileShader.vert" />
+  </ItemGroup>
 </Project>

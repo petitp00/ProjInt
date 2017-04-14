@@ -28,7 +28,7 @@ Tileset::Tileset(std::string filename)
 	types.push_back({NONE,				{{0,0}}});
 	types.push_back({GRASS,				{{1,0}}});
 	types.push_back({SAND,				{{2,0}, {3,0}}});
-	types.push_back({STONES,			{{4,0}}});
+	types.push_back({RIVER,			{{4,0}}});
 	types.push_back({DRY_DIRT,			{{5,0}}});
 
 	sf::Image image;
@@ -90,6 +90,7 @@ GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos)
 Ground::Ground() :
 	tileset("Ground.png")
 {
+	shader.loadFromFile("Resources/Shaders/TileShader.vert", "Resources/Shaders/TileShader.frag");
 }
 
 void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
@@ -179,12 +180,17 @@ void Ground::ReloadTileMap()
 			vector<sf::Vector3i>* tnbvec = new vector<sf::Vector3i>;
 			tileset.getUV(tnbvec, GroundType(tile_nb), overlaps);
 
+			bool main_tile_checked = false;
 			for (auto& t: *tnbvec) {
 				QuadH q;
-				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, fj*vts), sf::Vector2f(t.x*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, fj*vts), sf::Vector2f((t.x+1)*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, (fj+1)*vts), sf::Vector2f((t.x+1)*ts, (t.y+1)*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, (fj+1)*vts), sf::Vector2f(t.x*ts, (t.y+1)*ts)));
+				sf::Color c = sf::Color(255, 255, 255, 255);
+				if (!main_tile_checked && GroundType(tile_nb) == GroundType::RIVER) c.r = 0; // signals our shader to draw water on top
+				main_tile_checked = true;
+
+				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, fj*vts), c, sf::Vector2f(t.x*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, fj*vts), c, sf::Vector2f((t.x+1)*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, (fj+1)*vts), c, sf::Vector2f((t.x+1)*ts, (t.y+1)*ts)));
+				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, (fj+1)*vts), c, sf::Vector2f(t.x*ts, (t.y+1)*ts)));
 				q.h = t.z;
 				quadhs.push_back(q);
 			}
@@ -316,6 +322,12 @@ float Ground::getVisualTileSize()
 void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
 {
 	states.texture = &tileset.getTexture();
+
+	std::string unif = "time";
+	float time = clock.getElapsedTime().asSeconds();
+
+	shader.setUniform(unif, time);
+	states.shader = &shader;
 	target.draw(vertices, states);
 }
 

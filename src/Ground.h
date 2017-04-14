@@ -10,7 +10,7 @@ enum GroundType {
 	NONE = 0,
 	GRASS = 1,
 	SAND = 2,
-	STONES = 3,
+	RIVER = 3,
 	DRY_DIRT = 4
 };
 
@@ -20,7 +20,7 @@ static std::string getGroundTypeString(GroundType type) {
 	case NONE: return "NONE";
 	case GRASS: return "GRASS";
 	case SAND: return "SAND";
-	case STONES: return "STONES";
+	case RIVER: return "RIVER";
 	case DRY_DIRT: return "DRY_DIRT";
 	default: return "???";
 	}
@@ -28,7 +28,7 @@ static std::string getGroundTypeString(GroundType type) {
 
 static std::map<GroundType, int> type_overlap_val = {
 	{NONE, 0},
-	{STONES, 10},
+	{RIVER, 10},
 	{DRY_DIRT, 20},
 	{SAND, 30},
 	{GRASS, 40}
@@ -44,16 +44,6 @@ static bool getTypeDominant(GroundType t1, GroundType t2, bool accept_equal = fa
 static bool getTypeDominant(int t1, int t2, bool accept_equal = false) {
 	return getTypeDominant(GroundType(t1), GroundType(t2), accept_equal);
 }
-//
-//#define NO_FLAG 0
-//#define UP 1
-//#define DOWN 2
-//#define LEFT 4
-//#define RIGHT 8
-//#define CORNER_TOP_LEFT 16
-//#define CORNER_TOP_RIGHT 32
-//#define CORNER_DOWN_LEFT 64
-//#define CORNER_DOWN_RIGHT 128
 
 enum TYPE_DIRS {
 	UP = 8,
@@ -120,6 +110,8 @@ public:
 
 private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	mutable sf::Shader shader;
+	sf::Clock clock;
 
 	sf::VertexArray vertices;
 	std::vector<GroundTile> tiles;

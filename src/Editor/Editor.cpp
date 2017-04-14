@@ -228,6 +228,8 @@ void Editor::Start()
 					if		(delta < 0) game_view_zoom += factor;
 					else if (delta > 0) game_view_zoom -= factor;
 
+					if (game_view_zoom < 0.001f) game_view_zoom = 0.001f;
+
 					gui_info_zoom->setVal(to_string(game_view_zoom));
 					game_view.setSize(game_view_size * game_view_zoom);
 					UpdateGameViewMinimapShape();

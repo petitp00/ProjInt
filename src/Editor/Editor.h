@@ -11,9 +11,6 @@ namespace ConsoleNamespace { class Console; };
 
 
 namespace EditorMode {
-	static const int WORLD_W = 1280*3;
-	static const int WORLD_H = 1280*3;
-
 	struct GUIInfo {
 		void setVal(const std::string& val) {
 			text_obj.setString(name + ": " + val);
