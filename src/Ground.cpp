@@ -26,10 +26,11 @@ Tileset::Tileset(std::string filename)
 
 	vector<pair<GroundType, vector<vec2i>>> types;
 	types.push_back({NONE,				{{0,0}}});
-	types.push_back({GRASS,				{{1,0}}});
-	types.push_back({SAND,				{{2,0}, {3,0}}});
-	types.push_back({RIVER,			{{4,0}}});
-	types.push_back({DRY_DIRT,			{{5,0}}});
+	types.push_back({GRASS,				{{1,0}, {2,0}}});
+	types.push_back({SAND,				{{3,0}, {4,0}}});
+	types.push_back({RIVER,				{{5,0}}});
+	types.push_back({DRY_DIRT,			{{7,0}, {1,0}, {1,1}, {1,2}}});
+	types.push_back({DIRT,				{{6,0}}});
 
 	sf::Image image;
 	image.create(uint(tile_size*16), uint(tile_size*16), sf::Color::Transparent);

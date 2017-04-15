@@ -293,7 +293,7 @@ static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	auto i = new ItemObject(id, Item::texture_map_file, SOLID);
 	i->type = ITEM;
 	i->pos = pos;
-	auto scale = 3.f;
+	auto scale = 1.5f;
 	i->size = {ts*scale, ts*scale};
 	i->scale = scale;
 	i->Init();

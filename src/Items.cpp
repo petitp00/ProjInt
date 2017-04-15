@@ -26,14 +26,14 @@ Food* make_food(ItemType type) {
 	if (type == banana) {
 		f->name = "Banane";
 		f->desc = "Fruit. Mangeable. Laisse une pelure.";
-		f->pos_in_texture_map = {0,0};
+		f->pos_in_texture_map = {1,0};
 		f->junk_created = banana_peel;
 		return f;
 	}
 	if (type == apple) {
 		f->name = "Pomme";
 		f->desc = "Fruit. Mangeable. Laisse un coeur.";
-		f->pos_in_texture_map = {2,1};
+		f->pos_in_texture_map = {0,0};
 		f->junk_created = apple_core;
 		return f;
 	}

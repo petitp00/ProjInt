@@ -30,10 +30,11 @@ World::~World()
 	Clear();
 }
 
-void World::Init(Inventory* inventory, InventoryButton* inv_butt)
+void World::Init(Inventory* inventory, InventoryButton* inv_butt, GameState* game_state)
 {
 	this->inventory = inventory;
 	this->inv_butt = inv_butt;
+	this->game_state= game_state;
 }
 
 void World::Clear()
@@ -449,6 +450,13 @@ ItemObject * World::FindItem(int id)
 		}
 	}
 	return nullptr;
+}
+
+void World::UseToolAt(vec2 mouse_pos_in_world)
+{
+	if (game_state->getEquippedTool()) {
+
+	}
 }
 
 void World::DuplicateEntity(int id)

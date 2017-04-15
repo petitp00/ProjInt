@@ -18,7 +18,7 @@ static bool minimap_drag	= false;
 static vec2i mouse_pos;
 static vec2 mouse_pos_in_world;
 static vec2 drag_mouse_pos;
-static vec2 last_ground_edit{-1.f, -1.f};
+static vec2 last_ground_edit {-1.f, -1.f};
 
 static Entity* selected_entity = nullptr;
 static vec2 selected_entity_click_offset;
@@ -41,7 +41,7 @@ Editor::Editor() :
 
 	controls->LoadDefault(); 
 	world.controls = controls;
-	world.Init(&inventory, nullptr);
+	world.Init(&inventory, nullptr, nullptr);
 
 	console = new ConsoleNamespace::Console(*this);
 

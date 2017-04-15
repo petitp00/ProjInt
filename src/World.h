@@ -33,7 +33,7 @@ public:
 	World(Controls* controls);
 	~World();
 
-	void Init(Inventory* inventory, InventoryButton* inv_butt);
+	void Init(Inventory* inventory, InventoryButton* inv_butt, GameState* game_state);
 	void Clear();
 	void CreateAndSaveWorld(const std::string& filename);
 	void CreateNewBlank(const std::string& filename);
@@ -50,6 +50,7 @@ public:
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 
+	void UseToolAt(vec2 mouse_pos_in_world);
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
@@ -59,6 +60,7 @@ public:
 private:
 	Controls* controls = nullptr;
 	Inventory* inventory = nullptr;
+	GameState* game_state = nullptr;
 	InventoryButton* inv_butt;
 	std::string name;
 

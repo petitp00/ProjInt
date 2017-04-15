@@ -25,7 +25,7 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 	inventory.Init(button_action_impl);
 	inv_butt.Init(&inventory);
 	tool_obj.Init(&inventory);
-	world.Init(&inventory, &inv_butt);
+	world.Init(&inventory, &inv_butt, this);
 }
 
 void GameState::Update(float dt)
@@ -71,6 +71,11 @@ bool GameState::HandleEvent(sf::Event const & event)
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				if (!inventory.IsMouseIn(sf::Mouse::getPosition(game.getWindow()))) {
 					//inventory.setActive(false);
+				}
+			}
+			else if (event.mouseButton.button == sf::Mouse::Right) {
+				if (!inventory.getActive()) {
+					world.UseToolAt(mouse_pos_in_world);
 				}
 			}
 		}

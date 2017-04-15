@@ -558,6 +558,7 @@ public:
 	void setOrigin(vec2 origin) override;
 
 	static float margin;
+	static float side_size;
 private:
 	void Init();
 	void UpdateButtonParams();

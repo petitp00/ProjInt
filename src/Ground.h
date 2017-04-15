@@ -12,10 +12,12 @@ enum GroundType {
 	GRASS = 1,
 	SAND = 2,
 	RIVER = 3,
-	DRY_DIRT = 4
+	DRY_DIRT = 4,
+	DIRT = 5,
+
 };
 
-static const int ground_type_max = DRY_DIRT;
+static const int ground_type_max = DIRT;
 static std::string getGroundTypeString(GroundType type) {
 	switch (type) {
 	case NONE: return "NONE";
@@ -23,6 +25,7 @@ static std::string getGroundTypeString(GroundType type) {
 	case SAND: return "SAND";
 	case RIVER: return "RIVER";
 	case DRY_DIRT: return "DRY_DIRT";
+	case DIRT: return "DIRT";
 	default: return "???";
 	}
 }
@@ -31,6 +34,7 @@ static std::map<GroundType, int> type_overlap_val = {
 	{NONE, 0},
 	{RIVER, 10},
 	{DRY_DIRT, 20},
+	{DIRT, 25},
 	{SAND, 30},
 	{GRASS, 40}
 };

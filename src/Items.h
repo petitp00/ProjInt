@@ -8,8 +8,8 @@
 
 namespace Item
 {
-	static const std::string texture_map_file = "Items.png";
-	static const float items_texture_size = 16.f;
+	static const std::string texture_map_file = "Textures_Icones.png";
+	static const float items_texture_size = 32.f;
 
 	enum ItemType {
 		none = -1,

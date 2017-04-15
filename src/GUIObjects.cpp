@@ -1002,7 +1002,7 @@ void InvItemButton::Init()
 	background_color_hover = INV_ACCENT_COLOR2;
 	background_color_selected = INV_ACCENT_COLOR3;
 
-	float icon_scale = 2.f;
+	float icon_scale = 1.f;
 	float icon_size = icon_scale*Item::items_texture_size;
 	rect_shape.setFillColor(background_color);
 	rect_shape.setSize({width, icon_size + 2*margin});
@@ -1118,6 +1118,7 @@ bool InvActionButton::onClick(vec2i mouse_pos)
 */
 
 float InvPageButton::margin = 16.f;
+float InvPageButton::side_size = 0;
 
 InvPageButton::InvPageButton(vec2 pos, const std::string & texture_name, vec2 pos_in_texture) :
 	GUIObject(pos, {0,0}), texture_name(texture_name), pos_in_texture(pos_in_texture)
@@ -1186,12 +1187,13 @@ void InvPageButton::setOrigin(vec2 origin)
 
 void InvPageButton::Init()
 {
-	float sprite_scale = 3.f;
+	float sprite_scale = 1.f;
 	float sprite_size = sprite_scale*Item::items_texture_size;
 
 	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
 
 	size = { margin*2 + sprite_size, margin*2 + sprite_size };
+	InvPageButton::side_size = size.x;
 
 	rect_shape.setFillColor(background_color);
 	rect_shape.setSize(size);

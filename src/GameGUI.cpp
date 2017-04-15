@@ -245,7 +245,7 @@ void ItemsPage::ResetItemButtons(std::vector<int>& items)
 		auto item = Item::Manager::getAny(i);
 		if (!Item::IsTool(Item::getItemTypeByName(item->name))) {
 			InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
-			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
+			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + (Item::items_texture_size + 20.f)*iy)});
 			inv_buttons.push_back(ib1);
 			++iy;
 		}
@@ -558,25 +558,31 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	window_shape.setSize({INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT});
 	window_shape.setFillColor(INV_WINDOW_COLOR);
 
+	auto temp = new InvPageButton({0,0}, "", {0,0});
+	delete temp;
+	system("cls");
+	cout << "The console has been cleared in Inventory::Init()" << endl;
+
 	auto ms = margin_sides;
 	auto mm = margin_middle;
 	auto margin = InvPageButton::margin; // of InvPageButton
+	auto ss = InvPageButton::side_size;
 
 	auto page_butt1 = new InvPageButton({0,0}, Item::texture_map_file, {0, 0});
-	page_butt1->setOrigin(vec2(-(-margin*5), -(ms)));
+	page_butt1->setOrigin(vec2(-(-ss), -(ms)));
 	page_butt1->setSelected(true);
 	page_butt1->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_items_page), button_action_impl);
 	page_butt1->setTooltip(new Tooltip("Items", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt1);
 
 	auto page_butt2 = new InvPageButton({0,0}, Item::texture_map_file, {3, 0});
-	page_butt2->setOrigin(vec2(-(-margin*5), -(ms*2.f + margin*5)));
+	page_butt2->setOrigin(vec2(-(-ss), -(ms*2.f + ss)));
 	page_butt2->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_tools_page), button_action_impl);
 	page_butt2->setTooltip(new Tooltip("Outils", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt2);
 
 	auto page_butt3 = new InvPageButton({0,0}, Item::texture_map_file, {1, 0});
-	page_butt3->setOrigin(vec2(-(-margin*5), -(ms*3.f + margin*10)));
+	page_butt3->setOrigin(vec2(-(-ss), -(ms*3.f + ss*2.f)));
 	page_butt3->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_craft_page), button_action_impl);
 	page_butt3->setTooltip(new Tooltip("Créer", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt3);
@@ -695,7 +701,9 @@ bool Inventory::AddItem(int id)
 	}
 	else return false;
 
+#ifndef EDITOR_MODE
 	ResetItemButtons();
+#endif
 	return true;
 }
 
@@ -818,7 +826,7 @@ EquippedToolObj::EquippedToolObj() { }
 void EquippedToolObj::Init(Inventory * inventory)
 {
 	this->inventory = inventory;
-	float scale = 3;
+	float scale = 2;
 	float ts = Item::items_texture_size * scale;
 	auto item = Item::Manager::getTool(tool);
 
@@ -853,6 +861,14 @@ void EquippedToolObj::Render(sf::RenderTarget & target)
 
 void EquippedToolObj::HandleEvent(sf::Event const & event)
 {
+	if (event.type == sf::Event::MouseButtonPressed) {
+		auto mp = vec2i(event.mouseButton.x, event.mouseButton.y);
+		if (mp.x >= pos.x && mp.x <= pos.x + size.x) {
+			if (mp.y >= pos.y && mp.y <= pos.y + size.y) {
+				
+			}
+		}
+	}
 }
 
 void EquippedToolObj::UpdateDurability()
