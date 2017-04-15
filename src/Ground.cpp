@@ -1,7 +1,7 @@
 #include "Ground.h"
 #include "ResourceManager.h"
 #include "rng.h"
-#include "Game.h" // for uint
+#include "Globals.h"
 
 #include <deque>
 #include <map>
@@ -14,7 +14,7 @@ Tileset::Tileset(std::string filename)
 	auto tiletexture = ResourceManager::getTexture(filename);
 	sf::Image original_texture(tiletexture.copyToImage());
 
-	vector<pair<unsigned long, sf::Vector2i>> ott1;
+	vector<pair<unsigned long, vec2i>> ott1;
 	ott1.push_back({UP,					{5, 6}});
 	ott1.push_back({DOWN,				{4, 6}});
 	ott1.push_back({LEFT,				{4, 7}});
@@ -24,7 +24,7 @@ Tileset::Tileset(std::string filename)
 	ott1.push_back({CORNER_DOWN_LEFT,	{7, 6}});
 	ott1.push_back({CORNER_DOWN_RIGHT,	{6, 6}});
 
-	vector<pair<GroundType, vector<sf::Vector2i>>> types;
+	vector<pair<GroundType, vector<vec2i>>> types;
 	types.push_back({NONE,				{{0,0}}});
 	types.push_back({GRASS,				{{1,0}}});
 	types.push_back({SAND,				{{2,0}, {3,0}}});
@@ -85,7 +85,7 @@ void Tileset::getUV(vector<sf::Vector3i>* vec, GroundType main_type, vector<Over
 	}
 }
 
-GroundTile::GroundTile(GroundType type, sf::Vector2f pos) : type(type), pos(pos) { }
+GroundTile::GroundTile(GroundType type, vec2 pos) : type(type), pos(pos) { }
 
 Ground::Ground() :
 	tileset("Ground.png")
@@ -111,7 +111,7 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 		for (unsigned i = 0; i != width; ++i) {
 			int tile_nb = tiles[i+j*width];
 
-			this->tiles.emplace_back(GroundType(tile_nb), sf::Vector2f(float(i), float(j)));
+			this->tiles.emplace_back(GroundType(tile_nb), vec2(float(i), float(j)));
 
 		}
 	}
@@ -187,10 +187,10 @@ void Ground::ReloadTileMap()
 				if (!main_tile_checked && GroundType(tile_nb) == GroundType::RIVER) c.r = 0; // signals our shader to draw water on top
 				main_tile_checked = true;
 
-				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, fj*vts), c, sf::Vector2f(t.x*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, fj*vts), c, sf::Vector2f((t.x+1)*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f((fi+1)*vts, (fj+1)*vts), c, sf::Vector2f((t.x+1)*ts, (t.y+1)*ts)));
-				q.verts.push_back(sf::Vertex(sf::Vector2f(fi*vts, (fj+1)*vts), c, sf::Vector2f(t.x*ts, (t.y+1)*ts)));
+				q.verts.push_back(sf::Vertex(vec2(fi*vts, fj*vts), c, vec2(t.x*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts, fj*vts), c, vec2((t.x+1)*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts, (fj+1)*vts), c, vec2((t.x+1)*ts, (t.y+1)*ts)));
+				q.verts.push_back(sf::Vertex(vec2(fi*vts, (fj+1)*vts), c, vec2(t.x*ts, (t.y+1)*ts)));
 				q.h = t.z;
 				quadhs.push_back(q);
 			}
@@ -218,16 +218,16 @@ void Ground::Clear()
 	tiles.clear();
 }
 
-void Ground::Fill(sf::Vector2f mpos, GroundType type)
+void Ground::Fill(vec2 mpos, GroundType type)
 {
-	sf::Vector2f tpos{
+	vec2 tpos{
 		float(int(mpos.x / visual_tile_size)),
 		float(int(mpos.y / visual_tile_size))
 	};
 	GroundType target_type = getTile(tpos).getType();
 	if (type == target_type) return;
 
-	std::deque<sf::Vector2f> stack;
+	std::deque<vec2> stack;
 	std::vector<int> to_remove;
 	stack.push_back(tpos);
 
@@ -273,9 +273,9 @@ void Ground::Fill(sf::Vector2f mpos, GroundType type)
 	ReloadTileMap();
 }
 
-void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
+void Ground::setTileClicked(vec2 mpos, GroundType type)
 {
-	sf::Vector2f tpos;
+	vec2 tpos;
 	tpos.x = float(int(mpos.x / visual_tile_size));
 	tpos.y = float(int(mpos.y / visual_tile_size));
 
@@ -285,9 +285,9 @@ void Ground::setTileClicked(sf::Vector2f mpos, GroundType type)
 	}
 }
 
-GroundType Ground::getTileClicked(sf::Vector2f mpos)
+GroundType Ground::getTileClicked(vec2 mpos)
 {
-	sf::Vector2f tpos;
+	vec2 tpos;
 	tpos.x = float(int(mpos.x / visual_tile_size));
 	tpos.y = float(int(mpos.y / visual_tile_size));
 
@@ -296,7 +296,7 @@ GroundType Ground::getTileClicked(sf::Vector2f mpos)
 	return NONE;
 }
 
-GroundTile& Ground::getTile(sf::Vector2f pos)
+GroundTile& Ground::getTile(vec2 pos)
 {
 	uint i = uint(pos.x + pos.y*width);
 	if (i < tiles.size()) {

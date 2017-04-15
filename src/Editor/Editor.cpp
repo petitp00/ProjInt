@@ -8,20 +8,20 @@ using namespace EditorMode;
 using namespace std;
 
 // Vars
-static sf::Vector2f game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
+static vec2 game_view_size ={float(WINDOW_WIDTH), float(WINDOW_HEIGHT)};
 
 static bool escape_pressed	= false;
 static bool middle_pressed	= false;
 static bool left_pressed	= false;
 static bool minimap_drag	= false;
 
-static sf::Vector2i mouse_pos;
-static sf::Vector2f mouse_pos_in_world;
-static sf::Vector2f drag_mouse_pos;
-static sf::Vector2f last_ground_edit{-1.f, -1.f};
+static vec2i mouse_pos;
+static vec2 mouse_pos_in_world;
+static vec2 drag_mouse_pos;
+static vec2 last_ground_edit{-1.f, -1.f};
 
 static Entity* selected_entity = nullptr;
-static sf::Vector2f selected_entity_click_offset;
+static vec2 selected_entity_click_offset;
 
 // Forward decl
 void InitMinimap(sf::RenderTexture& texture,
@@ -166,9 +166,9 @@ void Editor::Start()
 
 					// Check for minimap view drag
 					sf::FloatRect rect(minimap_border_shape.getPosition(), minimap_border_shape.getSize());
-					if (rect.contains(sf::Vector2f(mouse_pos))) {
+					if (rect.contains(vec2(mouse_pos))) {
 						minimap_drag = true;
-						drag_mouse_pos = sf::Vector2f(mouse_pos) - minimap_border_shape.getPosition();
+						drag_mouse_pos = vec2(mouse_pos) - minimap_border_shape.getPosition();
 					}
 					// Change tile if ground edit mode
 					else if (ground_edit_mode) {
@@ -183,7 +183,7 @@ void Editor::Start()
 							gui_info_id->active = true;
 							gui_info_id->setVal(to_string(selected_entity->getId()));
 							selected_entity_pos_label->text_obj.setPosition(
-								sf::Vector2f(window.mapCoordsToPixel(selected_entity->getPos() + sf::Vector2f(0, selected_entity->getSize().y + 10.f), game_view)));
+								vec2(window.mapCoordsToPixel(selected_entity->getPos() + vec2(0, selected_entity->getSize().y + 10.f), game_view)));
 						}
 					}
 				}
@@ -256,13 +256,13 @@ void Editor::Start()
 					// Move selected entity
 					selected_entity->setPos(mouse_pos_in_world - selected_entity_click_offset);
 					selected_entity_pos_label->setVal("{"+ to_string(int(selected_entity->getPos().x)) + ", " + to_string(int(selected_entity->getPos().y)) + "}");
-					selected_entity_pos_label->text_obj.setPosition( sf::Vector2f( window.mapCoordsToPixel(
-						selected_entity->getPos() + sf::Vector2f(0, selected_entity->getSize().y + 10.f), game_view)));
+					selected_entity_pos_label->text_obj.setPosition( vec2( window.mapCoordsToPixel(
+						selected_entity->getPos() + vec2(0, selected_entity->getSize().y + 10.f), game_view)));
 
 				}
 				else if (left_pressed && ground_edit_mode) {
 					// Add tiles to ground
-					sf::Vector2f mouse_pos_in_tile_pos {
+					vec2 mouse_pos_in_tile_pos {
 						float(int(mouse_pos_in_world.x/Ground::getVisualTileSize())),
 						float(int(mouse_pos_in_world.y/Ground::getVisualTileSize()))
 					};
@@ -289,7 +289,7 @@ void Editor::Start()
 					UpdateGameViewMinimapShape();
 				}
 				if (minimap_drag) {
-					auto p = sf::Vector2f(sf::Mouse::getPosition(window)) - sf::Vector2f(minimap_border_shape.getPosition());
+					auto p = vec2(sf::Mouse::getPosition(window)) - vec2(minimap_border_shape.getPosition());
 					float mx = p.x/200.f * WORLD_W;
 					float my = p.y/200.f * WORLD_H;
 					mx = min(mx, float(WORLD_W + WINDOW_WIDTH/2.f));
@@ -422,7 +422,7 @@ void InitMinimap(sf::RenderTexture& texture,
 	sprite.setTexture(texture.getTexture());
 	sprite.setColor(sf::Color(255, 255, 255, 128));
 	sprite.setPosition(float(WINDOW_WIDTH-204), 4);
-	border_shape.setSize(sf::Vector2f(200, 200));
+	border_shape.setSize(vec2(200, 200));
 	border_shape.setFillColor(sf::Color::Transparent);
 	border_shape.setOutlineColor(sf::Color::Black);
 	border_shape.setOutlineThickness(3);

@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "Items.h"
+#include "Game.h"
 
 struct Controls;
 
@@ -88,7 +89,7 @@ public:
 		++last_id;
 		id = last_id;
 	}
-	Entity(sf::Vector2f pos, sf::Vector2f size, unsigned long flags=NO_FLAG,
+	Entity(vec2 pos, vec2 size, unsigned long flags=NO_FLAG,
 		   std::vector<std::string> const& saved_data={}) {
 		this->pos = pos;
 		this->size = size;
@@ -102,13 +103,13 @@ public:
 	virtual void Update(float dt) {};
 	virtual void Render(sf::RenderTarget& target) = 0;
 
-	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
+	virtual void setPos(vec2 pos) { this->pos = pos; }
 	void setDead(bool dead) { this->dead = dead; }
 
 	virtual std::vector<std::string> getSavedData();
-	sf::Vector2f const& getPos() { return pos; }
-	virtual sf::Vector2f getOrigin() { return {0,0}; }
-	sf::Vector2f const& getSize() { return size; }
+	vec2 const& getPos() { return pos; }
+	virtual vec2 getOrigin() { return {0,0}; }
+	vec2 const& getSize() { return size; }
 	virtual sf::FloatRect const getCollisionBox() { return {pos,size}; }
 	bool getDead() { return dead; }
 	Type getType() { return type; }
@@ -119,8 +120,8 @@ public:
 	bool HasFlag(unsigned long flag) { return (flags & flag) == flag; }
 
 protected:
-	sf::Vector2f pos;
-	sf::Vector2f size;
+	vec2 pos;
+	vec2 size;
 	bool dead = false;
 	Type type = ENTITY;
 	unsigned long flags;
@@ -131,9 +132,9 @@ protected:
 
 class GameObject : public Entity
 {
-	friend GameObject* make_rock(sf::Vector2f pos);
-	friend GameObject* make_bush(sf::Vector2f pos);
-	friend GameObject* make_tree(sf::Vector2f pos);
+	friend GameObject* make_rock(vec2 pos);
+	friend GameObject* make_bush(vec2 pos);
+	friend GameObject* make_tree(vec2 pos);
 public:
 	GameObject()=default;
 	GameObject(std::string texture_name, unsigned long flags=NO_FLAG,
@@ -144,8 +145,8 @@ public:
 	void Init(); // call this after members are set
 	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
 
-	void setPos(sf::Vector2f pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
-	sf::Vector2f getOrigin() override { return sprite_origin*scale; }
+	void setPos(vec2 pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
+	vec2 getOrigin() override { return sprite_origin*scale; }
 	std::vector<std::string> getSavedData() override { return {
 			std::to_string(pos.x) +" "+ std::to_string(pos.y),
 			std::to_string(size.x) +" "+ std::to_string(size.y),
@@ -154,14 +155,14 @@ public:
 		}; }
 protected:
 	sf::Sprite sprite;
-	sf::Vector2f sprite_origin ={0,0};
+	vec2 sprite_origin ={0,0};
 	std::string texture_name = "";
 	float scale = 1.f;
 };
 
 class ItemObject : public GameObject
 {
-	friend ItemObject* make_item(int id, sf::Vector2f pos);
+	friend ItemObject* make_item(int id, vec2 pos);
 public:
 	ItemObject()=default;
 	ItemObject(int item_id, std::string texture_name, unsigned long flags=NO_FLAG,
@@ -196,10 +197,10 @@ public:
 	void Update();
 	void Init();
 
-	sf::Vector2f* entity_pos; // not the same as the sprite's pos
-	sf::Vector2f entity_box_texture_pos; // where the collision box of the entity starts in the texture
-	sf::Vector2f frame_size;
-	sf::Vector2f scale;
+	vec2* entity_pos; // not the same as the sprite's pos
+	vec2 entity_box_texture_pos; // where the collision box of the entity starts in the texture
+	vec2 frame_size;
+	vec2 scale;
 	sf::Sprite sprite;
 	sf::Texture* tileset;
 	sf::Time frame_time;
@@ -217,7 +218,7 @@ class Player : public Entity
 {
 public:
 	Player();
-	Player(sf::Vector2f pos, sf::Vector2f size, unsigned long flags=NO_FLAG,
+	Player(vec2 pos, vec2 size, unsigned long flags=NO_FLAG,
 		   std::vector<std::string> const& saved_data={});
 
 	void Init();
@@ -226,14 +227,14 @@ public:
 	void DoCollisions(std::vector<Entity*>& entities, int entity_move_id = -1);
 	void DoMovement(float dt);
 	void setControls(Controls* controls) { this->controls = controls; }
-	void setPos(sf::Vector2f pos) override;
+	void setPos(vec2 pos) override;
 
 private:
 	Controls* controls = nullptr;
 
 	AnimationComponent anim_comp;
 
-	sf::Vector2f movement;
+	vec2 movement;
 	float walk_speed = 0.3f;
 };
 
@@ -241,7 +242,7 @@ private:
 	--- ### --- ### --- MAKE ENTITY FUNCTIONS --- ### --- ### --- ### ---
 */
 
-static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
+static Entity* make_entity(Type type, vec2 pos={0,0}) {
 	Entity* e = nullptr;
 
 	if		(type == ROCK)	e = make_rock(pos);
@@ -251,7 +252,7 @@ static Entity* make_entity(Type type, sf::Vector2f pos={0,0}) {
 	return e;
 }
 
-static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
+static GameObject* make_rock(vec2 pos ={0,0}) {
 	auto rock = new GameObject("Placeholders/rock.png", SOLID|IMMORTAL);
 	rock->type = ROCK;
 	rock->pos = pos;
@@ -263,7 +264,7 @@ static GameObject* make_rock(sf::Vector2f pos ={0,0}) {
 	return rock;
 }
 
-static GameObject* make_bush(sf::Vector2f pos ={0,0}) {
+static GameObject* make_bush(vec2 pos ={0,0}) {
 	auto bush = new GameObject("Placeholders/bush.png", NO_FLAG);
 	bush->type = BUSH;
 	bush->pos = pos;
@@ -275,7 +276,7 @@ static GameObject* make_bush(sf::Vector2f pos ={0,0}) {
 	return bush;
 }
 
-static GameObject* make_tree(sf::Vector2f pos= {0,0}) {
+static GameObject* make_tree(vec2 pos= {0,0}) {
 	auto tree = new GameObject("Placeholders/tree.png", SOLID);
 	tree->type = TREE;
 	tree->pos = pos;
@@ -287,7 +288,7 @@ static GameObject* make_tree(sf::Vector2f pos= {0,0}) {
 	return tree;
 }
 
-static ItemObject* make_item(int id, sf::Vector2f pos = {0,0}) {
+static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	float ts = Item::items_texture_size;
 	auto i = new ItemObject(id, Item::texture_map_file, SOLID);
 	i->type = ITEM;

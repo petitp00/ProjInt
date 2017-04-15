@@ -2,6 +2,7 @@
 
 #include "Tweener.h"
 #include "Items.h"
+#include "Globals.h"
 #include <SFML/Graphics.hpp>
 
 class GUIObject;
@@ -116,7 +117,7 @@ public:
 
 	// Getters
 	bool getActive() { return active; }
-	bool IsMouseIn(sf::Vector2i mpos);
+	bool IsMouseIn(vec2i mpos);
 	std::vector<int>& getItemsId() { return items; }
 
 	// Setters
@@ -158,9 +159,34 @@ private:
 	Inventory* inventory;
 
 	sf::Sprite sprite;
-	sf::Vector2f pos;
-	sf::Vector2f size;
+	vec2 pos;
+	vec2 size;
 
 	void UpdateOpen();
 	bool open = false;
+};
+
+class EquippedToolObj // on the bottom right part of the screen
+{
+public:
+	EquippedToolObj();
+	void Init(Inventory* inventory);
+
+	void Render(sf::RenderTarget& target);
+	void HandleEvent(sf::Event const& event);
+	void UpdateDurability();
+
+	void setTool(int id) { tool = id; Init(inventory); }
+	int getToolId() { return tool; }
+
+private:
+	Inventory* inventory;
+
+	int tool = -1;
+
+	sf::Sprite sprite;
+	sf::RectangleShape shape;
+	sf::RectangleShape durab_bar;
+	vec2 pos;
+	vec2 size;
 };

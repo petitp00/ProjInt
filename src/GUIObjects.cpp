@@ -12,7 +12,7 @@ using namespace std;
 
 ButtonActionImpl::ButtonActionImpl(Game* game, MenuState* menu_state, GameState* game_state) : game(game), menu_state(menu_state), game_state(game_state) {}
 
-GUIObject::GUIObject(sf::Vector2f pos, sf::Vector2f size) : pos(pos), size(size) {}
+GUIObject::GUIObject(vec2 pos, vec2 size) : pos(pos), size(size) {}
 
 GUIObject::~GUIObject() {
 	if (tooltip) delete tooltip;
@@ -27,7 +27,7 @@ void GUIObject::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_rend
 	if (tooltip) tooltip->Render(target, tooltip_render_target);
 }
 
-bool GUIObject::onHoverIn(sf::Vector2i mouse_pos) {
+bool GUIObject::onHoverIn(vec2i mouse_pos) {
 	hovered = true;
 	if (tooltip) tooltip->StartTimer(mouse_pos);
 	return true;
@@ -39,11 +39,11 @@ bool GUIObject::onHoverOut() {
 	return true;
 }
 
-void GUIObject::UpdateHoveredMousePos(sf::Vector2i mouse_pos) {
+void GUIObject::UpdateHoveredMousePos(vec2i mouse_pos) {
 	if (tooltip) tooltip->setMousePos(mouse_pos);
 }
 
-bool GUIObject::isMouseIn(sf::Vector2i mouse_pos) {
+bool GUIObject::isMouseIn(vec2i mouse_pos) {
 	if (mouse_pos.x >= pos.x - origin.x && mouse_pos.x <= pos.x + size.x - origin.x) {
 		if (mouse_pos.y >= pos.y - origin.y && mouse_pos.y <= pos.y + size.y - origin.y) {
 			return true;
@@ -56,15 +56,15 @@ bool GUIObject::isMouseIn(sf::Vector2i mouse_pos) {
 	TextBox
 */
 
-TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font * font, sf::Color color, unsigned int character_size) :
-	GUIObject(pos, sf::Vector2f(width, 0)), font(font), color(color),
+TextBox::TextBox(std::string const& text_string, vec2 pos, float width, sf::Font * font, sf::Color color, unsigned int character_size) :
+	GUIObject(pos, vec2(width, 0)), font(font), color(color),
 	character_size(character_size), text_string(text_string), original_text_string(text_string), width(width) {
 	size.x = width;
 	UpdateTextBox();
 }
 
-TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, std::string const& font_name, sf::Color color, unsigned int character_size) :
-	GUIObject(pos, sf::Vector2f(width, 0)), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string), width(width) {
+TextBox::TextBox(std::string const& text_string, vec2 pos, float width, std::string const& font_name, sf::Color color, unsigned int character_size) :
+	GUIObject(pos, vec2(width, 0)), font(&ResourceManager::getFont(font_name)), color(color), character_size(character_size), text_string(text_string), original_text_string(text_string), width(width) {
 	size.x = width;
 	UpdateTextBox();
 }
@@ -77,12 +77,12 @@ void TextBox::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-void TextBox::setPos(sf::Vector2f pos, bool update) {
+void TextBox::setPos(vec2 pos, bool update) {
 	this->pos = pos;
 	if (update) UpdateTextBox();
 }
 
-void TextBox::setOrigin(sf::Vector2f origin)
+void TextBox::setOrigin(vec2 origin)
 {
 	this->origin = origin;
 	text_obj.setOrigin(origin);
@@ -131,7 +131,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 	text_obj.setString(text_string);
 
 	if (text_obj.getLocalBounds().width <= width) {
-		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
+		setSize(vec2(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
 		return;
 	}
 
@@ -154,7 +154,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 
 	if (changed) UpdateTextBox(false, i);
 	else {
-		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
+		setSize(vec2(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
 	}
 }
 
@@ -163,7 +163,7 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 */
 
 TextButton::TextButton(std::string const & text_string,
-					   sf::Vector2f pos,
+					   vec2 pos,
 					   float width,
 					   unsigned int character_size,
 					   sf::Color text_color,
@@ -195,7 +195,7 @@ void TextButton::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_ren
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool TextButton::onClick(sf::Vector2i mouse_pos) {
+bool TextButton::onClick(vec2i mouse_pos) {
 	onHoverOut();
 	if (action) {
 		(*action)(button_action_impl);
@@ -204,7 +204,7 @@ bool TextButton::onClick(sf::Vector2i mouse_pos) {
 	return false;
 }
 
-bool TextButton::onHoverIn(sf::Vector2i mouse_pos) {
+bool TextButton::onHoverIn(vec2i mouse_pos) {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
 	return false;
@@ -216,12 +216,12 @@ bool TextButton::onHoverOut() {
 	return false;
 }
 
-void TextButton::setPos(sf::Vector2f pos) {
+void TextButton::setPos(vec2 pos) {
 	this->pos = pos;
 	UpdateTextButton(false);
 }
 
-void TextButton::setOrigin(sf::Vector2f origin) {
+void TextButton::setOrigin(vec2 origin) {
 	GUIObject::setOrigin(origin);
 	UpdateTextButton(false);
 }
@@ -248,16 +248,16 @@ void TextButton::UpdateTextButton(bool set_params) {
 	else height = hhh;
 
 	if (width == 0.f) {
-		rect_shape.setSize(sf::Vector2f(text_rect.width + margin*2.f, height + margin*2.f));
+		rect_shape.setSize(vec2(text_rect.width + margin*2.f, height + margin*2.f));
 
 		text_obj.setOrigin(text_rect.width / 2.f + origin.x, height + origin.y);
-		text_obj.setPosition(sf::Vector2f(pos.x + text_rect.width / 2.f + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
+		text_obj.setPosition(vec2(pos.x + text_rect.width / 2.f + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
 	}
 	else {
-		rect_shape.setSize(sf::Vector2f(width, height + margin*2.f));
+		rect_shape.setSize(vec2(width, height + margin*2.f));
 
 		text_obj.setOrigin(origin.x, height + origin.y);
-		text_obj.setPosition(sf::Vector2f(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
+		text_obj.setPosition(vec2(pos.x + margin, pos.y + rect_shape.getLocalBounds().height/2.f));
 	}
 
 	text_obj.setString(text_string);
@@ -272,14 +272,14 @@ void TextButton::UpdateTextButton(bool set_params) {
 	ControlsTextButton
 */
 
-ControlsTextButton::ControlsTextButton(std::string const & text_string, sf::Vector2f pos, float width,
+ControlsTextButton::ControlsTextButton(std::string const & text_string, vec2 pos, float width,
 									   unsigned int character_size, sf::Color text_color, sf::Color background_color,
 									   sf::Color background_color_hover, std::string const & font_name) :
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name) {
 	UpdateControlsTextButton();
 }
 
-bool ControlsTextButton::onClick(sf::Vector2i mouse_pos) {
+bool ControlsTextButton::onClick(vec2i mouse_pos) {
 	if (!active) {
 		active = true;
 		return true;
@@ -287,7 +287,7 @@ bool ControlsTextButton::onClick(sf::Vector2i mouse_pos) {
 	return false;
 }
 
-bool ControlsTextButton::onHoverIn(sf::Vector2i mouse_pos) {
+bool ControlsTextButton::onHoverIn(vec2i mouse_pos) {
 	if (!active) TextButton::onHoverIn(mouse_pos);
 	hovered = true;
 	return false;
@@ -325,12 +325,12 @@ bool ControlsTextButton::UpdateControlsTextButton(bool set_params) {
 	WorldSelectButton
 */
 
-WorldSelectButton::WorldSelectButton(std::string const & text_string, sf::Vector2f pos, float width, unsigned int character_size, sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) :
+WorldSelectButton::WorldSelectButton(std::string const & text_string, vec2 pos, float width, unsigned int character_size, sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) :
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name)
 {
 }
 
-bool WorldSelectButton::onClick(sf::Vector2i mouse_pos)
+bool WorldSelectButton::onClick(vec2i mouse_pos)
 {
 	onHoverOut();
 	if (action) {
@@ -346,9 +346,9 @@ bool WorldSelectButton::onClick(sf::Vector2i mouse_pos)
 */
 
 Tooltip::Tooltip(std::string const & text_string, sf::Time show_after) :
-	text_box(text_string, sf::Vector2f(0, 0), 300, BASE_FONT_NAME, sf::Color::Black, FontSize::TINY),
+	text_box(text_string, vec2(0, 0), 300, BASE_FONT_NAME, sf::Color::Black, FontSize::TINY),
 	show_after(show_after) {
-	rect_shape.setSize(text_box.getSize() + sf::Vector2f(20.f, 20.f));
+	rect_shape.setSize(text_box.getSize() + vec2(20.f, 20.f));
 	rect_shape.setFillColor(sf::Color::White);
 
 	size = rect_shape.getSize();
@@ -370,7 +370,7 @@ void Tooltip::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render
 	}
 }
 
-void Tooltip::StartTimer(sf::Vector2i mouse_pos) {
+void Tooltip::StartTimer(vec2i mouse_pos) {
 	timer_active = true;
 	clock.restart();
 
@@ -383,8 +383,8 @@ void Tooltip::StopTimer() {
 	alpha_tweener_started = false;
 }
 
-void Tooltip::setMousePos(sf::Vector2i mouse_pos) {
-	pos = sf::Vector2f(mouse_pos) + sf::Vector2f(0.f, size.y*1.0f) - size / 2.f;
+void Tooltip::setMousePos(vec2i mouse_pos) {
+	pos = vec2(mouse_pos) + vec2(0.f, size.y*1.0f) - size / 2.f;
 
 	if (pos.x + size.x >= WINDOW_WIDTH - 10.f) pos.x = WINDOW_WIDTH - size.x - 10.f;
 	else if (pos.x <= 10.f) pos.x = 10.f;
@@ -392,14 +392,14 @@ void Tooltip::setMousePos(sf::Vector2i mouse_pos) {
 	else if (pos.y + size.y >= WINDOW_HEIGHT - 10.f) pos.y = WINDOW_HEIGHT - size.y - 10.f;
 
 	rect_shape.setPosition(pos);
-	text_box.setPos(pos + sf::Vector2f(10.f, 5.f));
+	text_box.setPos(pos + vec2(10.f, 5.f));
 }
 
 /*
 	Checkbox
 */
 
-Checkbox::Checkbox(bool active, sf::Vector2f pos, sf::Vector2f size, sf::Color background_color, sf::Color background_color_hover) :
+Checkbox::Checkbox(bool active, vec2 pos, vec2 size, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, size),
 	active(active),
 	background_color(background_color),
@@ -430,7 +430,7 @@ void Checkbox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_rend
 	target.draw(text_obj);
 }
 
-bool Checkbox::onClick(sf::Vector2i mouse_pos) {
+bool Checkbox::onClick(vec2i mouse_pos) {
 	active = !active;
 	if (!active) text_obj.setString("");
 	else text_obj.setString("X");
@@ -441,7 +441,7 @@ bool Checkbox::onClick(sf::Vector2i mouse_pos) {
 	return false;
 }
 
-bool Checkbox::onHoverIn(sf::Vector2i mouse_pos) {
+bool Checkbox::onHoverIn(vec2i mouse_pos) {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
 	return false;
@@ -462,10 +462,10 @@ void Checkbox::UpdateCheckbox() {
 	Slider
 */
 
-Slider::Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
+Slider::Slider(vec2 pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, {40,40}),
 	bar_width(width),
-	bar_pos(pos - sf::Vector2f(0, 15/2.f - 20)),
+	bar_pos(pos - vec2(0, 15/2.f - 20)),
 	value(start_value),
 	min_value(min_value),
 	max_value(max_value),
@@ -485,12 +485,12 @@ void Slider::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render
 	target.draw(rect_shape);
 }
 
-bool Slider::onClick(sf::Vector2i mouse_pos) {
+bool Slider::onClick(vec2i mouse_pos) {
 	GUIObject::onClick(mouse_pos);
 	return true;
 }
 
-bool Slider::onHoverIn(sf::Vector2i mouse_pos) {
+bool Slider::onHoverIn(vec2i mouse_pos) {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
 	return false;
@@ -502,7 +502,7 @@ bool Slider::onHoverOut() {
 	return false;
 }
 
-void Slider::UpdateClickDrag(sf::Vector2i mouse_pos) {
+void Slider::UpdateClickDrag(vec2i mouse_pos) {
 	float mx = float(mouse_pos.x);
 	pos.x = min(max(bar_pos.x, mx - 20), bar_pos.x + bar_width - 40.f);
 	value = min_value + (pos.x - bar_pos.x) / (bar_width - 40) * max_value;
@@ -517,7 +517,7 @@ void Slider::UpdateSlider() {
 
 	pos.x = bar_pos.x + (value-min_value)/max_value * (bar_width-40);
 
-	rect_shape.setSize(sf::Vector2f(40, 40));
+	rect_shape.setSize(vec2(40, 40));
 	rect_shape.setPosition(pos);
 }
 
@@ -525,7 +525,7 @@ void Slider::UpdateSlider() {
 	Scrollbar
 */
 
-Scrollbar::Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
+Scrollbar::Scrollbar(vec2 pos, float height, float start_val, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, {15, 30}),
 	bar_pos(pos),
 	bar_height(height),
@@ -540,7 +540,7 @@ Scrollbar::Scrollbar(sf::Vector2f pos, float height, float start_val, float min_
 	color_tw.Reset(TweenType::QuartInOut, 0, 0, sf::milliseconds(50));
 
 	bar_shape.setPosition(pos);
-	bar_shape.setSize(sf::Vector2f(15, bar_height));
+	bar_shape.setSize(vec2(15, bar_height));
 	bar_shape.setFillColor(sf::Color::Black);
 
 	UpdateScrollbar(value);
@@ -555,12 +555,12 @@ void Scrollbar::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_ren
 	target.draw(rect_shape);
 }
 
-bool Scrollbar::onClick(sf::Vector2i mouse_pos) {
+bool Scrollbar::onClick(vec2i mouse_pos) {
 	GUIObject::onClick(mouse_pos);
 	return true;
 }
 
-bool Scrollbar::onHoverIn(sf::Vector2i mouse_pos) {
+bool Scrollbar::onHoverIn(vec2i mouse_pos) {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
 	return false;
@@ -572,7 +572,7 @@ bool Scrollbar::onHoverOut() {
 	return false;
 }
 
-void Scrollbar::UpdateClickDrag(sf::Vector2i mouse_pos) {
+void Scrollbar::UpdateClickDrag(vec2i mouse_pos) {
 	float my = float(mouse_pos.y);
 	pos.y = min(max(bar_pos.y, my - 15), bar_pos.y + bar_height - 30.f);
 	value = min_value + (pos.y - bar_pos.y) / (bar_height - 30) * max_value;
@@ -591,10 +591,10 @@ void Scrollbar::UpdateScrollbar(float val) {
 	ObjContainer
 */
 
-ObjContainer::ObjContainer(sf::Vector2f pos, sf::Vector2f size) :
+ObjContainer::ObjContainer(vec2 pos, vec2 size) :
 	GUIObject(pos, size) {
 	UpdateObjContainer();
-	scrollbar = new Scrollbar(pos+sf::Vector2f(size.x, 10) - sf::Vector2f{40, 0}, size.y-30, 0, 0, max_offset);
+	scrollbar = new Scrollbar(pos+vec2(size.x, 10) - vec2{40, 0}, size.y-30, 0, 0, max_offset);
 }
 
 void ObjContainer::Update() {
@@ -629,7 +629,7 @@ void ObjContainer::AddObject(GUIObject * obj) {
 	}
 }
 
-bool ObjContainer::onClick(sf::Vector2i mouse_pos) {
+bool ObjContainer::onClick(vec2i mouse_pos) {
 	bool ret = false;
 	GUIObject::onClick(mouse_pos);
 	for (auto o : gui_objects) {
@@ -659,7 +659,7 @@ bool ObjContainer::onClickRelease() {
 	return false;
 }
 
-bool ObjContainer::onHoverIn(sf::Vector2i mouse_pos) {
+bool ObjContainer::onHoverIn(vec2i mouse_pos) {
 	GUIObject::onHoverIn(mouse_pos);
 	return false;
 }
@@ -682,8 +682,8 @@ bool ObjContainer::onMouseWheel(float delta) {
 
 	scrollbar->UpdateScrollbar(y_offset);
 
-	view.setCenter(sf::Vector2f(size.x/2.f, size.y/2.f + y_offset));
-	rect_shape.setPosition(view.getCenter() - view.getSize()/2.f + sf::Vector2f{thicc, thicc});
+	view.setCenter(vec2(size.x/2.f, size.y/2.f + y_offset));
+	rect_shape.setPosition(view.getCenter() - view.getSize()/2.f + vec2{thicc, thicc});
 	render_texture.setView(view);
 
 	return true;
@@ -700,11 +700,11 @@ bool ObjContainer::onKeyType(sf::Event::KeyEvent e)
 	return ret;
 }
 
-void ObjContainer::UpdateClickDrag(sf::Vector2i mouse_pos) {
+void ObjContainer::UpdateClickDrag(vec2i mouse_pos) {
 }
 
-void ObjContainer::UpdateHoveredMousePos(sf::Vector2i mouse_pos) {
-	sf::Vector2i mouse = sf::Vector2i(mouse_pos)- sf::Vector2i(pos) + sf::Vector2i(0, int(y_offset));
+void ObjContainer::UpdateHoveredMousePos(vec2i mouse_pos) {
+	vec2i mouse = vec2i(mouse_pos)- vec2i(pos) + vec2i(0, int(y_offset));
 
 	for (auto o : gui_objects) {
 		if (o->isClicked()) {
@@ -752,7 +752,7 @@ void ObjContainer::UpdateObjContainer(bool set_params) {
 
 	if (set_params) {
 		rect_shape.setPosition({thicc, thicc});
-		rect_shape.setSize(size - sf::Vector2f{thicc*2, thicc*2});
+		rect_shape.setSize(size - vec2{thicc*2, thicc*2});
 		rect_shape.setOutlineColor(sf::Color::Black);
 		rect_shape.setOutlineThickness(thicc);
 		rect_shape.setFillColor(sf::Color(151, 196, 198));
@@ -763,7 +763,7 @@ void ObjContainer::UpdateObjContainer(bool set_params) {
 	TextInputBox
 */
 
-TextInputBox::TextInputBox(sf::Vector2f pos, float width, unsigned int character_size) :
+TextInputBox::TextInputBox(vec2 pos, float width, unsigned int character_size) :
 	GUIObject(pos, {width,0}), character_size(character_size)
 {
 	Init();
@@ -791,7 +791,7 @@ void TextInputBox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool TextInputBox::onClick(sf::Vector2i mouse_pos)
+bool TextInputBox::onClick(vec2i mouse_pos)
 {
 	GUIObject::onClick(mouse_pos);
 
@@ -818,7 +818,7 @@ bool TextInputBox::onClick(sf::Vector2i mouse_pos)
 	return false;
 }
 
-void TextInputBox::UpdateClickDrag(sf::Vector2i mouse_pos)
+void TextInputBox::UpdateClickDrag(vec2i mouse_pos)
 {
 	float cw = 18;
 
@@ -924,7 +924,7 @@ void TextInputBox::UpdateCursorPos()
 	InvItemButton
 */
 
-InvItemButton::InvItemButton(int item, sf::Vector2f pos, float width) :
+InvItemButton::InvItemButton(int item, vec2 pos, float width) :
 	GUIObject(pos, {0,0}),
 	item(item),
 	width(width),
@@ -950,7 +950,7 @@ void InvItemButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool InvItemButton::onClick(sf::Vector2i mouse_pos)
+bool InvItemButton::onClick(vec2i mouse_pos)
 {
 	onHoverOut();
 	setSelected(true);
@@ -961,7 +961,7 @@ bool InvItemButton::onClick(sf::Vector2i mouse_pos)
 	return false;
 }
 
-bool InvItemButton::onHoverIn(sf::Vector2i mouse_pos)
+bool InvItemButton::onHoverIn(vec2i mouse_pos)
 {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
@@ -982,13 +982,13 @@ void InvItemButton::setSelected(bool selected)
 	else rect_shape.setOutlineColor(sf::Color::Transparent);
 }
 
-void InvItemButton::setPos(sf::Vector2f pos)
+void InvItemButton::setPos(vec2 pos)
 {
 	this->pos = pos;
 	UpdateButtonParams();
 }
 
-void InvItemButton::setOrigin(sf::Vector2f origin)
+void InvItemButton::setOrigin(vec2 origin)
 {
 	this->origin = origin;
 	UpdateButtonParams();
@@ -1042,7 +1042,7 @@ void InvItemButton::UpdateButtonParams()
 	InvToolButton
 */
 
-InvToolButton::InvToolButton(int item, sf::Vector2f pos, float width):
+InvToolButton::InvToolButton(int item, vec2 pos, float width):
 	InvItemButton(item, pos, width)
 {
 	Init();
@@ -1063,7 +1063,7 @@ void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool InvToolButton::onClick(sf::Vector2i pos)
+bool InvToolButton::onClick(vec2i pos)
 {
 	UpdateDurability();
 	return InvItemButton::onClick(pos);
@@ -1079,7 +1079,7 @@ void InvToolButton::Init()
 void InvToolButton::UpdateButtonParams()
 {
 	InvItemButton::UpdateButtonParams();
-	bar_shape.setPosition(pos + sf::Vector2f(0, size.y) - sf::Vector2f(0, bar_height) - origin);
+	bar_shape.setPosition(pos + vec2(0, size.y) - vec2(0, bar_height) - origin);
 }
 
 void InvToolButton::UpdateDurability()
@@ -1088,7 +1088,7 @@ void InvToolButton::UpdateDurability()
 	float perc = max(0.f, min(100.f, (1 - t->durability / 100.f)));
 	float bw = width * perc;
 
-	bar_shape.setSize(sf::Vector2f(bw, bar_height));
+	bar_shape.setSize(vec2(bw, bar_height));
 	bar_shape.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
 }
 
@@ -1096,13 +1096,13 @@ void InvToolButton::UpdateDurability()
 	InvActionButton
 */
 
-InvActionButton::InvActionButton(std::string const & text_string, int item, sf::Vector2f pos, float width, unsigned int character_size,
+InvActionButton::InvActionButton(std::string const & text_string, int item, vec2 pos, float width, unsigned int character_size,
 								 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) : 
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name), item(item)
 {
 }
 
-bool InvActionButton::onClick(sf::Vector2i mouse_pos)
+bool InvActionButton::onClick(vec2i mouse_pos)
 {
 	onHoverOut();
 	if (action) {
@@ -1119,7 +1119,7 @@ bool InvActionButton::onClick(sf::Vector2i mouse_pos)
 
 float InvPageButton::margin = 16.f;
 
-InvPageButton::InvPageButton(sf::Vector2f pos, const std::string & texture_name, sf::Vector2f pos_in_texture) :
+InvPageButton::InvPageButton(vec2 pos, const std::string & texture_name, vec2 pos_in_texture) :
 	GUIObject(pos, {0,0}), texture_name(texture_name), pos_in_texture(pos_in_texture)
 {
 	Init();
@@ -1141,7 +1141,7 @@ void InvPageButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 	GUIObject::Render(target, tooltip_render_target);
 }
 
-bool InvPageButton::onClick(sf::Vector2i mouse_pos)
+bool InvPageButton::onClick(vec2i mouse_pos)
 {
 	onHoverOut();
 	setSelected(true);
@@ -1152,7 +1152,7 @@ bool InvPageButton::onClick(sf::Vector2i mouse_pos)
 	return false;
 }
 
-bool InvPageButton::onHoverIn(sf::Vector2i mouse_pos)
+bool InvPageButton::onHoverIn(vec2i mouse_pos)
 {
 	GUIObject::onHoverIn(mouse_pos);
 	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
@@ -1172,13 +1172,13 @@ void InvPageButton::setSelected(bool selected)
 	if (selected) rect_shape.setFillColor(selected_color);
 }
 
-void InvPageButton::setPos(sf::Vector2f pos)
+void InvPageButton::setPos(vec2 pos)
 {
 	this->pos = pos;
 	UpdateButtonParams();
 }
 
-void InvPageButton::setOrigin(sf::Vector2f origin)
+void InvPageButton::setOrigin(vec2 origin)
 {
 	this->origin = origin;
 	UpdateButtonParams();
@@ -1198,7 +1198,7 @@ void InvPageButton::Init()
 
 	float ts = sprite_size / sprite_scale;
 	sprite.setTexture(ResourceManager::getTexture(texture_name));
-	sprite.setTextureRect(sf::IntRect(sf::Vector2i(pos_in_texture * ts), sf::Vector2i(int(ts), int(ts))));
+	sprite.setTextureRect(sf::IntRect(vec2i(pos_in_texture * ts), vec2i(int(ts), int(ts))));
 	sprite.setScale(sprite_scale, sprite_scale);
 
 	UpdateButtonParams();
@@ -1207,5 +1207,5 @@ void InvPageButton::Init()
 void InvPageButton::UpdateButtonParams()
 {
 	rect_shape.setPosition(pos - origin);
-	sprite.setPosition(pos - origin + sf::Vector2f {margin, margin});
+	sprite.setPosition(pos - origin + vec2 {margin, margin});
 }

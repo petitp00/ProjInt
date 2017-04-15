@@ -1,7 +1,7 @@
 #include "Entity.h"
 #include "ResourceManager.h"
 
-#include "Game.h"
+#include "Globals.h"
 
 #include <iostream>
 using namespace std;
@@ -44,7 +44,7 @@ void AnimationComponent::Update()
 		else {
 			frame = 0;
 		}
-		sprite.setTextureRect({sf::Vector2i{int(frame*frame_size.x),0}, sf::Vector2i(frame_size)});
+		sprite.setTextureRect({vec2i{int(frame*frame_size.x),0}, vec2i(frame_size)});
 		if (flip) {
 			sprite.setOrigin(frame_size.x - entity_box_texture_pos.x, entity_box_texture_pos.y);
 			sprite.setScale(-scale.x, scale.y);
@@ -64,7 +64,7 @@ void AnimationComponent::Init()
 
 	frame_size.x = sprite.getLocalBounds().width / float(nb_of_frames);
 	frame_size.y = sprite.getLocalBounds().height;
-	sprite.setTextureRect({sf::Vector2i{0,0}, sf::Vector2i(frame_size)});
+	sprite.setTextureRect({vec2i{0,0}, vec2i(frame_size)});
 	sprite.setScale(scale);
 }
 
@@ -74,7 +74,7 @@ Player::Player() : Entity()
 	Init();
 }
 
-Player::Player(sf::Vector2f pos, sf::Vector2f size, unsigned long flags, std::vector<std::string> const & saved_data) :
+Player::Player(vec2 pos, vec2 size, unsigned long flags, std::vector<std::string> const & saved_data) :
 	Entity(pos, size, flags, saved_data)
 {
 	type = PLAYER;
@@ -85,10 +85,10 @@ void Player::Init()
 {
 	float scale(1.5f);
 
-	size= sf::Vector2f(36, 36) * scale;
+	size= vec2(36, 36) * scale;
 
 	anim_comp.tileset = &ResourceManager::getTexture("Placeholders/player.png");
-	anim_comp.scale = sf::Vector2f(scale, scale);
+	anim_comp.scale = vec2(scale, scale);
 	anim_comp.nb_of_frames = 4;
 	anim_comp.entity_pos = &pos;
 	anim_comp.entity_box_texture_pos ={20,58};
@@ -107,7 +107,7 @@ void Player::Update(float dt)
 	else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) movement.x = 1;
 	else movement.x = 0;
 
-	if (movement != sf::Vector2f(0, 0)) {
+	if (movement != vec2(0, 0)) {
 		movement = normalize(movement);
 		movement.y *= 0.92f;
 		anim_comp.Update();
@@ -132,8 +132,8 @@ void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 	for (auto e : entities) {
 		if (e->HasFlag(SOLID) && e->getId() != entity_move_id) {
 			auto ebox = e->getCollisionBox();
-			sf::Vector2f epos = {ebox.left, ebox.top};
-			sf::Vector2f esize ={ebox.width, ebox.height};
+			vec2 epos = {ebox.left, ebox.top};
+			vec2 esize ={ebox.width, ebox.height};
 		
 
 			float tolerance = 10;
@@ -173,7 +173,7 @@ void Player::DoMovement(float dt)
 	pos += movement * walk_speed * dt;
 }
 
-void Player::setPos(sf::Vector2f pos)
+void Player::setPos(vec2 pos)
 {
 	this->pos = pos;
 	anim_comp.Update();

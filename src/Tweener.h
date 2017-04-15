@@ -4,6 +4,8 @@
 #include <SFML/System/Clock.hpp>
 #include <algorithm>
 
+#include "Globals.h"
+
 enum class TweenType
 {
 	Linear,
@@ -121,14 +123,14 @@ class PosTweener
 {
 public:
 	PosTweener()=default;
-	PosTweener(TweenType tween_type, sf::Vector2f start_pos, sf::Vector2f end_pos, sf::Time time) { Reset(tween_type, start_pos, end_pos, time); }
+	PosTweener(TweenType tween_type, vec2 start_pos, vec2 end_pos, sf::Time time) { Reset(tween_type, start_pos, end_pos, time); }
 
-	void Reset(TweenType tween_type, sf::Vector2f start_pos, sf::Vector2f end_pos, sf::Time time) {
+	void Reset(TweenType tween_type, vec2 start_pos, vec2 end_pos, sf::Time time) {
 		tw_x.Reset(tween_type, start_pos.x, end_pos.x, time);
 		tw_y.Reset(tween_type, start_pos.y, end_pos.y, time);
 	}
 
-	sf::Vector2f Tween() { return { tw_x.Tween(), tw_y.Tween() }; }
+	vec2 Tween() { return { tw_x.Tween(), tw_y.Tween() }; }
 	bool getEnded() { return tw_x.getEnded(); }
 
 private:

@@ -11,7 +11,7 @@
 #include <iostream>
 using namespace std;
 
-sf::Vector2f mouse_pos = {-1, -1};
+vec2 mouse_pos = {-1, -1};
 
 World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
@@ -99,13 +99,13 @@ void World::LoadWorld(std::string const & filename)
 			s >> str;
 			t = Type(atoi(str.c_str()));
 
-			sf::Vector2f p;
+			vec2 p;
 			s >> str;
 			p.x = stof(str);
 			s >> str;
 			p.y = stof(str);
 
-			sf::Vector2f sz;
+			vec2 sz;
 			s >> str;
 			sz.x = stof(str);
 			s >> str;
@@ -270,7 +270,7 @@ void World::Save(const string& filename)
 	cout << "World saved to \"Resources/Data/Saves/" << name << "\"" << endl;
 }
 
-void World::Update(float dt, sf::Vector2f mouse_pos_in_world)
+void World::Update(float dt, vec2 mouse_pos_in_world)
 {
 	auto mpw = mouse_pos_in_world;
 
@@ -367,7 +367,7 @@ void World::Render(sf::RenderTarget & target)
 	//target.setView(target.getDefaultView());
 }
 
-sf::Vector2i drag_mouse_pos;
+vec2i drag_mouse_pos;
 bool middle_pressed = false;
 
 bool World::HandleEvent(sf::Event const & event)
@@ -413,7 +413,7 @@ bool World::HandleEvent(sf::Event const & event)
 	return false;
 }
 
-Entity * World::FindEntityClicked(sf::Vector2f mpos)
+Entity * World::FindEntityClicked(vec2 mpos)
 {
 	for (auto e : entities) {
 		auto ep = e->getPos();

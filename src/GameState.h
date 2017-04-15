@@ -24,9 +24,14 @@ public:
 	void StartNewGame(std::string const& name);
 	void LoadGame(std::string const& name);
 
+	void EquipTool(int id) { tool_obj.setTool(id); }
+	void UnequipTool() { tool_obj.setTool(-1); }
+
 	Inventory* getInventory() { return &inventory; }
 	World& getWorld() { return world; }
+	EquippedToolObj* getEquippedToolObj() { return &tool_obj; }
 	bool getActive() { return active; }
+	int getEquippedTool() { return tool_obj.getToolId(); }
 	void setActive(bool active) { this->active = active; }
 
 private:
@@ -37,5 +42,6 @@ private:
 	World world;
 	Inventory inventory;
 	InventoryButton inv_butt;
+	EquippedToolObj tool_obj;
 
 };

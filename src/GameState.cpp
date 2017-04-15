@@ -7,7 +7,7 @@
 #include <iostream>
 using namespace std;
 
-static sf::Vector2f mouse_pos_in_world = {-1, -1};
+static vec2 mouse_pos_in_world = {-1, -1};
 
 GameState::GameState(Game& game) :
 	game(game),
@@ -24,6 +24,7 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 {
 	inventory.Init(button_action_impl);
 	inv_butt.Init(&inventory);
+	tool_obj.Init(&inventory);
 	world.Init(&inventory, &inv_butt);
 }
 
@@ -42,6 +43,7 @@ void GameState::Render(sf::RenderTarget & target)
 
 	target.setView(target.getDefaultView());
 	inv_butt.Render(target);
+	tool_obj.Render(target);
 
 	inventory.Render(target);
 
@@ -86,6 +88,7 @@ bool GameState::HandleEvent(sf::Event const & event)
 			}
 		}
 		inv_butt.HandleEvent(event);
+		tool_obj.HandleEvent(event);
 	}
 	return world.HandleEvent(event);
 }

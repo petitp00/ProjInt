@@ -40,13 +40,13 @@ public:
 	void LoadWorld(const std::string& filename);
 	void Save(const std::string& filename ="");
 
-	void Update(float dt, sf::Vector2f mouse_pos_in_world);
+	void Update(float dt, vec2 mouse_pos_in_world);
 	void UpdateView();
 	void Render(sf::RenderTarget& target);
 	bool HandleEvent(sf::Event const& event);
 
 	sf::View& getGameView() { return game_view; }
-	Entity* FindEntityClicked(sf::Vector2f mpos);
+	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 

@@ -295,6 +295,7 @@
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\GameGUI.h" />
     <ClInclude Include="src\GameState.h" />
+    <ClInclude Include="src\Globals.h" />
     <ClInclude Include="src\Ground.h" />
     <ClInclude Include="src\Items.h" />
     <ClInclude Include="src\MenuState.h" />

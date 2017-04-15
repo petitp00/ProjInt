@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include "Globals.h"
 
 #include <SFML/System/Vector2.hpp>
 
@@ -28,7 +29,7 @@ namespace Item
 	{
 		std::string name;
 		std::string desc;
-		sf::Vector2i pos_in_texture_map;
+		vec2i pos_in_texture_map;
 
 		bool operator==(any& b) {
 			return this->name == b.name;

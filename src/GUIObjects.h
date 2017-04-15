@@ -47,48 +47,48 @@ class GUIObject
 {
 public:
 	GUIObject()=default;
-	GUIObject(sf::Vector2f pos, sf::Vector2f size);
+	GUIObject(vec2 pos, vec2 size);
 	virtual ~GUIObject() = 0;
 
 	virtual void Update();
 	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 						bool draw_on_tooltip_render_target=false);
 
-	virtual bool onClick(sf::Vector2i mouse_pos) { clicked = true; return true; }
+	virtual bool onClick(vec2i mouse_pos) { clicked = true; return true; }
 	virtual bool onClickRelease() { clicked = false; return true; }
-	virtual bool onHoverIn(sf::Vector2i mouse_pos={0,0});
+	virtual bool onHoverIn(vec2i mouse_pos={0,0});
 	virtual bool onHoverOut();
 	virtual bool onMouseWheel(float delta) { return false; }
 	//virtual bool onKeyPressed(sf::Keyboard::Key key) { return false; }
 	virtual bool onKeyType(sf::Event::KeyEvent e) { return false; }
 
 	// when mouse has moved on top of object
-	virtual void UpdateHoveredMousePos(sf::Vector2i mouse_pos);
+	virtual void UpdateHoveredMousePos(vec2i mouse_pos);
 
-	virtual void UpdateClickDrag(sf::Vector2i mouse_pos) {}
+	virtual void UpdateClickDrag(vec2i mouse_pos) {}
 
-	bool isMouseIn(sf::Vector2i mouse_pos);
+	bool isMouseIn(vec2i mouse_pos);
 	bool isClicked() { return clicked; }
 
-	virtual void setPos(sf::Vector2f pos) { this->pos = pos; }
-	virtual void setOrigin(sf::Vector2f origin) { this->origin = origin; }
-	virtual void setSize(sf::Vector2f size) { this->size = size; }
+	virtual void setPos(vec2 pos) { this->pos = pos; }
+	virtual void setOrigin(vec2 origin) { this->origin = origin; }
+	virtual void setSize(vec2 size) { this->size = size; }
 	virtual void setTooltip(Tooltip* tooltip) { this->tooltip = tooltip; }
 	virtual void setOnClickAction(action_t action, ButtonActionImpl* impl) {
 		this->button_action_impl = impl; this->action = action;
 	}
 	virtual void setActive(bool active) { this->active = active; }
 
-	sf::Vector2f getPos() { return pos; }
-	sf::Vector2f getOrigin() { return origin; }
-	sf::Vector2f getSize() { return size; }
+	vec2 getPos() { return pos; }
+	vec2 getOrigin() { return origin; }
+	vec2 getSize() { return size; }
 	bool getHovered() { return hovered; }
 	bool getActive() { return active; }
 
 protected:
-	sf::Vector2f pos;
-	sf::Vector2f origin;
-	sf::Vector2f size;
+	vec2 pos;
+	vec2 origin;
+	vec2 size;
 
 	bool clicked = false;
 	bool hovered = false;
@@ -108,19 +108,19 @@ class TextBox : public GUIObject
 {
 public:
 	TextBox() = default;
-	TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font* font,
+	TextBox(std::string const& text_string, vec2 pos, float width, sf::Font* font,
 			sf::Color color, unsigned int character_size);
 
-	TextBox(std::string const& text_string, sf::Vector2f pos, float width,
+	TextBox(std::string const& text_string, vec2 pos, float width,
 			std::string const& font_name, sf::Color color, unsigned int character_size);
 
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
 
-	void setPos(sf::Vector2f pos) override { setPos(pos, true); }
-	void setPos(sf::Vector2f pos, bool update);
-	void setOrigin(sf::Vector2f origin) override;
+	void setPos(vec2 pos) override { setPos(pos, true); }
+	void setPos(vec2 pos, bool update);
+	void setOrigin(vec2 origin) override;
 	void setWidth(float width, bool update=true);
 	void setFont(sf::Font* font, bool update=true);
 	void setFont(std::string const& font_name, bool update=true);
@@ -151,7 +151,7 @@ private:
 class TextButton : public GUIObject {
 public:
 	TextButton()=default;
-	TextButton(std::string const& text_string, sf::Vector2f pos, float width,
+	TextButton(std::string const& text_string, vec2 pos, float width,
 			   unsigned int character_size = FontSize::NORMAL,
 			   sf::Color text_color = sf::Color::Black,
 			   sf::Color background_color = BG_COLOR,
@@ -164,12 +164,12 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
-	void setPos(sf::Vector2f pos) override;
-	void setOrigin(sf::Vector2f origin) override;
+	void setPos(vec2 pos) override;
+	void setOrigin(vec2 origin) override;
 
 protected:
 	void UpdateTextButton(bool set_params = true);
@@ -198,15 +198,15 @@ class ControlsTextButton : public TextButton
 {
 public:
 	ControlsTextButton()=default;
-	ControlsTextButton(std::string const& text_string, sf::Vector2f pos, float width,
+	ControlsTextButton(std::string const& text_string, vec2 pos, float width,
 					   unsigned int character_size = FontSize::NORMAL,
 					   sf::Color text_color = sf::Color::Black,
 					   sf::Color background_color = BG_COLOR,
 					   sf::Color background_color_hover = BG_HOVER,
 					   std::string const& font_name=BASE_FONT_NAME);
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	bool onKeyType(sf::Event::KeyEvent e) override;
 
@@ -224,14 +224,14 @@ class WorldSelectButton : public TextButton
 {
 public:
 	WorldSelectButton()=default;
-	WorldSelectButton(std::string const& text_string, sf::Vector2f pos, float width,
+	WorldSelectButton(std::string const& text_string, vec2 pos, float width,
 					   unsigned int character_size = FontSize::NORMAL,
 					   sf::Color text_color = sf::Color::Black,
 					   sf::Color background_color = BG_COLOR,
 					   sf::Color background_color_hover = BG_HOVER,
 					   std::string const& font_name=BASE_FONT_NAME);
 
-	bool onClick(sf::Vector2i mouse_pos) override;
+	bool onClick(vec2i mouse_pos) override;
 
 	void setWorldName(std::string name) { world_name = name; }
 private:
@@ -248,10 +248,10 @@ public:
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=true) override;
 
-	void StartTimer(sf::Vector2i mouse_pos);
+	void StartTimer(vec2i mouse_pos);
 	void StopTimer();
 
-	void setMousePos(sf::Vector2i mouse_pos);
+	void setMousePos(vec2i mouse_pos);
 
 private:
 	TextBox text_box;
@@ -268,15 +268,15 @@ private:
 class Checkbox : public GUIObject {
 public:
 	Checkbox() = default;
-	Checkbox(bool active, sf::Vector2f pos, sf::Vector2f size ={40, 40},
+	Checkbox(bool active, vec2 pos, vec2 size ={40, 40},
 			 sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER );
 
 	void Update() override;
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
 	bool* getActiveRef() { return &active; }
@@ -298,17 +298,17 @@ private:
 class Slider : public GUIObject {
 public:
 	Slider()=default;
-	Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value,
+	Slider(vec2 pos, float width, float start_value, float min_value, float max_value,
 		   sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER );
 
 	void Update() override;
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
-	void UpdateClickDrag(sf::Vector2i mouse_pos);
+	void UpdateClickDrag(vec2i mouse_pos);
 
 	float* getValueRef() { return &value; }
 
@@ -318,7 +318,7 @@ private:
 	sf::RectangleShape bar_shape;
 	sf::RectangleShape rect_shape;
 
-	sf::Vector2f bar_pos;
+	vec2 bar_pos;
 	float bar_width;
 
 	float value;
@@ -334,7 +334,7 @@ private:
 class Scrollbar : public GUIObject {
 public:
 	Scrollbar()=default;
-	Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value,
+	Scrollbar(vec2 pos, float height, float start_val, float min_value, float max_value,
 			  sf::Color background_color = BG_COLOR, sf::Color background_color_hover = BG_HOVER
 	);
 
@@ -342,10 +342,10 @@ public:
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
-	void UpdateClickDrag(sf::Vector2i mouse_pos);
+	void UpdateClickDrag(vec2i mouse_pos);
 
 	float getValue() { return value; }
 	float* getValueRef() { return &value; }
@@ -358,7 +358,7 @@ private:
 	sf::RectangleShape bar_shape;
 	sf::RectangleShape rect_shape;
 
-	sf::Vector2f bar_pos;
+	vec2 bar_pos;
 	float bar_height;
 
 	float value;
@@ -375,7 +375,7 @@ private:
 class ObjContainer : public GUIObject {
 public:
 	ObjContainer()=default;
-	ObjContainer(sf::Vector2f pos, sf::Vector2f size);
+	ObjContainer(vec2 pos, vec2 size);
 
 	~ObjContainer() { delete scrollbar; }
 
@@ -385,16 +385,16 @@ public:
 
 	void AddObject(GUIObject* obj);
 
-	bool onClick(sf::Vector2i mouse_pos) override;
+	bool onClick(vec2i mouse_pos) override;
 	bool onClickRelease() override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	bool onMouseWheel(float delta) override;
 	//bool onKeyPressed(sf::Keyboard::Key key) override;
 	bool onKeyType(sf::Event::KeyEvent e) override;
 
-	void UpdateClickDrag(sf::Vector2i mouse_pos) override;
-	void UpdateHoveredMousePos(sf::Vector2i mouse_pos) override;
+	void UpdateClickDrag(vec2i mouse_pos) override;
+	void UpdateHoveredMousePos(vec2i mouse_pos) override;
 
 private:
 	void UpdateObjContainer(bool set_params = true);
@@ -417,15 +417,15 @@ private:
 class TextInputBox : public GUIObject {
 public:
 	TextInputBox()=default;
-	TextInputBox(sf::Vector2f pos, float width, unsigned int character_size = FontSize::SMALL);
+	TextInputBox(vec2 pos, float width, unsigned int character_size = FontSize::SMALL);
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	void UpdateClickDrag(sf::Vector2i mouse_pos);
+	bool onClick(vec2i mouse_pos) override;
+	void UpdateClickDrag(vec2i mouse_pos);
 	bool onKeyType(sf::Event::KeyEvent e) override;
 	std::string* getStringRef() { return &text_string; }
 
@@ -452,20 +452,20 @@ private:
 class InvItemButton : public GUIObject {
 public:
 	InvItemButton()=default;
-	InvItemButton( int item, sf::Vector2f pos, float width );
+	InvItemButton( int item, vec2 pos, float width );
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
 	void setSelected(bool selected);
-	void setPos(sf::Vector2f pos) override;
-	void setOrigin(sf::Vector2f origin) override;
+	void setPos(vec2 pos) override;
+	void setOrigin(vec2 origin) override;
 
 	bool getSelected() { return selected; }
 	int getItem() { return item; }
@@ -498,14 +498,15 @@ class InvToolButton : public InvItemButton
 {
 public:
 	InvToolButton()=default;
-	InvToolButton(int item, sf::Vector2f pos, float width);
+	InvToolButton(int item, vec2 pos, float width);
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i pos) override;
+	bool onClick(vec2i pos) override;
+
 	void UpdateDurability();
 private:
 	void Init() override;
@@ -520,14 +521,14 @@ class InvActionButton : public TextButton
 {
 public:
 	InvActionButton()=default;
-	InvActionButton(std::string const& text_string, int item, sf::Vector2f pos, float width,
+	InvActionButton(std::string const& text_string, int item, vec2 pos, float width,
 					   unsigned int character_size = FontSize::NORMAL,
 					   sf::Color text_color = INV_TEXT_COLOR,
 					   sf::Color background_color = INV_ACCENT_COLOR,
 					   sf::Color background_color_hover = INV_ACCENT_COLOR2,
 					   std::string const& font_name=BASE_FONT_NAME);
 
-	bool onClick(sf::Vector2i mouse_pos) override;
+	bool onClick(vec2i mouse_pos) override;
 
 private:
 	int item;
@@ -538,9 +539,9 @@ class InvPageButton : public GUIObject
 public:
 	InvPageButton()=default;
 	InvPageButton(
-		sf::Vector2f pos,
+		vec2 pos,
 		const std::string& texture_name,
-		sf::Vector2f pos_in_texture
+		vec2 pos_in_texture
 	);
 
 	void Update() override;
@@ -548,13 +549,13 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(sf::Vector2i mouse_pos) override;
-	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onClick(vec2i mouse_pos) override;
+	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 
 	void setSelected(bool selected);
-	void setPos(sf::Vector2f pos) override;
-	void setOrigin(sf::Vector2f origin) override;
+	void setPos(vec2 pos) override;
+	void setOrigin(vec2 origin) override;
 
 	static float margin;
 private:
@@ -563,7 +564,7 @@ private:
 
 	bool selected = false;
 	std::string texture_name;
-	sf::Vector2f pos_in_texture;
+	vec2 pos_in_texture;
 
 	sf::RectangleShape rect_shape;
 	sf::Sprite sprite;

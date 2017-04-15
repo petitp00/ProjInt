@@ -2,6 +2,7 @@
 
 #include <string>
 #include <SFML/Graphics.hpp>
+#include "Globals.h"
 
 static const int tile_size = 32;
 static const int visual_tile_size = int(64);
@@ -77,16 +78,16 @@ private:
 class GroundTile {
 public:
 
-	GroundTile(GroundType type, sf::Vector2f pos);
+	GroundTile(GroundType type, vec2 pos);
 
 	void setType(GroundType type) { this->type = type; }
 
 	GroundType getType() { return type; }
-	sf::Vector2f getPos() { return pos; }
+	vec2 getPos() { return pos; }
 
 private:
 	GroundType type;
-	sf::Vector2f pos;
+	vec2 pos;
 };
 
 class Ground : public sf::Drawable
@@ -97,10 +98,10 @@ public:
 	void ReloadTileMap();
 	void Clear();
 
-	void Fill(sf::Vector2f mpos, GroundType type);
-	void setTileClicked(sf::Vector2f mpos, GroundType type);
-	GroundType getTileClicked(sf::Vector2f mpos);
-	GroundTile& getTile(sf::Vector2f pos);
+	void Fill(vec2 mpos, GroundType type);
+	void setTileClicked(vec2 mpos, GroundType type);
+	GroundType getTileClicked(vec2 mpos);
+	GroundTile& getTile(vec2 pos);
 	GroundTile& getTile(float x, float y);
 	std::vector<GroundTile>& getTiles() { return tiles; }
 	int getWidth() { return width; }

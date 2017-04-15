@@ -104,6 +104,9 @@
     <ClInclude Include="src\Items.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\TileShader.frag" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Game.h"
+#include "Globals.h"
 #include "Tweener.h"
 #include "Editor/Editor.h"
 

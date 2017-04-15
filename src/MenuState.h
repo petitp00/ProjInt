@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Game.h"
-
 #include "GUIObjects.h"
 
 #include <SFML/Window/Mouse.hpp>

@@ -162,7 +162,7 @@ void MenuPage::Render(sf::RenderTarget& target)
 bool MenuPage::MousePressedEvent(int mouse_x, int mouse_y)
 {
 	bool ret = false;
-	sf::Vector2i mouse(mouse_x, mouse_y);
+	vec2i mouse(mouse_x, mouse_y);
 	for (auto o : gui_objects) {
 		if (o->getHovered()) {
 			if (o->onClick(mouse)) { ret = true; return true; }
@@ -185,7 +185,7 @@ bool MenuPage::MouseReleasedEvent(int mouse_x, int mouse_y)
 bool MenuPage::MouseMovedEvent(int mouse_x, int mouse_y)
 {
 	bool ret = false;
-	sf::Vector2i mouse(mouse_x, mouse_y);
+	vec2i mouse(mouse_x, mouse_y);
 	for (auto o : gui_objects) {
 		if (o->isClicked()) {
 			o->UpdateClickDrag(mouse);

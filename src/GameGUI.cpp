@@ -1,5 +1,5 @@
 #include "GameGUI.h"
-#include "Game.h"
+#include "Globals.h"
 #include "GUIObjects.h"
 #include "GameState.h"
 #include "ResourceManager.h"
@@ -23,11 +23,29 @@ static void eat(ButtonActionImpl* impl) {
 static void use_tool(ButtonActionImpl* impl) {
 	auto tool = Item::Manager::getTool(impl->item);
 	if (tool) {
-		tool->durability += 50;//10;
+		tool->durability += 5;
 		if (tool->durability == 100) {
 			impl->game_state->getInventory()->DeleteItem(impl->item);
+			if (impl->game_state->getEquippedTool() == impl->item) {
+				impl->game_state->UnequipTool();
+			}
 		}
+		impl->game_state->getEquippedToolObj()->UpdateDurability();
 		impl->game_state->getInventory()->UpdateToolsDurability();
+	}
+}
+
+static void repair_tool(ButtonActionImpl* impl) {
+	auto tool = Item::Manager::getTool(impl->item);
+	if (tool) {
+		tool->durability = 0;
+	}
+}
+
+static void equip_tool(ButtonActionImpl* impl) {
+	auto tool = Item::Manager::getTool(impl->item);
+	if (tool) {
+		impl->game_state->EquipTool(impl->item);
 	}
 }
 
@@ -67,7 +85,7 @@ void UpdateObj(vector<T*>& vec, PosTweener& window_tw) {
 
 template <typename T>
 bool MouseMoveO(vector<T*>& vec, const sf::Event& event) {
-	sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
+	vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
 	bool ret = false;
 
 	for (auto o : vec) {
@@ -118,7 +136,7 @@ void ItemsPage::Init()
 	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
 	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
 	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
-	item_desc_obj = new TextBox("Description:", sf::Vector2f{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	item_desc_obj = new TextBox("Description:", vec2{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
 	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
 	gui_objects.push_back(item_desc_obj);
 }
@@ -163,22 +181,40 @@ bool ItemsPage::HandleEvents(sf::Event const & event)
 		MouseMoveO<InvActionButton>(actions_buttons, event);
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
-		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
-		for (auto o : inv_buttons) o->setSelected(false);
+		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		int old_item = *selected_item;
+		bool reselect = false;
+
+		for (auto o : inv_buttons) o->setSelected(false); // unselect every item
 		for (auto o : gui_objects)
 			if (o->getHovered() && o->onClick(mouse)) return true;
 		for (auto o : inv_buttons)
 			if (o->getHovered() && o->onClick(mouse)) return true;
 		for (auto o : actions_buttons) {
 			if (o->getHovered()) {
-				for (auto o : inv_buttons) o->setSelected(false);
 				if (o->onClick(mouse)) { 
 					ResetItemDescription(false);
-					return true;
+					*selected_item = old_item;
+					reselect = true;
+					break;
 				}
 			}
 		}
-		ResetItemDescription(false);
+
+		if (!reselect) {
+			ResetItemDescription(false);
+		}
+		else {
+			bool found = false;
+			for (auto o : inv_buttons) {
+				if (o->getItem() == old_item) {
+					o->setSelected(true);
+					found = true;
+					break;
+				}
+			}
+			if (!found) return true; // the item is not in the inventory anymore so we return
+		}
 
 		for (auto o : inv_buttons) {
 			if (o->getSelected()) {
@@ -281,7 +317,7 @@ void ToolsPage::Init()
 	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
 	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
 	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
-	item_desc_obj = new TextBox("Description:", sf::Vector2f{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	item_desc_obj = new TextBox("Description:", vec2{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
 	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
 	gui_objects.push_back(item_desc_obj);
 }
@@ -320,27 +356,43 @@ bool ToolsPage::HandleEvents(sf::Event const & event)
 		MouseMoveO<InvActionButton>(actions_buttons, event);
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
-		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
-		for (auto o : inv_buttons) o->setSelected(false);
+		auto old_selected = *selected_tool;
+		bool reselect = false;
+		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+
+		for (auto o : inv_buttons) o->setSelected(false); // unselect every item
+
 		for (auto o : gui_objects)
 			if (o->getHovered() && o->onClick(mouse)) return true;
 		for (auto o : inv_buttons)
 			if (o->getHovered() && o->onClick(mouse)) return true;
 		for (auto o : actions_buttons) {
 			if (o->getHovered()) {
-				for (auto o : inv_buttons) {
-					o->setSelected(false);
-				}
 				if (o->onClick(mouse)) { 
 					ResetItemDescription(false);
-					return true;
+					*selected_tool = old_selected;
+					reselect = true;
+					break;
 				}
 			}
 		}
-		ResetItemDescription(false);
+		if (!reselect) {
+			ResetItemDescription(false); // clears the description box
+		}
+		else { // keep item selected
+			bool found = false;
+			for (auto o : inv_buttons) {
+				if (o->getItem() == old_selected) {
+					o->setSelected(true);
+					found = true;
+					break;
+				}
+			}
+			if (!found) return true;
+		}
 
+		// for newly selected items
 		for (auto o : inv_buttons) {
-			o->UpdateDurability();
 			if (o->getSelected()) {
 				*selected_tool = o->getItem();
 				ResetItemDescription();
@@ -405,6 +457,13 @@ void ToolsPage::ResetItemDescription(bool item_selected)
 		height = b1->getSize().y;
 		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
 		actions_buttons.push_back(b1);
+		++i;
+
+		auto b2 = new InvActionButton("Équiper", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
+		b2->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
+		b2->setPos(window_tw->Tween());
+		b2->setOnClickAction(new function<void(ButtonActionImpl*)>(equip_tool), button_action_impl);
+		actions_buttons.push_back(b2);
 		++i;
 
 		if (si->durability >= 0) {
@@ -504,20 +563,20 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	auto margin = InvPageButton::margin; // of InvPageButton
 
 	auto page_butt1 = new InvPageButton({0,0}, Item::texture_map_file, {0, 0});
-	page_butt1->setOrigin(sf::Vector2f(-(-margin*5), -(ms)));
+	page_butt1->setOrigin(vec2(-(-margin*5), -(ms)));
 	page_butt1->setSelected(true);
 	page_butt1->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_items_page), button_action_impl);
 	page_butt1->setTooltip(new Tooltip("Items", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt1);
 
 	auto page_butt2 = new InvPageButton({0,0}, Item::texture_map_file, {3, 0});
-	page_butt2->setOrigin(sf::Vector2f(-(-margin*5), -(ms*2.f + margin*5)));
+	page_butt2->setOrigin(vec2(-(-margin*5), -(ms*2.f + margin*5)));
 	page_butt2->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_tools_page), button_action_impl);
 	page_butt2->setTooltip(new Tooltip("Outils", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt2);
 
 	auto page_butt3 = new InvPageButton({0,0}, Item::texture_map_file, {1, 0});
-	page_butt3->setOrigin(sf::Vector2f(-(-margin*5), -(ms*3.f + margin*10)));
+	page_butt3->setOrigin(vec2(-(-margin*5), -(ms*3.f + margin*10)));
 	page_butt3->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_craft_page), button_action_impl);
 	page_butt3->setTooltip(new Tooltip("Créer", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt3);
@@ -572,7 +631,7 @@ bool Inventory::HandleEvents(sf::Event const & event)
 		MouseMoveO<InvPageButton>(page_buttons, event);
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
-		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
 		for (auto o : page_buttons) {
 			if (o->getHovered()) {
 				for (auto o2 : page_buttons) o2->setSelected(false);
@@ -686,10 +745,10 @@ void Inventory::PutDownItem(int item)
 	setActive(false);
 }
 
-bool Inventory::IsMouseIn(sf::Vector2i mpos)
+bool Inventory::IsMouseIn(vec2i mpos)
 {
 	auto p = window_tw.Tween();
-	auto s = sf::Vector2f(INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT);
+	auto s = vec2(INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT);
 	return (mpos.x >= p.x && mpos.x <= p.x + s.x && mpos.y >= p.y && mpos.y <= p.y + s.y);
 }
 
@@ -728,7 +787,7 @@ void InventoryButton::Render(sf::RenderTarget & target)
 void InventoryButton::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::MouseMoved) {
-		sf::Vector2f mouse = sf::Vector2f(float(event.mouseMove.x), float(event.mouseMove.y));
+		vec2 mouse = vec2(float(event.mouseMove.x), float(event.mouseMove.y));
 
 		if (mouse.x >= pos.x && mouse.x <= pos.x + size.x && mouse.y >= pos.y && mouse.y <= pos.y + size.y) {
 			if (!open) {
@@ -752,4 +811,58 @@ void InventoryButton::UpdateOpen()
 {
 	if (open) sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
 	else sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
+}
+
+EquippedToolObj::EquippedToolObj() { }
+
+void EquippedToolObj::Init(Inventory * inventory)
+{
+	this->inventory = inventory;
+	float scale = 3;
+	float ts = Item::items_texture_size * scale;
+	auto item = Item::Manager::getTool(tool);
+
+	size = {ts,ts};
+	pos = {WINDOW_WIDTH - 10 - size.x, WINDOW_HEIGHT - 10 - size.y};
+	sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
+	if (item) {
+		sprite.setTextureRect(sf::IntRect((item->pos_in_texture_map)*int(ts/3), {int(ts/3.f), int(ts/3.f)}));
+	}
+	sprite.setPosition(pos);
+	sprite.setScale(scale, scale);
+
+	shape.setSize({ts + 4, ts + 4});
+	shape.setPosition(pos - vec2{2.f, 2.f});
+	shape.setOutlineColor(INV_WINDOW_COLOR);
+	shape.setFillColor(INV_ACCENT_COLOR);
+	shape.setOutlineThickness(2);
+
+	durab_bar.setPosition(pos + vec2(-2, shape.getSize().y - 4));
+	UpdateDurability();
+
+}
+
+void EquippedToolObj::Render(sf::RenderTarget & target)
+{
+	if (tool != -1) {
+		target.draw(shape);
+		target.draw(sprite);
+		target.draw(durab_bar);
+	}
+}
+
+void EquippedToolObj::HandleEvent(sf::Event const & event)
+{
+}
+
+void EquippedToolObj::UpdateDurability()
+{
+	if (tool != -1) {
+		auto t = Item::Manager::getTool(tool);
+		float perc = max(0.f, min(100.f, (1 - t->durability / 100.f)));
+		float bw = shape.getSize().x * perc;
+
+		durab_bar.setSize(vec2(bw, 2));
+		durab_bar.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
+	}
 }
