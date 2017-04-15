@@ -52,6 +52,18 @@
 	- poisson
 		- cuit et pas cuit
 	- graines
+	- coeur de pomme
+	- pelure de banane
+	- bout de carotte
+	- hache
+	- faux
+	- bol
+		- vide
+		- 1/4 d'eau
+		- 1/2 d'eau
+		- 3/4 d'eau
+		- rempli
+	- bois
 
 + Probablement d'autres choses
 
