@@ -238,7 +238,6 @@ private:
 	std::string world_name;
 };
 
-
 class Tooltip : public GUIObject {
 public:
 	Tooltip()=default;
@@ -453,14 +452,7 @@ private:
 class InvItemButton : public GUIObject {
 public:
 	InvItemButton()=default;
-	InvItemButton(
-		int item, sf::Vector2f pos, float width,
-		unsigned int character_size = FontSize::SMALL,
-		sf::Color text_color = INV_TEXT_COLOR,
-		sf::Color background_color = INV_ACCENT_COLOR,
-		sf::Color background_color_hover = INV_ACCENT_COLOR2,
-		sf::Color background_color_selected = INV_ACCENT_COLOR3
-	);
+	InvItemButton( int item, sf::Vector2f pos, float width );
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
@@ -478,9 +470,9 @@ public:
 	bool getSelected() { return selected; }
 	int getItem() { return item; }
 
-private:
-	void Init();
-	void UpdateButtonParams();
+protected:
+	virtual void Init();
+	virtual void UpdateButtonParams();
 
 	bool selected = false;
 
@@ -502,6 +494,28 @@ private:
 	int item;
 };
 
+class InvToolButton : public InvItemButton
+{
+public:
+	InvToolButton()=default;
+	InvToolButton(int item, sf::Vector2f pos, float width);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	bool onClick(sf::Vector2i pos) override;
+	void UpdateDurability();
+private:
+	void Init() override;
+	void UpdateButtonParams() override;
+
+	float bar_height = 3.f;
+	sf::RectangleShape bar_shape;
+	sf::Text durab_text;
+};
+
 class InvActionButton : public TextButton
 {
 public:
@@ -519,3 +533,43 @@ private:
 	int item;
 };
 
+class InvPageButton : public GUIObject
+{
+public:
+	InvPageButton()=default;
+	InvPageButton(
+		sf::Vector2f pos,
+		const std::string& texture_name,
+		sf::Vector2f pos_in_texture
+	);
+
+	void Update() override;
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+
+	bool onClick(sf::Vector2i mouse_pos) override;
+	bool onHoverIn(sf::Vector2i mouse_pos={0,0}) override;
+	bool onHoverOut() override;
+
+	void setSelected(bool selected);
+	void setPos(sf::Vector2f pos) override;
+	void setOrigin(sf::Vector2f origin) override;
+
+	static float margin;
+private:
+	void Init();
+	void UpdateButtonParams();
+
+	bool selected = false;
+	std::string texture_name;
+	sf::Vector2f pos_in_texture;
+
+	sf::RectangleShape rect_shape;
+	sf::Sprite sprite;
+
+	sf::Color background_color = INV_ACCENT_COLOR2;
+	sf::Color background_color_hover = INV_ACCENT_COLOR;
+	sf::Color selected_color = INV_WINDOW_COLOR;
+	Tweener color_tw;
+};

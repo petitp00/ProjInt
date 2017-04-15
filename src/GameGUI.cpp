@@ -20,8 +20,29 @@ static void eat(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->EatItem(impl->item);
 }
 
+static void use_tool(ButtonActionImpl* impl) {
+	auto tool = Item::Manager::getTool(impl->item);
+	if (tool) {
+		tool->durability += 50;//10;
+		if (tool->durability == 100) {
+			impl->game_state->getInventory()->DeleteItem(impl->item);
+		}
+		impl->game_state->getInventory()->UpdateToolsDurability();
+	}
+}
+
 static void put_down(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PutDownItem(impl->item);
+}
+
+static void go_to_items_page(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->GoToPage(PageType::Items);
+}
+static void go_to_tools_page(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->GoToPage(PageType::Tools);
+}
+static void go_to_craft_page(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->GoToPage(PageType::Craft);
 }
 
 static bool go_up_then_not_active = false;
@@ -36,14 +57,421 @@ static float WINDOW_ENDY = (WINDOW_HEIGHT - INV_WINDOW_HEIGHT)/2.f;
 static float margin_sides = 20.f;
 static float margin_middle = 10.f;
 
+template <typename T>
+void UpdateObj(vector<T*>& vec, PosTweener& window_tw) {
+	for (auto o : vec) {
+		o->setPos(window_tw.Tween());
+		o->Update();
+	}
+}
+
+template <typename T>
+bool MouseMoveO(vector<T*>& vec, const sf::Event& event) {
+	sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
+	bool ret = false;
+
+	for (auto o : vec) {
+		if (o->isClicked())
+			o->UpdateClickDrag(mouse);
+
+		if (o->isMouseIn(mouse)) {
+			if (!o->getHovered()) {
+				if (o->onHoverIn(mouse)) { ret = true; }
+			}
+			else {
+				o->UpdateHoveredMousePos(mouse);
+			}
+		}
+
+		else if (o->getHovered())
+			if (o->onHoverOut()) ret = true;
+	}
+	return ret;
+}
+
+// INVENTORY PAGES
+
+
+InvPage::~InvPage()
+{
+	Clear();
+}
+
+void InvPage::Clear()
+{
+	for (int i = 0; i != gui_objects.size(); ++i) {
+		delete gui_objects[i];
+	}
+	gui_objects.clear();
+}
+
+ItemsPage::~ItemsPage()
+{
+	Clear();
+}
+
+void ItemsPage::Init()
+{
+	Clear();
+	auto ms = margin_sides;
+	auto mm = margin_middle;
+	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
+	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
+	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
+	item_desc_obj = new TextBox("Description:", sf::Vector2f{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
+	gui_objects.push_back(item_desc_obj);
+}
+
+void ItemsPage::Clear()
+{
+	InvPage::Clear();
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
+	inv_buttons.clear();
+
+	for (int i = 0; i != actions_buttons.size(); ++i) {
+		delete actions_buttons[i];
+	}
+	actions_buttons.clear();
+}
+
+void ItemsPage::Update()
+{
+	item_desc_shape.setPosition(window_tw->Tween());
+	UpdateObj<GUIObject>(gui_objects, *window_tw);
+	UpdateObj<InvItemButton>(inv_buttons, *window_tw);
+	UpdateObj<InvActionButton>(actions_buttons, *window_tw);
+}
+
+void ItemsPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
+{
+	target.draw(item_desc_shape);
+	//item_desc_obj->Render(target, tooltip_render_target);
+	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
+	for (auto o : inv_buttons) o->Render(target, tooltip_render_target);
+	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
+}
+
+bool ItemsPage::HandleEvents(sf::Event const & event)
+{
+	bool ret = false;
+	if (event.type == sf::Event::MouseMoved) {
+		MouseMoveO<GUIObject>(gui_objects, event);
+		MouseMoveO<InvItemButton>(inv_buttons, event);
+		MouseMoveO<InvActionButton>(actions_buttons, event);
+	}
+	else if (event.type == sf::Event::MouseButtonPressed) {
+		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		for (auto o : inv_buttons) o->setSelected(false);
+		for (auto o : gui_objects)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : inv_buttons)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : actions_buttons) {
+			if (o->getHovered()) {
+				for (auto o : inv_buttons) o->setSelected(false);
+				if (o->onClick(mouse)) { 
+					ResetItemDescription(false);
+					return true;
+				}
+			}
+		}
+		ResetItemDescription(false);
+
+		for (auto o : inv_buttons) {
+			if (o->getSelected()) {
+				*selected_item = o->getItem();
+				ResetItemDescription();
+			}
+		}
+	}
+	else if (event.type == sf::Event::MouseButtonReleased) {
+		for (auto o : gui_objects)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+		for (auto o : actions_buttons)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+	}
+	return ret;
+}
+
+void ItemsPage::ResetItemButtons(std::vector<int>& items)
+{
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
+	
+	inv_buttons.clear();
+
+	int iy = 0;
+	for (auto i : items) {
+		auto item = Item::Manager::getAny(i);
+		if (!Item::IsTool(Item::getItemTypeByName(item->name))) {
+			InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
+			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
+			inv_buttons.push_back(ib1);
+			++iy;
+		}
+	}
+
+	for (auto o : inv_buttons) {
+		o->setPos(window_tw->Tween());
+	}
+}
+
+void ItemsPage::ResetItemDescription(bool item_selected)
+{
+	if (item_selected) {
+		auto si = Item::Manager::getAny(*selected_item);
+		auto sit = Item::getItemTypeByName(si->name);
+
+		item_desc_obj->setTextString("Description: " + si->desc);
+
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+
+		int i = 0;
+		float width = INV_WINDOW_WIDTH/2.f - margin_middle*2.f - margin_sides*2.f;
+		float height = 0;
+		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
+		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
+
+		auto b1 = new InvActionButton("Déposer", *selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
+		b1->setOrigin({-(ox), -(oy)});
+		b1->setPos(window_tw->Tween());
+		height = b1->getSize().y;
+		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
+		actions_buttons.push_back(b1);
+		++i;
+
+		if (Item::IsFood(sit)) {
+			auto b = new InvActionButton("Manger", *selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
+			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
+			b->setPos(window_tw->Tween());
+			b->setOnClickAction(new function<void(ButtonActionImpl*)>(eat), button_action_impl);
+			actions_buttons.push_back(b);
+			++i;
+		}
+	}
+	else {
+		item_desc_obj->setTextString("Description: ");
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+	}
+}
+
+// 
+
+ToolsPage::~ToolsPage()
+{
+	Clear();
+}
+
+void ToolsPage::Init()
+{
+	Clear();
+
+	auto ms = margin_sides;
+	auto mm = margin_middle;
+	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
+	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
+	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
+	item_desc_obj = new TextBox("Description:", sf::Vector2f{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
+	gui_objects.push_back(item_desc_obj);
+}
+
+void ToolsPage::Clear()
+{
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
+	inv_buttons.clear();
+}
+
+void ToolsPage::Update()
+{
+	item_desc_shape.setPosition(window_tw->Tween());
+	UpdateObj<GUIObject>(gui_objects, *window_tw);
+	UpdateObj<InvToolButton>(inv_buttons, *window_tw);
+	UpdateObj<InvActionButton>(actions_buttons, *window_tw);
+}
+
+void ToolsPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
+{
+	target.draw(item_desc_shape);
+	//item_desc_obj->Render(target, tooltip_render_target);
+	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
+	for (auto o : inv_buttons) o->Render(target, tooltip_render_target);
+	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
+}
+
+bool ToolsPage::HandleEvents(sf::Event const & event)
+{
+	bool ret = false;
+	if (event.type == sf::Event::MouseMoved) {
+		MouseMoveO<GUIObject>(gui_objects, event);
+		MouseMoveO<InvToolButton>(inv_buttons, event);
+		MouseMoveO<InvActionButton>(actions_buttons, event);
+	}
+	else if (event.type == sf::Event::MouseButtonPressed) {
+		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		for (auto o : inv_buttons) o->setSelected(false);
+		for (auto o : gui_objects)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : inv_buttons)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : actions_buttons) {
+			if (o->getHovered()) {
+				for (auto o : inv_buttons) {
+					o->setSelected(false);
+				}
+				if (o->onClick(mouse)) { 
+					ResetItemDescription(false);
+					return true;
+				}
+			}
+		}
+		ResetItemDescription(false);
+
+		for (auto o : inv_buttons) {
+			o->UpdateDurability();
+			if (o->getSelected()) {
+				*selected_tool = o->getItem();
+				ResetItemDescription();
+			}
+		}
+	}
+	else if (event.type == sf::Event::MouseButtonReleased) {
+		for (auto o : gui_objects)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+		for (auto o : actions_buttons)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+	}
+	return ret;
+}
+
+void ToolsPage::ResetItemButtons(std::vector<int>& items)
+{
+	for (int i = 0; i != inv_buttons.size(); ++i) {
+		delete inv_buttons[i];
+	}
+	
+	inv_buttons.clear();
+
+	int iy = 0;
+	for (auto i : items) {
+		auto item = Item::Manager::getAny(i);
+		if (Item::IsTool(Item::getItemTypeByName(item->name))) {
+			InvToolButton* ib1 = new InvToolButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
+			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
+			inv_buttons.push_back(ib1);
+			++iy;
+		}
+	}
+
+	for (auto o : inv_buttons) {
+		o->setPos(window_tw->Tween());
+	}
+}
+
+void ToolsPage::ResetItemDescription(bool item_selected)
+{
+	if (item_selected) {
+		auto si = Item::Manager::getTool(*selected_tool);
+		auto sit = Item::getItemTypeByName(si->name);
+
+		item_desc_obj->setTextString("Description: " + si->desc);
+
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+
+		int i = 0;
+		float width = INV_WINDOW_WIDTH/2.f - margin_middle*2.f - margin_sides*2.f;
+		float height = 0;
+		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
+		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
+
+		auto b1 = new InvActionButton("Déposer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
+		b1->setOrigin({-(ox), -(oy)});
+		b1->setPos(window_tw->Tween());
+		height = b1->getSize().y;
+		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
+		actions_buttons.push_back(b1);
+		++i;
+
+		if (si->durability >= 0) {
+			auto b = new InvActionButton("Réparer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
+			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
+			b->setPos(window_tw->Tween());
+			b->setOnClickAction(new function<void(ButtonActionImpl*)>(use_tool), button_action_impl);
+			actions_buttons.push_back(b);
+			++i;
+		}
+	}
+	else {
+		item_desc_obj->setTextString("Description: ");
+		for (int i = 0; i != actions_buttons.size(); ++i) {
+			delete actions_buttons[i];
+		}
+		actions_buttons.clear();
+	}
+}
+
+void ToolsPage::UpdateToolsDurability()
+{
+	for (auto o : inv_buttons) {
+		o->UpdateDurability();
+	}
+}
+
+// 
+
+CraftPage::~CraftPage()
+{
+}
+
+void CraftPage::Init()
+{
+}
+
+void CraftPage::Clear()
+{
+}
+
+void CraftPage::Update()
+{
+}
+
+void CraftPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
+{
+}
+
+bool CraftPage::HandleEvents(sf::Event const & event)
+{
+	return false;
+}
+// INVENTORY //
+
 Inventory::Inventory(Controls* controls) : controls(controls)
 {
+	active_page = &items_page;
+	tooltip_render_target.create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	tooltip_render_target.setSmooth(true);
+	tooltip_render_target_sprite.setTexture(tooltip_render_target.getTexture());
 }
 
 Inventory::~Inventory()
 {
-	for (int i = 0; i != gui_objects.size(); ++i) {
-		delete gui_objects[i];
+	for (int i = 0; i != page_buttons.size(); ++i) {
+		delete page_buttons[i];
 	}
 }
 
@@ -51,62 +479,65 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 {
 	this->button_action_impl = button_action_impl;
 
-	for (int i = 0; i != inv_buttons.size(); ++i) {
-		delete inv_buttons[i];
+	items_page.button_action_impl = button_action_impl;
+	items_page.window_tw = &window_tw;
+	items_page.selected_item = &selected_item;
+	items_page.Init();
+	tools_page.button_action_impl = button_action_impl;
+	tools_page.window_tw = &window_tw;
+	tools_page.selected_tool = &selected_tool;
+	tools_page.Init();
+	craft_page.button_action_impl = button_action_impl;
+	craft_page.window_tw = &window_tw;
+	craft_page.Init();
+
+	for (int i = 0; i != page_buttons.size(); ++i) {
+		delete page_buttons[i];
 	}
-	inv_buttons.clear();
-	for (int i = 0; i != gui_objects.size(); ++i) {
-		delete gui_objects[i];
-	}
-	gui_objects.clear();
+	page_buttons.clear();
 
 	window_shape.setSize({INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT});
 	window_shape.setFillColor(INV_WINDOW_COLOR);
 
 	auto ms = margin_sides;
 	auto mm = margin_middle;
+	auto margin = InvPageButton::margin; // of InvPageButton
 
-	// item desc
-	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
-	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
-	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
+	auto page_butt1 = new InvPageButton({0,0}, Item::texture_map_file, {0, 0});
+	page_butt1->setOrigin(sf::Vector2f(-(-margin*5), -(ms)));
+	page_butt1->setSelected(true);
+	page_butt1->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_items_page), button_action_impl);
+	page_butt1->setTooltip(new Tooltip("Items", sf::seconds(0.5f)));
+	page_buttons.push_back(page_butt1);
 
-	item_desc_obj = new TextBox("Description:", sf::Vector2f{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
-	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
+	auto page_butt2 = new InvPageButton({0,0}, Item::texture_map_file, {3, 0});
+	page_butt2->setOrigin(sf::Vector2f(-(-margin*5), -(ms*2.f + margin*5)));
+	page_butt2->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_tools_page), button_action_impl);
+	page_butt2->setTooltip(new Tooltip("Outils", sf::seconds(0.5f)));
+	page_buttons.push_back(page_butt2);
 
-	gui_objects.push_back(item_desc_obj);
+	auto page_butt3 = new InvPageButton({0,0}, Item::texture_map_file, {1, 0});
+	page_butt3->setOrigin(sf::Vector2f(-(-margin*5), -(ms*3.f + margin*10)));
+	page_butt3->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_craft_page), button_action_impl);
+	page_butt3->setTooltip(new Tooltip("Créer", sf::seconds(0.5f)));
+	page_buttons.push_back(page_butt3);
 
 	ResetItemButtons();
 }
+
 
 void Inventory::Update()
 {
 	if (active) {
 		window_shape.setPosition(window_tw.Tween());
-		item_desc_shape.setPosition(window_tw.Tween());
 		if (go_up_then_not_active && window_tw.getEnded()) {
 			active = false;
 			go_up_then_not_active = false;
 		}
+		
+		UpdateObj(page_buttons, window_tw);
 
-		for (auto o : gui_objects) {
-			if (!window_tw.getEnded()) {
-				o->setPos(window_tw.Tween());
-			}
-			o->Update();
-		}
-		for (auto o : inv_buttons) {
-			if (!window_tw.getEnded()) {
-				o->setPos(window_tw.Tween());
-			}
-			o->Update();
-		}
-		for (auto o : actions_buttons) {
-			if (!window_tw.getEnded()) {
-				o->setPos(window_tw.Tween());
-			}
-			o->Update();
-		}
+		active_page->Update();
 	}
 }
 
@@ -115,17 +546,12 @@ void Inventory::Render(sf::RenderTarget & target)
 	if (active) {
 		target.setView(target.getDefaultView());
 		target.draw(window_shape);
-		target.draw(item_desc_shape);
 
 		tooltip_render_target.clear(sf::Color::Transparent);
 
-		for (auto o : gui_objects)
-			o->Render(target, tooltip_render_target);
+		active_page->Render(target, tooltip_render_target);
 
-		for (auto o : inv_buttons)
-			o->Render(target, tooltip_render_target);
-
-		for (auto o : actions_buttons)
+		for (auto o : page_buttons)
 			o->Render(target, tooltip_render_target);
 
 		tooltip_render_target.display();
@@ -142,189 +568,82 @@ bool Inventory::HandleEvents(sf::Event const & event)
 			ret = true;
 		}
 	}
-	
 	else if (event.type == sf::Event::MouseMoved) {
-		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
-
-		for (auto o : gui_objects) {
-			if (o->isClicked())
-				o->UpdateClickDrag(mouse);
-
-			if (o->isMouseIn(mouse)) {
-				if (!o->getHovered())
-					if (o->onHoverIn(mouse)) ret = true;
-				else 
-					o->UpdateHoveredMousePos(mouse);
-			}
-
-			else if (o->getHovered())
-				if (o->onHoverOut()) ret = true;
-		}
-		for (auto o : inv_buttons) {
-			if (o->isClicked())
-				o->UpdateClickDrag(mouse);
-
-			if (o->isMouseIn(mouse)) {
-				if (!o->getHovered())
-					if (o->onHoverIn(mouse)) ret = true;
-				else 
-					o->UpdateHoveredMousePos(mouse);
-			}
-
-			else if (o->getHovered())
-				if (o->onHoverOut()) ret = true;
-		}
-		for (auto o : actions_buttons) {
-			if (o->isClicked())
-				o->UpdateClickDrag(mouse);
-
-			if (o->isMouseIn(mouse)) {
-				if (!o->getHovered())
-					if (o->onHoverIn(mouse)) ret = true;
-				else 
-					o->UpdateHoveredMousePos(mouse);
-			}
-
-			else if (o->getHovered())
-				if (o->onHoverOut()) ret = true;
-		}
+		MouseMoveO<InvPageButton>(page_buttons, event);
 	}
-
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		sf::Vector2i mouse = {event.mouseMove.x, event.mouseMove.y};
-
-		InvItemButton* old_selected = nullptr;
-		for (auto o : inv_buttons) {
-			if (o->getSelected()) {
-				old_selected = o;
-				break;
-			}
-		}
-		for (auto o : inv_buttons) o->setSelected(false);
-
-		bool clicked = false;
-		for (auto o : gui_objects) {
+		for (auto o : page_buttons) {
 			if (o->getHovered()) {
-				clicked = true;
-				if (o->onClick(mouse)) { return true; }
+				for (auto o2 : page_buttons) o2->setSelected(false);
+				if (o->onClick(mouse)) return true;
 			}
 		}
-		for (auto o : inv_buttons) {
-			if (o->getHovered()) {
-				clicked = true;
-				if (o->onClick(mouse)) { return true; }
-			}
-		}
-		for (auto o : actions_buttons) {
-			if (o->getHovered()) {
-				clicked = true;
-				for (auto o : inv_buttons) o->setSelected(false);
-				if (o->onClick(mouse)) { 
-					ResetItemDescription(false);
-					return true;
-				}
-			}
-		}
-
-		ResetItemDescription(false);
-
-		for (auto o : inv_buttons) {
-			if (o->getSelected()) {
-				selected_item = o->getItem();
-				ResetItemDescription();
-			}
-		}
-	} else if (event.type == sf::Event::MouseButtonReleased) {
-		for (auto o : gui_objects)
-			if (o->isClicked())
-				if (o->onClickRelease()) ret = true;
-		for (auto o : actions_buttons)
-			if (o->isClicked())
-				if (o->onClickRelease()) ret = true;
 	}
+	else if (event.type == sf::Event::MouseButtonReleased) {
+		for (auto o : page_buttons)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+	}
+
+	if (active_page->HandleEvents(event)) ret = true;
 
 	return ret;
 }
 
 void Inventory::ResetItemButtons()
 {
-	for (int i = 0; i != inv_buttons.size(); ++i) {
-		delete inv_buttons[i];
-	}
-	
-	inv_buttons.clear();
-
-	int iy = 0;
-	for (auto i : items) {
-		InvItemButton* ib1 = new InvItemButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
-		ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
-		inv_buttons.push_back(ib1);
-		++iy;
-	}
-
-	for (auto o : inv_buttons) {
-		o->setPos(window_tw.Tween());
-	}
+	items_page.ResetItemButtons(items);
+	tools_page.ResetItemButtons(items);
 }
 
 void Inventory::ResetItemDescription(bool item_selected)
 {
-	if (item_selected) {
-		auto si = Item::Manager::getAny(selected_item);
-		auto sit = Item::getItemTypeByName(si->name);
-
-		item_desc_obj->setTextString("Description: " + si->desc);
-
-		for (int i = 0; i != actions_buttons.size(); ++i) {
-			delete actions_buttons[i];
-		}
-		actions_buttons.clear();
-
-		int i = 0;
-		float width = INV_WINDOW_WIDTH/2.f - margin_middle*2.f - margin_sides*2.f;
-		float height = 0;
-		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
-		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
-
-		auto b1 = new InvActionButton("Déposer", selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
-		b1->setOrigin({-(ox), -(oy)});
-		b1->setPos(window_tw.Tween());
-		height = b1->getSize().y;
-		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
-		actions_buttons.push_back(b1);
-		++i;
-
-		if (Item::IsFood(sit)) {
-			auto b = new InvActionButton("Manger", selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
-			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
-			b->setPos(window_tw.Tween());
-			b->setOnClickAction(new function<void(ButtonActionImpl*)>(eat), button_action_impl);
-			actions_buttons.push_back(b);
-			++i;
-		}
-	}
-	else {
-		item_desc_obj->setTextString("Description: ");
-		for (int i = 0; i != actions_buttons.size(); ++i) {
-			delete actions_buttons[i];
-		}
-		actions_buttons.clear();
-	}
+	items_page.ResetItemDescription(item_selected);
+	tools_page.ResetItemDescription(item_selected);
 }
 
-void Inventory::AddItem(int id)
+void Inventory::UpdateToolsDurability()
 {
-	if (items.size() < INV_MAX) {
-		items.push_back(id);
+	tools_page.UpdateToolsDurability();
+}
+
+void Inventory::GoToPage(PageType type)
+{
+	if (type == PageType::Items)		active_page = &items_page;
+	else if (type == PageType::Tools)	active_page = &tools_page;
+	else if (type == PageType::Craft)	active_page = &craft_page;
+}
+
+bool Inventory::AddItem(int id)
+{
+	int tools_nb = 0;
+	for (auto i : items) {
+		auto item = Item::Manager::getAny(i);
+		if (Item::IsTool(Item::getItemTypeByName(item->name))) {
+			++tools_nb;
+		}
 	}
 
+	auto ni = Item::Manager::getAny(id);
+	if (Item::IsTool(Item::getItemTypeByName(ni->name))) {
+		if (tools_nb < INV_MAX) {
+			items.push_back(id);
+		}
+		else return false;
+	}
+	else if (items.size() - tools_nb < INV_MAX) {
+		items.push_back(id);
+	}
+	else return false;
+
 	ResetItemButtons();
+	return true;
 }
 
 void Inventory::AddNewItem(Item::ItemType type)
 {
 	int item = Item::Manager::CreateItem(type);
-	AddItem(item);
+	if (!AddItem(item)) Item::Manager::DeleteItem(item);
 }
 
 void Inventory::RemoveItem(int item)
@@ -337,6 +656,21 @@ void Inventory::RemoveItem(int item)
 	}
 
 	ResetItemButtons();
+}
+
+void Inventory::DeleteItem(int id)
+{
+	for (uint i = 0; i != items.size(); ++i) {
+		if (items[i] == id) {
+			items.erase(items.begin() + i);
+			break;
+		}
+	}
+
+	Item::Manager::DeleteItem(id);
+
+	ResetItemButtons();
+	//ResetItemDescription();
 }
 
 void Inventory::EatItem(int item)
@@ -371,9 +705,7 @@ void Inventory::setActive(bool active)
 	}
 }
 
-InventoryButton::InventoryButton()
-{
-}
+InventoryButton::InventoryButton() {}
 
 void InventoryButton::Init(Inventory* inventory)
 {
@@ -418,11 +750,6 @@ void InventoryButton::HandleEvent(sf::Event const & event)
 
 void InventoryButton::UpdateOpen()
 {
-	if (open) {
-		sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
-	}
-	else {
-		sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
-	}
+	if (open) sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
+	else sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
 }
-

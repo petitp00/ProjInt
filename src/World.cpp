@@ -173,7 +173,7 @@ void World::LoadWorld(std::string const & filename)
 			}
 		}
 		else if (w == "[TILE_MAP]") {
-			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl << "loading tile_map...";
+			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl << "loading tile_map...";
 			vector<int> tiles;
 			int width, height;
 			s >> width;
@@ -186,7 +186,7 @@ void World::LoadWorld(std::string const & filename)
 			ground.LoadTileMap(tiles, width, height);
 		}
 		else if (w == "[INVENTORY]") {
-			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl << "loading inventory...";
+			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl << "loading inventory...";
 			while (s >> w) {
 				if (w == "[END]") break;
 				
@@ -205,7 +205,7 @@ void World::LoadWorld(std::string const & filename)
 				}
 				inventory->AddNewItem(Item::getItemTypeByName(w));
 			}
-			cout << "   done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
+			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl;
 		}
 	}
 	player->setControls(controls);
@@ -241,9 +241,7 @@ void World::Save(const string& filename)
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
 	}
-	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
-
-	clock.restart();
+	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 
 	cout << "saving tilemap...";
 	s << "[TILE_MAP]" << endl;
@@ -252,9 +250,7 @@ void World::Save(const string& filename)
 		s << t.getType() << " ";
 	}
 	s << endl << "[END]" << endl;
-	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
-
-	clock.restart();
+	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 
 	cout << "saving inventory...";
 	s << "[INVENTORY]" << endl;
@@ -264,7 +260,7 @@ void World::Save(const string& filename)
 		s << "\"" << item->name << "\"" << endl;
 	}
 	s << "[END]" << endl;
-	cout << " - done! (" << clock.getElapsedTime().asSeconds() << " s)" << endl;
+	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 
 	if (!file_existed) {
 		std::ofstream stream("Resources/Data/Saves/all_saves", std::ios_base::app);

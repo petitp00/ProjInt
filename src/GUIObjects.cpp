@@ -52,7 +52,9 @@ bool GUIObject::isMouseIn(sf::Vector2i mouse_pos) {
 	return false;
 }
 
-// TEXTBOX //
+/*
+	TextBox
+*/
 
 TextBox::TextBox(std::string const& text_string, sf::Vector2f pos, float width, sf::Font * font, sf::Color color, unsigned int character_size) :
 	GUIObject(pos, sf::Vector2f(width, 0)), font(font), color(color),
@@ -155,6 +157,10 @@ void TextBox::UpdateTextBox(bool set_text_obj_params, int start_at_index) {
 		setSize(sf::Vector2f(text_obj.getLocalBounds().width, text_obj.getLocalBounds().height));
 	}
 }
+
+/*
+	TextButton
+*/
 
 TextButton::TextButton(std::string const & text_string,
 					   sf::Vector2f pos,
@@ -262,7 +268,10 @@ void TextButton::UpdateTextButton(bool set_params) {
 	setSize(rect_shape.getSize());
 }
 
-// CONTROLS TEXT BUTTON
+/*
+	ControlsTextButton
+*/
+
 ControlsTextButton::ControlsTextButton(std::string const & text_string, sf::Vector2f pos, float width,
 									   unsigned int character_size, sf::Color text_color, sf::Color background_color,
 									   sf::Color background_color_hover, std::string const & font_name) :
@@ -312,7 +321,10 @@ bool ControlsTextButton::UpdateControlsTextButton(bool set_params) {
 	return true; //TODO: Check if key entered is ok, else return false
 }
 
-// WORLDSELECTBUTTON //
+/*
+	WorldSelectButton
+*/
+
 WorldSelectButton::WorldSelectButton(std::string const & text_string, sf::Vector2f pos, float width, unsigned int character_size, sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) :
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name)
 {
@@ -329,7 +341,10 @@ bool WorldSelectButton::onClick(sf::Vector2i mouse_pos)
 	return false;
 }
 
-// TOOLTIP //
+/*
+	Tooltip
+*/
+
 Tooltip::Tooltip(std::string const & text_string, sf::Time show_after) :
 	text_box(text_string, sf::Vector2f(0, 0), 300, BASE_FONT_NAME, sf::Color::Black, FontSize::TINY),
 	show_after(show_after) {
@@ -380,7 +395,9 @@ void Tooltip::setMousePos(sf::Vector2i mouse_pos) {
 	text_box.setPos(pos + sf::Vector2f(10.f, 5.f));
 }
 
-// CHECKBOX //
+/*
+	Checkbox
+*/
 
 Checkbox::Checkbox(bool active, sf::Vector2f pos, sf::Vector2f size, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, size),
@@ -441,6 +458,10 @@ void Checkbox::UpdateCheckbox() {
 	rect_shape.setSize(size);
 }
 
+/*
+	Slider
+*/
+
 Slider::Slider(sf::Vector2f pos, float width, float start_value, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, {40,40}),
 	bar_width(width),
@@ -499,6 +520,10 @@ void Slider::UpdateSlider() {
 	rect_shape.setSize(sf::Vector2f(40, 40));
 	rect_shape.setPosition(pos);
 }
+
+/*
+	Scrollbar
+*/
 
 Scrollbar::Scrollbar(sf::Vector2f pos, float height, float start_val, float min_value, float max_value, sf::Color background_color, sf::Color background_color_hover) :
 	GUIObject(pos, {15, 30}),
@@ -563,7 +588,7 @@ void Scrollbar::UpdateScrollbar(float val) {
 }
 
 /*
-	OBJCONTAINER
+	ObjContainer
 */
 
 ObjContainer::ObjContainer(sf::Vector2f pos, sf::Vector2f size) :
@@ -734,6 +759,10 @@ void ObjContainer::UpdateObjContainer(bool set_params) {
 	}
 }
 
+/*
+	TextInputBox
+*/
+
 TextInputBox::TextInputBox(sf::Vector2f pos, float width, unsigned int character_size) :
 	GUIObject(pos, {width,0}), character_size(character_size)
 {
@@ -891,17 +920,15 @@ void TextInputBox::UpdateCursorPos()
 	cursor_shape.setPosition({text_obj.findCharacterPos(cursor_pos).x, pos.y+ 5});
 }
 
-InvItemButton::InvItemButton(int item, sf::Vector2f pos,
-							 float width, unsigned int character_size,
-							 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, sf::Color background_color_selected) :
+/*
+	InvItemButton
+*/
+
+InvItemButton::InvItemButton(int item, sf::Vector2f pos, float width) :
 	GUIObject(pos, {0,0}),
 	item(item),
 	width(width),
-	character_size(character_size),
-	text_color(text_color),
-	background_color(background_color),
-	background_color_hover(background_color_hover),
-	background_color_selected(background_color_selected)
+	character_size(character_size)
 {
 	Init();
 	color_tw.Reset(TweenType::Linear, 1, 0, sf::milliseconds(1));
@@ -969,6 +996,12 @@ void InvItemButton::setOrigin(sf::Vector2f origin)
 
 void InvItemButton::Init()
 {
+	character_size = FontSize::SMALL;
+	text_color = INV_TEXT_COLOR;
+	background_color = INV_ACCENT_COLOR;
+	background_color_hover = INV_ACCENT_COLOR2;
+	background_color_selected = INV_ACCENT_COLOR3;
+
 	float icon_scale = 2.f;
 	float icon_size = icon_scale*Item::items_texture_size;
 	rect_shape.setFillColor(background_color);
@@ -1005,6 +1038,64 @@ void InvItemButton::UpdateButtonParams()
 	text_obj.setPosition(pos.x + margin*5.f + icon_sprite.getLocalBounds().width - origin.x, pos.y + 6 - origin.y);
 }
 
+/*
+	InvToolButton
+*/
+
+InvToolButton::InvToolButton(int item, sf::Vector2f pos, float width):
+	InvItemButton(item, pos, width)
+{
+	Init();
+}
+
+void InvToolButton::Update()
+{
+	InvItemButton::Update();
+}
+
+void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(rect_shape);
+	target.draw(icon_sprite);
+	target.draw(text_obj);
+	target.draw(bar_shape);
+
+	GUIObject::Render(target, tooltip_render_target);
+}
+
+bool InvToolButton::onClick(sf::Vector2i pos)
+{
+	UpdateDurability();
+	return InvItemButton::onClick(pos);
+}
+
+void InvToolButton::Init()
+{
+	InvItemButton::Init();
+	UpdateButtonParams();
+	UpdateDurability();
+}
+
+void InvToolButton::UpdateButtonParams()
+{
+	InvItemButton::UpdateButtonParams();
+	bar_shape.setPosition(pos + sf::Vector2f(0, size.y) - sf::Vector2f(0, bar_height) - origin);
+}
+
+void InvToolButton::UpdateDurability()
+{
+	auto t = Item::Manager::getTool(item);
+	float perc = max(0.f, min(100.f, (1 - t->durability / 100.f)));
+	float bw = width * perc;
+
+	bar_shape.setSize(sf::Vector2f(bw, bar_height));
+	bar_shape.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
+}
+
+/*
+	InvActionButton
+*/
+
 InvActionButton::InvActionButton(std::string const & text_string, int item, sf::Vector2f pos, float width, unsigned int character_size,
 								 sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) : 
 	TextButton(text_string, pos, width, character_size, text_color, background_color, background_color_hover, font_name), item(item)
@@ -1020,4 +1111,101 @@ bool InvActionButton::onClick(sf::Vector2i mouse_pos)
 		return true;
 	}
 	return false;
+}
+
+/*
+	InvPageButton
+*/
+
+float InvPageButton::margin = 16.f;
+
+InvPageButton::InvPageButton(sf::Vector2f pos, const std::string & texture_name, sf::Vector2f pos_in_texture) :
+	GUIObject(pos, {0,0}), texture_name(texture_name), pos_in_texture(pos_in_texture)
+{
+	Init();
+}
+
+void InvPageButton::Update()
+{
+	GUIObject::Update();
+
+	if (!selected)
+		rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
+}
+
+void InvPageButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(rect_shape);
+	target.draw(sprite);
+
+	GUIObject::Render(target, tooltip_render_target);
+}
+
+bool InvPageButton::onClick(sf::Vector2i mouse_pos)
+{
+	onHoverOut();
+	setSelected(true);
+	if (action) {
+		(*action)(button_action_impl);
+		return true;
+	}
+	return false;
+}
+
+bool InvPageButton::onHoverIn(sf::Vector2i mouse_pos)
+{
+	GUIObject::onHoverIn(mouse_pos);
+	color_tw.Reset(TweenType::QuartInOut, 0, 1, sf::milliseconds(100));
+	return false;
+}
+
+bool InvPageButton::onHoverOut()
+{
+	GUIObject::onHoverOut();
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+	return false;
+}
+
+void InvPageButton::setSelected(bool selected)
+{
+	this->selected = selected;
+	if (selected) rect_shape.setFillColor(selected_color);
+}
+
+void InvPageButton::setPos(sf::Vector2f pos)
+{
+	this->pos = pos;
+	UpdateButtonParams();
+}
+
+void InvPageButton::setOrigin(sf::Vector2f origin)
+{
+	this->origin = origin;
+	UpdateButtonParams();
+}
+
+void InvPageButton::Init()
+{
+	float sprite_scale = 3.f;
+	float sprite_size = sprite_scale*Item::items_texture_size;
+
+	color_tw.Reset(TweenType::QuartInOut, 1, 0, sf::milliseconds(100));
+
+	size = { margin*2 + sprite_size, margin*2 + sprite_size };
+
+	rect_shape.setFillColor(background_color);
+	rect_shape.setSize(size);
+
+	float ts = sprite_size / sprite_scale;
+	sprite.setTexture(ResourceManager::getTexture(texture_name));
+	sprite.setTextureRect(sf::IntRect(sf::Vector2i(pos_in_texture * ts), sf::Vector2i(int(ts), int(ts))));
+	sprite.setScale(sprite_scale, sprite_scale);
+
+	UpdateButtonParams();
+}
+
+void InvPageButton::UpdateButtonParams()
+{
+	rect_shape.setPosition(pos - origin);
+	sprite.setPosition(pos - origin + sf::Vector2f {margin, margin});
 }

@@ -68,7 +68,7 @@ bool GameState::HandleEvent(sf::Event const & event)
 		if (event.type == sf::Event::MouseButtonPressed) {
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				if (!inventory.IsMouseIn(sf::Mouse::getPosition(game.getWindow()))) {
-					inventory.setActive(false);
+					//inventory.setActive(false);
 				}
 			}
 		}
