@@ -109,4 +109,7 @@
     <None Include="Resources\Shaders\TileShader.frag" />
     <None Include="Resources\Shaders\TileShader.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="todo.txt" />
+  </ItemGroup>
 </Project>

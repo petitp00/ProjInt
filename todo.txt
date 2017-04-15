@@ -1,0 +1,72 @@
+[ À FAIRE ]
+
+[ PHILIPPE ET/OU MALLAURY ]
++ la recherche
++ préparer l'oral
+
+[ MALLAURY ]
++ textures du sol
+	- gazon
+	- terre pour agriculture
+		- sèche (normale)
+		- arrosée
+
++ textures du personnage
+	- animé
+	- directions (dans le même fichier (une couche par animation))
+		- haut
+		- bas
+		- droite (pas besoin de gauche)
+
++ texture de la cabane (environ 5 tuiles par 4 tuiles)
+	- pas besoin d'intérieur
+
++ textures des objets
+	- arbres
+		- pommier
+			- différents niveaux de pousses (plant, petit, moyen, complet)
+			- avec et sans pommes
+		- bananier
+			- avec et sans banane
+			- pas de feuille
+			- moyennes feuilles (pas complétement poussées)
+			- avec feuilles
+	- feuilles (pour les particules)
+		- bananier
+		- pommier
+	- roches
+		- petites (~ 1 tuile)
+		- grandes (~ 1.5-2 tuiles)
+	- pousses (agriculture)
+		- graines de carottes dans la terre (seulement les graines, pas la terre)
+		- petites pousses de carottes (petits bouts verts)
+		- pousses de carottes (on voit un peu le orange)
+	- bac de compost
+		- ouvert
+		- fermé
+
++ textures des icônes d'items (dans le fichier Items.pyxel)
+	- feuilles de bananier (roulées ?)
+	- corde
+	- canne à pêche
+	- poisson
+		- cuit et pas cuit
+	- graines
+
++ Probablement d'autres choses
+
+[ PHILIPPE ]
++ Crafting
++ Agriculture
++ Système de coupe/pousse d'arbres
++ Système de fatigue/faim/soif du joueur avec interface
++ Sons
++ Cabane
++ Cycle jour nuit
++ Utilisation des outils
++ Utilisation du bol (boire et arroser)
++ Feu et cuisson de poissons
++ Pêche
++ Pourissement de la nourriture
++ Compost
++ Probablement d'autres choses
