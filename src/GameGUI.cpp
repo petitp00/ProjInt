@@ -834,7 +834,7 @@ void EquippedToolObj::Init(Inventory * inventory)
 	pos = {WINDOW_WIDTH - 10 - size.x, WINDOW_HEIGHT - 10 - size.y};
 	sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
 	if (item) {
-		sprite.setTextureRect(sf::IntRect((item->pos_in_texture_map)*int(ts/3), {int(ts/3.f), int(ts/3.f)}));
+		sprite.setTextureRect(sf::IntRect((item->pos_in_texture_map)*int(ts/scale), {int(ts/scale), int(ts/scale)}));
 	}
 	sprite.setPosition(pos);
 	sprite.setScale(scale, scale);

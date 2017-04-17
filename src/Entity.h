@@ -4,6 +4,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Clock.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 
 #include <string>
 #include <vector>
@@ -53,6 +54,8 @@ enum Type {
 	BUSH = 5,
 	TREE = 6,
 	ITEM = 7,
+	APPLE_TREE = 8,
+	BANANA_TREE = 9,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -65,6 +68,8 @@ static std::string getEntityTypeString(Type t) {
 	case BUSH:			return "BUSH";
 	case TREE:			return "TREE";
 	case ITEM:			return "ITEM";
+	case APPLE_TREE:	return "APPLE_TREE";
+	case BANANA_TREE:	return "BANANA_TREE";
 	case Type::ERROR:	return "ERROR";
 	default:			return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -78,6 +83,8 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "BUSH")			return BUSH;
 	if (str == "TREE")			return TREE;
 	if (str == "ITEM")			return ITEM;
+	if (str == "APPLE_TREE")	return APPLE_TREE;
+	if (str == "BANANA_TREE")	return BANANA_TREE;
 	return Type::ERROR;
 }
 
@@ -132,32 +139,42 @@ protected:
 
 class GameObject : public Entity
 {
-	friend GameObject* make_rock(vec2 pos);
-	friend GameObject* make_bush(vec2 pos);
-	friend GameObject* make_tree(vec2 pos);
+	friend GameObject* make_rock(vec2 pos, int variation);
 public:
 	GameObject()=default;
-	GameObject(std::string texture_name, unsigned long flags=NO_FLAG,
+	GameObject(int variation, unsigned long flags=NO_FLAG,
 					  std::vector<std::string> const& saved_data={});
 	GameObject(unsigned long flags,
 					  std::vector<std::string> const& saved_data={}); // for loading
 
 	void Init(); // call this after members are set
-	void Render(sf::RenderTarget& target) override { target.draw(sprite); }
+	void Render(sf::RenderTarget& target) override { 
+		target.draw(sprite);
+
+		sf::RectangleShape shape(vec2(getCollisionBox().width, getCollisionBox().height));
+		shape.setPosition(vec2(getCollisionBox().left, getCollisionBox().top));
+		shape.setFillColor(sf::Color(255, 0, 0, 128));
+		target.draw(shape);
+
+		shape.setSize(size);
+		shape.setPosition(pos);
+		shape.setFillColor(sf::Color(0, 255, 0, 100));
+		target.draw(shape);
+	}
 
 	void setPos(vec2 pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
-	vec2 getOrigin() override { return sprite_origin*scale; }
+	void setCoordsInfo(CoordsInfo ci);
+
+	sf::FloatRect const getCollisionBox() override;
+
 	std::vector<std::string> getSavedData() override { return {
-			std::to_string(pos.x) +" "+ std::to_string(pos.y),
-			std::to_string(size.x) +" "+ std::to_string(size.y),
-			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
-			texture_name,
-		}; }
+		std::to_string(variation)
+	}; }
 protected:
 	sf::Sprite sprite;
-	vec2 sprite_origin ={0,0};
-	std::string texture_name = "";
-	float scale = 1.f;
+	CoordsInfo cinfo;
+	float scale;
+	int variation = 0;
 };
 
 class ItemObject : public GameObject
@@ -165,7 +182,7 @@ class ItemObject : public GameObject
 	friend ItemObject* make_item(int id, vec2 pos);
 public:
 	ItemObject()=default;
-	ItemObject(int item_id, std::string texture_name, unsigned long flags=NO_FLAG,
+	ItemObject(int item_id, unsigned long flags=NO_FLAG,
 					  std::vector<std::string> const& saved_data={});
 	
 	ItemObject(unsigned long flags,
@@ -174,13 +191,7 @@ public:
 	std::vector<std::string> getSavedData() override {
 		auto item = Item::Manager::getAny(item_id);
 		return { // save with item id (referring to another part of the save file) ???????
-			item->name,
-			std::to_string(pos.x) +" "+ std::to_string(pos.y),
-			std::to_string(size.x) +" "+ std::to_string(size.y),
-			std::to_string(sprite_origin.x) +" "+ std::to_string(sprite_origin.y),
-			texture_name,
-
-
+			item->name, std::to_string(variation)
 		};
 	}
 	sf::FloatRect const getCollisionBox() override { return {pos+size/4.f,size/2.f}; }
@@ -188,6 +199,30 @@ public:
 
 private:
 	int item_id;
+
+};
+
+class TreeObj : public GameObject
+{
+	friend TreeObj* make_tree_obj(Type type, vec2 pos);
+public:
+	TreeObj()=default;
+	TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags = SOLID,
+			const std::vector<std::string>& saved_data = {});
+
+	void Init();
+	void Update(float dt) override;
+
+	void setGrowthLevel(int level);
+
+	std::vector<std::string> getSavedData() override { return {
+		std::to_string(int(type)), std::to_string(growth_level),
+		cinfo.texture_name
+	}; }
+
+
+private:
+	int growth_level = 0; // 0 to 5
 
 };
 
@@ -242,66 +277,71 @@ private:
 	--- ### --- ### --- MAKE ENTITY FUNCTIONS --- ### --- ### --- ### ---
 */
 
-static Entity* make_entity(Type type, vec2 pos={0,0}) {
+static Entity* make_entity(Type type, vec2 pos={0,0}, int variation=0) {
 	Entity* e = nullptr;
 
-	if		(type == ROCK)	e = make_rock(pos);
-	else if (type == BUSH)	e = make_bush(pos);
-	else if (type == TREE)	e = make_tree(pos);
+	if (type == ROCK)	e = make_rock(pos, variation);
+	///*else*/ if (type == BUSH)	e = make_bush(pos);
+	//else if (type == TREE)	e = make_tree(pos);
 
 	return e;
 }
 
-static GameObject* make_rock(vec2 pos ={0,0}) {
-	auto rock = new GameObject("Placeholders/rock.png", SOLID|IMMORTAL);
+static GameObject* make_rock(vec2 pos = {0,0}, int variation = 1) {
+	auto rock = new GameObject(variation, SOLID|IMMORTAL);
+
+	CoordsInfo info;
+	if (variation == 1) {
+		info = getCoordsInfo("rock1");
+	}
+	else if (variation == 2) {
+		info = getCoordsInfo("rock2");
+	}
+	else if (true || variation == 3) {
+		info = getCoordsInfo("rock3");
+	}
+
 	rock->type = ROCK;
 	rock->pos = pos;
-	rock->sprite_origin = {14, 34};
-	auto scale = 2.f;
-	rock->size ={40.f*scale, 20.f*scale};
-	rock->scale = scale;
+	rock->scale = 2.f;
+	rock->setCoordsInfo(info);
 	rock->Init();
 	return rock;
 }
 
-static GameObject* make_bush(vec2 pos ={0,0}) {
-	auto bush = new GameObject("Placeholders/bush.png", NO_FLAG);
-	bush->type = BUSH;
-	bush->pos = pos;
-	bush->sprite_origin ={0,0};
-	auto scale = 2.f;
-	bush->size ={46*scale, 36*scale};
-	bush->scale = scale;
-	bush->Init();
-	return bush;
-}
+static TreeObj* make_tree_obj(Type type, vec2 pos= {0,0}) {
+	auto tree = new TreeObj(type, pos, {0,0}, SOLID);
+	tree->growth_level = 5;
 
-static GameObject* make_tree(vec2 pos= {0,0}) {
-	auto tree = new GameObject("Placeholders/tree.png", SOLID);
-	tree->type = TREE;
-	tree->pos = pos;
-	tree->sprite_origin = {53,100};
-	auto scale = 4.f;
-	tree->size = {13*scale,9*scale};
-	tree->scale = scale;
+	if (type == Type::APPLE_TREE) {
+	}
+	else if (type == Type::BANANA_TREE) {
+	}
+
 	tree->Init();
 	return tree;
 }
 
 static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	float ts = Item::items_texture_size;
-	auto i = new ItemObject(id, Item::texture_map_file, SOLID);
+	auto i = new ItemObject(id, SOLID);
 	i->type = ITEM;
 	i->pos = pos;
 	auto scale = 1.5f;
 	i->size = {ts*scale, ts*scale};
 	i->scale = scale;
-	i->Init();
 
 	auto item = Item::Manager::getAny(id);
 
-	i->sprite.setTextureRect(
-		{int(item->pos_in_texture_map.x*ts), int(item->pos_in_texture_map.y*ts), int(ts), int(ts)});
+	i->cinfo.texture_name = Item::texture_map_file;
+	i->cinfo.texture_rect = {
+		int(item->pos_in_texture_map.x*ts),
+		int(item->pos_in_texture_map.y*ts), int(ts), int(ts)};
+	i->cinfo.collision_rect = {
+		int(item->pos_in_texture_map.x*ts),
+		int(item->pos_in_texture_map.y*ts), int(ts), int(ts)};
+	i->Init();
+
 	return i;
 }
 	

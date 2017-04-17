@@ -1,0 +1,4 @@
+hut
+0 1 155 116
+6 65 145 47
+Textures_Objets.png

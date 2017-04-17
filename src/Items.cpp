@@ -7,11 +7,11 @@ using namespace std;
 
 void Bowl::UpdatePosInTextureMap()
 {
-	if (water_level == 0) pos_in_texture_map = {5,0};
-	else if (water_level == 1) pos_in_texture_map = {6,0};
-	else if (water_level == 2) pos_in_texture_map = {7,0};
-	else if (water_level == 3) pos_in_texture_map = {0,1};
-	else if (water_level == 4) pos_in_texture_map = {1,1};
+	if (water_level == 0) pos_in_texture_map = {8,0};
+	else if (water_level == 1) pos_in_texture_map = {9,0};
+	else if (water_level == 2) pos_in_texture_map = {10,0};
+	else if (water_level == 3) pos_in_texture_map = {11,0};
+	else if (water_level == 4) pos_in_texture_map = {12,0};
 }
 
 int Manager::last_id = 0;
@@ -26,7 +26,7 @@ Food* make_food(ItemType type) {
 	if (type == banana) {
 		f->name = "Banane";
 		f->desc = "Fruit. Mangeable. Laisse une pelure.";
-		f->pos_in_texture_map = {1,0};
+		f->pos_in_texture_map = {2,0};
 		f->junk_created = banana_peel;
 		return f;
 	}
@@ -40,7 +40,7 @@ Food* make_food(ItemType type) {
 	if (type == carrot) {
 		f->name = "Carotte";
 		f->desc = "Légume. Mangeable. Laisse un bout et des graines.";
-		f->pos_in_texture_map = {4,1};
+		f->pos_in_texture_map = {4,0};
 		f->junk_created = carrot_top;
 	}
 
@@ -52,17 +52,17 @@ BioJunk* make_bio_junk(ItemType type) {
 	BioJunk* bj = new BioJunk;
 	if (type == banana_peel) {
 		bj->name = "Pelure de banane";
-		bj->pos_in_texture_map = {2, 0};
+		bj->pos_in_texture_map = {3, 0};
 		return bj;
 	}
 	if (type == apple_core) {
 		bj->name = "Coeur de pomme";
-		bj->pos_in_texture_map = {3, 1};
+		bj->pos_in_texture_map = {1, 0};
 		return bj;
 	}
 	if (type == carrot_top) {
 		bj->name = "Bout de carotte";
-		bj->pos_in_texture_map = {5, 1};
+		bj->pos_in_texture_map = {5, 0};
 		return bj;
 	}
 
@@ -75,13 +75,13 @@ Tool* make_tool(ItemType type) {
 	if (type == axe) {
 		t->name = "Hache";
 		t->desc = "Outil. Utilisé pour couper des arbres.";
-		t->pos_in_texture_map = {3, 0};
+		t->pos_in_texture_map = {6, 0};
 		return t;
 	}
 	if (type == hoe) {
 		t->name = "Faux";
 		t->desc = "Outil. Utilisé pour préparer la terre pour l'agriculture.";
-		t->pos_in_texture_map = {4, 0};
+		t->pos_in_texture_map = {7, 0};
 		return t;
 	}
 
@@ -107,7 +107,7 @@ any* make_any(ItemType type) {
 	if (type == wood) {
 		a->name = "Bois";
 		a->desc = "Utilisé pour construire d'autres objets.";
-		a->pos_in_texture_map = {1,0};
+		a->pos_in_texture_map = {13,0};
 		return a;
 	}
 

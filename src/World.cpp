@@ -137,6 +137,7 @@ void World::LoadWorld(std::string const & filename)
 			Player* pl;
 			GameObject* go;
 			ItemObject* io;
+			TreeObj* to;
 			int id;
 
 			switch (t)
@@ -152,16 +153,16 @@ void World::LoadWorld(std::string const & filename)
 			case GAME_OBJECT:
 				break;
 			case ROCK:
-				go = make_rock(p);
+				go = make_rock(p, stoi(vec[0]));
 				entities.push_back(go);
 				break;
 			case BUSH:
-				go = make_bush(p);
-				entities.push_back(go);
+				//go = make_bush(p);
+				//entities.push_back(go);
 				break;
 			case TREE:
-				go = make_tree(p);
-				entities.push_back(go);
+				//go = make_tree(p);
+				//entities.push_back(go);
 				break;
 			case ITEM:
 				id = Item::Manager::CreateItem(Item::getItemTypeByName(vec[0]));
@@ -169,6 +170,13 @@ void World::LoadWorld(std::string const & filename)
 				entities.push_back(io);
 				items.push_back(io);
 				break;
+			case APPLE_TREE:
+				to = new TreeObj(APPLE_TREE, p, sz, f, vec);
+				entities.push_back(to);
+				break;
+			case BANANA_TREE:
+				to = new TreeObj(BANANA_TREE, p, sz, f, vec);
+				entities.push_back(to);
 			default:
 				break;
 			}

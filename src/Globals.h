@@ -2,7 +2,10 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Rect.hpp>
 #include <string>
+#include <fstream>
+#include <iostream>
 
 using uint = unsigned int;
 using vec2 = sf::Vector2f;
@@ -59,4 +62,49 @@ inline float dist(vec2 const& a, vec2 const& b) {
 inline std::ostream& operator<<(std::ostream& os, vec2 const& vec) {
 	os << "{" << vec.x << ", " << vec.y << "}";
 	return os;
+}
+
+struct CoordsInfo {
+	std::string entity_name;
+	sf::IntRect texture_rect;
+	sf::IntRect collision_rect;
+	std::string texture_name;
+};
+
+static CoordsInfo getCoordsInfo(const std::string& name)
+{
+	CoordsInfo ci;
+
+	std::ifstream s("Resources/Data/SpriteCoords/" + name + ".txt");
+	if (s.fail()) {
+		std::cerr << "Cannot open coords info file \"" << "Resources/Data/SpriteCoords/" + name + ".txt" << "\"" << std::endl;
+	}
+
+	std::string w;
+
+	s >> w;
+	ci.entity_name = w;
+
+	s >> w;
+	ci.texture_rect.left = atoi(w.c_str());
+	s >> w;
+	ci.texture_rect.top = atoi(w.c_str());
+	s >> w;
+	ci.texture_rect.width = atoi(w.c_str());
+	s >> w;
+	ci.texture_rect.height = atoi(w.c_str());
+
+	s >> w;
+	ci.collision_rect.left = atoi(w.c_str());
+	s >> w;
+	ci.collision_rect.top = atoi(w.c_str());
+	s >> w;
+	ci.collision_rect.width = atoi(w.c_str());
+	s >> w;
+	ci.collision_rect.height = atoi(w.c_str());
+
+	s >> w;
+	ci.texture_name = w;
+
+	return ci;
 }

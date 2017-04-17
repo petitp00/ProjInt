@@ -13,25 +13,100 @@ std::vector<std::string> Entity::getSavedData()
 	return std::vector<std::string>();
 }
 
-GameObject::GameObject(std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data):
-	Entity({0,0}, {0,0}, flags), texture_name(texture_name)
-{
-	type = GAME_OBJECT;
-}
+GameObject::GameObject(int variation, unsigned long flags, std::vector<std::string> const & saved_data):
+	Entity({0,0}, {0,0}, flags), variation(variation) {}
 
 GameObject::GameObject(unsigned long flags, std::vector<std::string> const & saved_data):
 	Entity({0,0}, {0,0}, flags)
 {
 	type = GAME_OBJECT;
+	variation = stoi(saved_data[0]);
 }
 
 void GameObject::Init()
 {
-	sprite.setTexture(ResourceManager::getTexture(texture_name));
-	sprite.setOrigin(sprite_origin);
+	sprite.setTexture(ResourceManager::getTexture(cinfo.texture_name));
+	sprite.setTextureRect(cinfo.texture_rect);
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos);
+	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height*scale);
 }
+
+void GameObject::setCoordsInfo(CoordsInfo ci)
+{
+	cinfo = ci;
+	cinfo.collision_rect.left -= cinfo.texture_rect.left;
+	cinfo.collision_rect.top -= cinfo.texture_rect.top;
+
+	cinfo.collision_rect.left = int(cinfo.collision_rect.left * scale);
+	cinfo.collision_rect.top = int(cinfo.collision_rect.top * scale);
+	cinfo.collision_rect.width = int(cinfo.collision_rect.width * scale);
+	cinfo.collision_rect.height = int(cinfo.collision_rect.height * scale);
+}
+
+sf::FloatRect const GameObject::getCollisionBox()
+{
+	return sf::FloatRect(pos.x + cinfo.collision_rect.left, pos.y + cinfo.collision_rect.top, float(cinfo.collision_rect.width), float(cinfo.collision_rect.height));
+}
+
+ItemObject::ItemObject(int item_id, unsigned long flags, std::vector<std::string> const & saved_data) :
+	item_id(item_id), GameObject(0, flags, saved_data)
+{
+	type = ITEM;
+	cinfo.texture_name = Item::texture_map_file;
+}
+
+TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std::vector<std::string>& saved_data):
+	GameObject(0, flags, saved_data)
+{
+	this->type = type;
+	this->pos = pos;
+	this->size = size;
+	this->flags = flags;
+
+	scale = 1.f;
+
+	if (saved_data.size() != 0) {
+		type = getEntityTypeFromString(saved_data[0]);
+		growth_level = atoi(saved_data[1].c_str());
+		string so = saved_data[2]; // sprite_origin
+		cinfo.texture_name = saved_data[3];
+		
+		Init();
+	}
+}
+
+void TreeObj::Init()
+{
+	sprite.setTexture(ResourceManager::getTexture(cinfo.texture_name));
+	sprite.setTextureRect(cinfo.texture_rect);
+	sprite.setScale(scale, scale);
+	sprite.setPosition(pos);
+	size = vec2(vec2i(cinfo.texture_rect.left, cinfo.texture_rect.top));
+}
+
+void TreeObj::Update(float dt)
+{
+}
+
+void TreeObj::setGrowthLevel(int level)
+{
+	growth_level = level;
+
+	if (type == APPLE_TREE) {
+		if (level == 0) {
+			size = {13, 20};
+			flags = NO_FLAG;
+		}
+		else if (level == 1) {
+			//sprite_origin = 
+		}
+	}
+
+	Init();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AnimationComponent::Update()
 {
@@ -50,7 +125,7 @@ void AnimationComponent::Update()
 			sprite.setScale(-scale.x, scale.y);
 		}
 		else {
-	sprite.setOrigin(entity_box_texture_pos);
+			sprite.setOrigin(entity_box_texture_pos);
 			sprite.setScale(scale.x, scale.y);
 		}
 	}
@@ -177,9 +252,4 @@ void Player::setPos(vec2 pos)
 {
 	this->pos = pos;
 	anim_comp.Update();
-}
-
-ItemObject::ItemObject(int item_id, std::string texture_name, unsigned long flags, std::vector<std::string> const & saved_data) :
-	item_id(item_id), GameObject(texture_name, flags, saved_data)
-{
 }

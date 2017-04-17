@@ -506,7 +506,7 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		Type type = ENTITY;
 		vec2 pos(0, 0);
 		unsigned long flags = NO_FLAG;
-
+		int variation = 0;
 
 		if (args.size() >= 1) {
 			std::string type_str;
@@ -515,11 +515,16 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 			}
 			type = getEntityTypeFromString(type_str);
 		}
-		if (args.size() >= 3) { pos = vec2(float(atof(args[1].c_str())), float(atof(args[2].c_str()))); }
-		//if (args.size() == 2) { flags = getFlagsFromString(args[1]); }
+		if (args.size() == 2) {
+			variation = stoi(args[1]); //e stoi moreno
+		}
+		else if (args.size() == 4) {
+			variation = stoi(args[3]); //e stoi moreno
+		}
+		else if (args.size() >= 3) { pos = vec2(float(atof(args[1].c_str())), float(atof(args[2].c_str()))); }
 		//if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
 
-		impl->editor->world.AddEntity(make_entity(type, pos));
+		impl->editor->world.AddEntity(make_entity(type, pos, variation));
 	});
 	AddInfo("NewEnt", "Create a new entity",new_ent_usage);
 
