@@ -114,6 +114,7 @@ public:
 	void DeleteItem(int id);
 	void EatItem(int id);
 	void PutDownItem(int id);
+	void UseEquippedTool();
 
 	// Getters
 	bool getActive() { return active; }

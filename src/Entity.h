@@ -56,6 +56,7 @@ enum Type {
 	ITEM = 7,
 	APPLE_TREE = 8,
 	BANANA_TREE = 9,
+	HUT = 10,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -70,6 +71,7 @@ static std::string getEntityTypeString(Type t) {
 	case ITEM:			return "ITEM";
 	case APPLE_TREE:	return "APPLE_TREE";
 	case BANANA_TREE:	return "BANANA_TREE";
+	case HUT:			return "HUT";
 	case Type::ERROR:	return "ERROR";
 	default:			return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -85,6 +87,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "ITEM")			return ITEM;
 	if (str == "APPLE_TREE")	return APPLE_TREE;
 	if (str == "BANANA_TREE")	return BANANA_TREE;
+	if (str == "HUT")			return HUT;
 	return Type::ERROR;
 }
 
@@ -140,6 +143,7 @@ protected:
 class GameObject : public Entity
 {
 	friend GameObject* make_rock(vec2 pos, int variation);
+	friend GameObject* make_hut(vec2 pos);
 public:
 	GameObject()=default;
 	GameObject(int variation, unsigned long flags=NO_FLAG,
@@ -282,9 +286,7 @@ static Entity* make_entity(Type type, vec2 pos={0,0}, int variation=0) {
 	if (type == ROCK)	e = make_rock(pos, variation);
 	else if (type == APPLE_TREE) e = make_tree_obj(type, variation, pos);
 	else if (type == BANANA_TREE) e = make_tree_obj(type, variation, pos);
-	///*else*/ if (type == BUSH)	e = make_bush(pos);
-	//else if (type == TREE)	e = make_tree(pos);
-
+	else if (type == HUT) e = make_hut(pos);
 	return e;
 }
 
@@ -310,6 +312,17 @@ static GameObject* make_rock(vec2 pos = {0,0}, int variation = 1) {
 	return rock;
 }
 
+static GameObject* make_hut(vec2 pos = {0,0}) {
+	auto hut = new GameObject(0, SOLID);
+	CoordsInfo i = getCoordsInfo("hut");
+	hut->type = HUT;
+	hut->pos = pos;
+	hut->scale = 2.f;
+	hut->setCoordsInfo(i);
+	hut->Init();
+	return hut;
+}
+
 static TreeObj* make_tree_obj(Type type, int variation = 5, vec2 pos= {0,0}) {
 	auto tree = new TreeObj(type, pos, {0,0}, SOLID);
 	tree->setGrowthLevel(variation);
@@ -322,7 +335,7 @@ static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	auto i = new ItemObject(id, SOLID);
 	i->type = ITEM;
 	i->pos = pos;
-	auto scale = 1.5f;
+	auto scale = 1.f;
 	i->size = {ts*scale, ts*scale};
 	i->scale = scale;
 

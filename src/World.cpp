@@ -169,6 +169,11 @@ void World::LoadWorld(std::string const & filename)
 			case BANANA_TREE:
 				to = make_tree_obj(BANANA_TREE, stoi(vec[1]), p);
 				entities.push_back(to);
+				break;
+			case HUT:
+				go = make_hut(p);
+				entities.push_back(go);
+				break;
 			default:
 				break;
 			}
@@ -452,10 +457,10 @@ ItemObject * World::FindItem(int id)
 	return nullptr;
 }
 
-void World::UseToolAt(vec2 mouse_pos_in_world)
+void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 {
-	if (game_state->getEquippedTool()) {
-
+	int t = game_state->getEquippedTool();
+	if (t != -1) {
 	}
 }
 

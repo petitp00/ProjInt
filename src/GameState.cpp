@@ -73,11 +73,6 @@ bool GameState::HandleEvent(sf::Event const & event)
 					//inventory.setActive(false);
 				}
 			}
-			else if (event.mouseButton.button == sf::Mouse::Right) {
-				if (!inventory.getActive()) {
-					world.UseToolAt(mouse_pos_in_world);
-				}
-			}
 		}
 		if (inventory.HandleEvents(event)) return true;
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
@@ -92,6 +87,15 @@ bool GameState::HandleEvent(sf::Event const & event)
 				return true;
 			}
 		}
+		if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.mouseButton.button == sf::Mouse::Right) {
+				if (!inventory.getActive()) {
+					inventory.UseEquippedTool();
+					world.UseEquippedToolAt(mouse_pos_in_world);
+				}
+			}
+		}
+
 		inv_butt.HandleEvent(event);
 		tool_obj.HandleEvent(event);
 	}

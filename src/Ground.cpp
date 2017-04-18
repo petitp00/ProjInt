@@ -27,7 +27,8 @@ Tileset::Tileset(std::string filename)
 	ott1.push_back({CORNER_DOWN_RIGHT,	{6, 6}});
 
 	types.push_back({NONE,				{{0,0}}});
-	types.push_back({GRASS,				{{1,0}, {2,0}}});
+	//types.push_back({GRASS,				{{1,0}, {2,0}}});
+	types.push_back({GRASS,				{{1,0}, {2,0}, {2,1}, {3,1}, {4,1}}});
 	types.push_back({SAND,				{{3,0}, {4,0}}});
 	types.push_back({RIVER,				{{5,0}}});
 	types.push_back({DRY_DIRT,			{{7,0}, {0,1}, {1,1} }});

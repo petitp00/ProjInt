@@ -50,7 +50,7 @@ public:
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 
-	void UseToolAt(vec2 mouse_pos_in_world);
+	void UseEquippedToolAt(vec2 mouse_pos_in_world);
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);

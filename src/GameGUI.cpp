@@ -39,6 +39,8 @@ static void repair_tool(ButtonActionImpl* impl) {
 	auto tool = Item::Manager::getTool(impl->item);
 	if (tool) {
 		tool->durability = 0;
+		impl->game_state->getEquippedToolObj()->UpdateDurability();
+		impl->game_state->getInventory()->UpdateToolsDurability();
 	}
 }
 
@@ -421,7 +423,7 @@ void ToolsPage::ResetItemButtons(std::vector<int>& items)
 		auto item = Item::Manager::getAny(i);
 		if (Item::IsTool(Item::getItemTypeByName(item->name))) {
 			InvToolButton* ib1 = new InvToolButton(i, {0, 0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
-			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + 2*(Item::items_texture_size + 10.f)*iy)});
+			ib1->setOrigin({-margin_sides, -(margin_sides*(iy+1) + (Item::items_texture_size + 20.f)*iy)});
 			inv_buttons.push_back(ib1);
 			++iy;
 		}
@@ -451,14 +453,6 @@ void ToolsPage::ResetItemDescription(bool item_selected)
 		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
 		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
 
-		auto b1 = new InvActionButton("Déposer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
-		b1->setOrigin({-(ox), -(oy)});
-		b1->setPos(window_tw->Tween());
-		height = b1->getSize().y;
-		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
-		actions_buttons.push_back(b1);
-		++i;
-
 		auto b2 = new InvActionButton("Équiper", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
 		b2->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
 		b2->setPos(window_tw->Tween());
@@ -466,11 +460,13 @@ void ToolsPage::ResetItemDescription(bool item_selected)
 		actions_buttons.push_back(b2);
 		++i;
 
+		height = b2->getSize().y;
+
 		if (si->durability >= 0) {
 			auto b = new InvActionButton("Réparer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
 			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
 			b->setPos(window_tw->Tween());
-			b->setOnClickAction(new function<void(ButtonActionImpl*)>(use_tool), button_action_impl);
+			b->setOnClickAction(new function<void(ButtonActionImpl*)>(repair_tool), button_action_impl);
 			actions_buttons.push_back(b);
 			++i;
 		}
@@ -751,6 +747,15 @@ void Inventory::PutDownItem(int item)
 	ItemObject* i = make_item(item);
 	button_action_impl->game_state->getWorld().StartPlaceItem(i);
 	setActive(false);
+}
+
+void Inventory::UseEquippedTool()
+{
+	auto tool = button_action_impl->game_state->getEquippedTool();
+	if (tool != -1) {
+		button_action_impl->item = tool;
+		use_tool(button_action_impl);
+	}
 }
 
 bool Inventory::IsMouseIn(vec2i mpos)
