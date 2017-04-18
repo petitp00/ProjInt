@@ -64,15 +64,13 @@ TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std:
 	this->size = size;
 	this->flags = flags;
 
-	scale = 1.f;
+	scale = 2.f;
 
 	if (saved_data.size() != 0) {
 		type = getEntityTypeFromString(saved_data[0]);
 		growth_level = atoi(saved_data[1].c_str());
-		string so = saved_data[2]; // sprite_origin
-		cinfo.texture_name = saved_data[3];
-		
-		Init();
+		variation = growth_level;
+		//Init();
 	}
 }
 
@@ -82,7 +80,7 @@ void TreeObj::Init()
 	sprite.setTextureRect(cinfo.texture_rect);
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos);
-	size = vec2(vec2i(cinfo.texture_rect.left, cinfo.texture_rect.top));
+	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height*scale);
 }
 
 void TreeObj::Update(float dt)
@@ -94,14 +92,13 @@ void TreeObj::setGrowthLevel(int level)
 	growth_level = level;
 
 	if (type == APPLE_TREE) {
-		if (level == 0) {
-			size = {13, 20};
-			flags = NO_FLAG;
-		}
-		else if (level == 1) {
-			//sprite_origin = 
-		}
+		cinfo = getCoordsInfo("appletree" + to_string(growth_level));
 	}
+	if (type == BANANA_TREE) {
+		cinfo = getCoordsInfo("bananatree" + to_string(growth_level));
+	}
+
+	setCoordsInfo(cinfo);
 
 	Init();
 }
@@ -213,28 +210,32 @@ void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 
 			float tolerance = 10;
 
-			if (movement.x != 0 && pos.y + size.y > epos.y && pos.y < epos.y + esize.y) {
-				if (pos.x + size.x >= epos.x && pos.x + size.x <= epos.x + tolerance
-				 && pos.x <= epos.x && movement.x > 0) {
-					pos.x = epos.x - size.x;
+			vec2 d(8, 8);
+			auto p = pos + d;
+			auto s = size - d;
+
+			if (movement.x != 0 && p.y + s.y > epos.y && p.y < epos.y + esize.y) {
+				if (p.x + s.x >= epos.x && p.x + s.x <= epos.x + tolerance
+				 && p.x <= epos.x && movement.x > 0) {
+					pos.x = epos.x - s.x - d.x;
 					movement.x = 0;
 				}
-				else if (pos.x <= epos.x + esize.x && pos.x >= epos.x + esize.x - tolerance
-					  && pos.x + size.x >= epos.x + esize.x && movement.x < 0) {
-					pos.x = epos.x + esize.x;
+				else if (p.x <= epos.x + esize.x && p.x >= epos.x + esize.x - tolerance
+					  && p.x + s.x >= epos.x + esize.x && movement.x < 0) {
+					pos.x = epos.x + esize.x - d.x;
 					movement.x = 0;
 				}
 			}
 
-			if (movement.y != 0 && pos.x + size.x > epos.x && pos.x < epos.x + esize.x) {
-				if (pos.y + size.y >= epos.y && pos.y + size.y <= epos.y + tolerance
-				 && pos.y <= epos.y && movement.y > 0) {
-					pos.y = epos.y - size.y;
+			if (movement.y != 0 && p.x + s.x > epos.x && p.x < epos.x + esize.x) {
+				if (p.y + s.y >= epos.y && p.y + s.y <= epos.y + tolerance
+				 && p.y <= epos.y && movement.y > 0) {
+					pos.y = epos.y - s.y - d.y;
 					movement.y = 0;
 				}
-				else if (pos.y <= epos.y + esize.y && pos.y >= epos.y + esize.y - tolerance
-					  && pos.y + size.y >= epos.y + esize.y && movement.y < 0) {
-					pos.y = epos.y + esize.y;
+				else if (p.y <= epos.y + esize.y && p.y >= epos.y + esize.y - tolerance
+					  && p.y + s.y >= epos.y + esize.y && movement.y < 0) {
+					pos.y = epos.y + esize.y - d.y;
 					movement.y = 0;
 				}
 			}

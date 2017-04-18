@@ -75,9 +75,11 @@ static CoordsInfo getCoordsInfo(const std::string& name)
 {
 	CoordsInfo ci;
 
-	std::ifstream s("Resources/Data/SpriteCoords/" + name + ".txt");
+	std::string fn = "Resources/Data/SpriteCoords/" + name + ".txt";
+	std::ifstream s;//(fn.c_str());
+	s.open(fn);
 	if (s.fail()) {
-		std::cerr << "Cannot open coords info file \"" << "Resources/Data/SpriteCoords/" + name + ".txt" << "\"" << std::endl;
+		std::cerr << "Cannot open coords info file \"" << fn  << "\"" << std::endl;
 	}
 
 	std::string w;

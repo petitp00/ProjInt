@@ -156,14 +156,6 @@ void World::LoadWorld(std::string const & filename)
 				go = make_rock(p, stoi(vec[0]));
 				entities.push_back(go);
 				break;
-			case BUSH:
-				//go = make_bush(p);
-				//entities.push_back(go);
-				break;
-			case TREE:
-				//go = make_tree(p);
-				//entities.push_back(go);
-				break;
 			case ITEM:
 				id = Item::Manager::CreateItem(Item::getItemTypeByName(vec[0]));
 				io = make_item(id, p);
@@ -171,11 +163,11 @@ void World::LoadWorld(std::string const & filename)
 				items.push_back(io);
 				break;
 			case APPLE_TREE:
-				to = new TreeObj(APPLE_TREE, p, sz, f, vec);
+				to = make_tree_obj(APPLE_TREE, stoi(vec[1]), p);
 				entities.push_back(to);
 				break;
 			case BANANA_TREE:
-				to = new TreeObj(BANANA_TREE, p, sz, f, vec);
+				to = make_tree_obj(BANANA_TREE, stoi(vec[1]), p);
 				entities.push_back(to);
 			default:
 				break;

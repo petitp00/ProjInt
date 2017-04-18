@@ -153,13 +153,13 @@ public:
 
 		sf::RectangleShape shape(vec2(getCollisionBox().width, getCollisionBox().height));
 		shape.setPosition(vec2(getCollisionBox().left, getCollisionBox().top));
-		shape.setFillColor(sf::Color(255, 0, 0, 128));
-		target.draw(shape);
+		shape.setFillColor(sf::Color(255, 0, 0, 60));
+		//target.draw(shape);
 
 		shape.setSize(size);
 		shape.setPosition(pos);
-		shape.setFillColor(sf::Color(0, 255, 0, 100));
-		target.draw(shape);
+		shape.setFillColor(sf::Color(0, 255, 0, 60));
+		//target.draw(shape);
 	}
 
 	void setPos(vec2 pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
@@ -204,7 +204,7 @@ private:
 
 class TreeObj : public GameObject
 {
-	friend TreeObj* make_tree_obj(Type type, vec2 pos);
+	friend TreeObj* make_tree_obj(Type type, int variation, vec2 pos);
 public:
 	TreeObj()=default;
 	TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags = SOLID,
@@ -217,7 +217,6 @@ public:
 
 	std::vector<std::string> getSavedData() override { return {
 		std::to_string(int(type)), std::to_string(growth_level),
-		cinfo.texture_name
 	}; }
 
 
@@ -281,6 +280,8 @@ static Entity* make_entity(Type type, vec2 pos={0,0}, int variation=0) {
 	Entity* e = nullptr;
 
 	if (type == ROCK)	e = make_rock(pos, variation);
+	else if (type == APPLE_TREE) e = make_tree_obj(type, variation, pos);
+	else if (type == BANANA_TREE) e = make_tree_obj(type, variation, pos);
 	///*else*/ if (type == BUSH)	e = make_bush(pos);
 	//else if (type == TREE)	e = make_tree(pos);
 
@@ -309,15 +310,9 @@ static GameObject* make_rock(vec2 pos = {0,0}, int variation = 1) {
 	return rock;
 }
 
-static TreeObj* make_tree_obj(Type type, vec2 pos= {0,0}) {
+static TreeObj* make_tree_obj(Type type, int variation = 5, vec2 pos= {0,0}) {
 	auto tree = new TreeObj(type, pos, {0,0}, SOLID);
-	tree->growth_level = 5;
-
-	if (type == Type::APPLE_TREE) {
-	}
-	else if (type == Type::BANANA_TREE) {
-	}
-
+	tree->setGrowthLevel(variation);
 	tree->Init();
 	return tree;
 }

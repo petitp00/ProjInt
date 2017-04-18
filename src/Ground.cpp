@@ -9,12 +9,14 @@
 
 using namespace std;
 
+vector<pair<unsigned long, vec2i>> ott1;
+vector<pair<GroundType, vector<vec2i>>> types;
+
 Tileset::Tileset(std::string filename)
 {
 	auto tiletexture = ResourceManager::getTexture(filename);
 	sf::Image original_texture(tiletexture.copyToImage());
 
-	vector<pair<unsigned long, vec2i>> ott1;
 	ott1.push_back({UP,					{5, 6}});
 	ott1.push_back({DOWN,				{4, 6}});
 	ott1.push_back({LEFT,				{4, 7}});
@@ -24,12 +26,11 @@ Tileset::Tileset(std::string filename)
 	ott1.push_back({CORNER_DOWN_LEFT,	{7, 6}});
 	ott1.push_back({CORNER_DOWN_RIGHT,	{6, 6}});
 
-	vector<pair<GroundType, vector<vec2i>>> types;
 	types.push_back({NONE,				{{0,0}}});
 	types.push_back({GRASS,				{{1,0}, {2,0}}});
 	types.push_back({SAND,				{{3,0}, {4,0}}});
 	types.push_back({RIVER,				{{5,0}}});
-	types.push_back({DRY_DIRT,			{{7,0}, {1,0}, {1,1}, {1,2}}});
+	types.push_back({DRY_DIRT,			{{7,0}, {0,1}, {1,1} }});
 	types.push_back({DIRT,				{{6,0}}});
 
 	sf::Image image;
@@ -79,8 +80,17 @@ Tileset::Tileset(std::string filename)
 
 void Tileset::getUV(vector<sf::Vector3i>* vec, GroundType main_type, vector<Overlap>& overlaps)
 {
-	vec->push_back({0, main_type, type_overlap_val[main_type]});
+	uint i = 0;
+	int version = 0;
+	for (auto& t : types) {
+		if (t.first == main_type) break;
+		++i;
+	}
+	if (i < types.size()) {
+		version = rng::rand_int(0, types[i].second.size()-1);
+	}
 
+	vec->push_back({version, main_type, type_overlap_val[main_type]});
 	for (auto o : overlaps) {
 		vec->push_back({o.dir, o.type, type_overlap_val[o.type]});
 	}
@@ -178,7 +188,7 @@ void Ground::ReloadTileMap()
 			if (getTypeDominant(tile_nb, down_right) && getTypeDominant(down, down_right, true) && getTypeDominant(right, down_right, true))
 					overlaps.push_back({GroundType(down_right), CORNER_DOWN_RIGHT});
 
-			vector<sf::Vector3i>* tnbvec = new vector<sf::Vector3i>;
+			vector<sf::Vector3i>* tnbvec = new vector<sf::Vector3i>; //x: texturex, y: texturey, z: h (overlap val)
 			tileset.getUV(tnbvec, GroundType(tile_nb), overlaps);
 
 			bool main_tile_checked = false;
@@ -188,10 +198,15 @@ void Ground::ReloadTileMap()
 				if (!main_tile_checked && GroundType(tile_nb) == GroundType::RIVER) c.r = 0; // signals our shader to draw water on top
 				main_tile_checked = true;
 
-				q.verts.push_back(sf::Vertex(vec2(fi*vts, fj*vts), c, vec2(t.x*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts, fj*vts), c, vec2((t.x+1)*ts, t.y*ts)));
-				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts, (fj+1)*vts), c, vec2((t.x+1)*ts, (t.y+1)*ts)));
-				q.verts.push_back(sf::Vertex(vec2(fi*vts, (fj+1)*vts), c, vec2(t.x*ts, (t.y+1)*ts)));
+
+				// fi,fj = float(i,j)
+				// vts = visual_tile_size
+				// ts = tile_size
+
+				q.verts.push_back(sf::Vertex(vec2(fi*vts,		fj*vts), c, vec2(t.x*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts,	fj*vts), c, vec2((t.x+1)*ts, t.y*ts)));
+				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts,	(fj+1)*vts), c, vec2((t.x+1)*ts, (t.y+1)*ts)));
+				q.verts.push_back(sf::Vertex(vec2(fi*vts,		(fj+1)*vts), c, vec2(t.x*ts, (t.y+1)*ts)));
 				q.h = t.z;
 				quadhs.push_back(q);
 			}
