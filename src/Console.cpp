@@ -524,7 +524,15 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		else if (args.size() >= 3) { pos = vec2(float(atof(args[1].c_str())), float(atof(args[2].c_str()))); }
 		//if (args.size() == 4) { flags = getFlagsFromString(args[3]); }
 
-		impl->editor->world.AddEntity(make_entity(type, pos, variation));
+		if (type == APPLE_TREE || type == BANANA_TREE) {
+			impl->editor->world.AddTreeEnt(make_tree_obj(type, variation, pos));
+		}
+		else if (type == ITEM) {
+			impl->console->AddLine("cannot add item object with console");
+		}
+		else {
+			impl->editor->world.AddEntity(make_entity(type, pos, variation));
+		}
 	});
 	AddInfo("NewEnt", "Create a new entity",new_ent_usage);
 

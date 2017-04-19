@@ -21,8 +21,13 @@ map<int, BioJunk*>	Manager::bio_junks;
 map<int, Tool*>		Manager::tools;
 map<int, Bowl*>		Manager::bowls;
 
-Food* make_food(ItemType type) {
+Food* make_food(ItemType type, vector<string>& save_data) {
 	Food* f = new Food;
+
+	if (save_data.size()) {
+		f->spoil_level = stoi(save_data[0]);
+	}
+
 	if (type == banana) {
 		f->name = "Banane";
 		f->desc = "Fruit. Mangeable. Laisse une pelure.";
@@ -48,8 +53,13 @@ Food* make_food(ItemType type) {
 	return f;
 }
 
-BioJunk* make_bio_junk(ItemType type) {
+BioJunk* make_bio_junk(ItemType type, vector<string>& save_data) {
 	BioJunk* bj = new BioJunk;
+
+	if (save_data.size()) {
+		bj->compost_time = stoi(save_data[0]);
+	}
+
 	if (type == banana_peel) {
 		bj->name = "Pelure de banane";
 		bj->pos_in_texture_map = {3, 0};
@@ -70,8 +80,13 @@ BioJunk* make_bio_junk(ItemType type) {
 	return bj;
 }
 
-Tool* make_tool(ItemType type) {
+Tool* make_tool(ItemType type, vector<string>& save_data) {
 	Tool* t = new Tool;
+
+	if (save_data.size()) {
+		t->durability = stoi(save_data[0]);
+	}
+
 	if (type == axe) {
 		t->name = "Hache";
 		t->desc = "Outil. Utilisé pour couper des arbres.";
@@ -89,20 +104,24 @@ Tool* make_tool(ItemType type) {
 	return t;
 }
 
-Bowl* make_bowl(ItemType type) { 
+Bowl* make_bowl(ItemType type, vector<string>& save_data) { 
 	Bowl* b = new Bowl;
+
+	if (save_data.size()) {
+		b->water_level = stoi(save_data[0]);
+	}
+
 	if (type == bowl) {
 		b->name = "Bol";
 		b->desc = "Utilisé pour récolter de l'eau, la boire ou arroser les plants.";
 		b->UpdatePosInTextureMap();
 		return b;
 	}
-
 	b->name = "Item was not a Bowl";
 	return b;
 }
 
-any* make_any(ItemType type) {
+any* make_any(ItemType type, vector<string>& save_data) {
 	any* a = new any;
 	if (type == wood) {
 		a->name = "Bois";
@@ -132,30 +151,30 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	return ItemType(-1);
 }
 
-int Manager::CreateItem(ItemType type)
+int Manager::CreateItem(ItemType type, vector<string> save_data)
 {
 	if (IsFood(type)) {
-		auto f = make_food(type);
+		auto f = make_food(type, save_data);
 		items[last_id] = f;
 		foods[last_id] = f;
 	}
 	else if (IsBioJunk(type)) {
-		auto bj = make_bio_junk(type);
+		auto bj = make_bio_junk(type, save_data);
 		items[last_id] = bj;
 		bio_junks[last_id] = bj;
 	}
 	else if (IsTool(type)) {
-		auto t = make_tool(type);
+		auto t = make_tool(type, save_data);
 		items[last_id] = t;
 		tools[last_id] = t;
 	}
 	else if (IsBowl(type)) {
-		auto b = make_bowl(type);
+		auto b = make_bowl(type, save_data);
 		items[last_id] = b;
 		bowls[last_id] = b;
 	}
 	else {
-		auto a = make_any(type);
+		auto a = make_any(type, save_data);
 		items[last_id] = a;
 	}
 	
@@ -189,5 +208,12 @@ void Manager::DeleteItem(int id)
 	else {
 		cerr << "Can not delete item (id: " << id << "), since it does not exist" << endl;
 	}
+}
+
+ItemType Item::Manager::getItemType(int id)
+{
+	auto a = getAny(id);
+	auto t = getItemTypeByName(a->name);
+	return t;
 }
 

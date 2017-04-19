@@ -220,13 +220,13 @@ public:
 	void setGrowthLevel(int level);
 
 	std::vector<std::string> getSavedData() override { return {
-		std::to_string(int(type)), std::to_string(growth_level),
+		std::to_string(int(type)), std::to_string(growth_level), std::to_string(hp)
 	}; }
 
 
 private:
 	int growth_level = 0; // 0 to 5
-
+	int hp;
 };
 
 class AnimationComponent

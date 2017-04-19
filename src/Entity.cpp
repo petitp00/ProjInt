@@ -70,7 +70,9 @@ TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std:
 		type = getEntityTypeFromString(saved_data[0]);
 		growth_level = atoi(saved_data[1].c_str());
 		variation = growth_level;
-		//Init();
+		if (saved_data.size() >= 3) {
+			hp = atoi(saved_data[2].c_str());
+		}
 	}
 }
 

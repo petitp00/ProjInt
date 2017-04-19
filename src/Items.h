@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "Globals.h"
 
 #include <SFML/System/Vector2.hpp>
@@ -31,6 +32,11 @@ namespace Item
 		std::string desc;
 		vec2i pos_in_texture_map;
 
+		virtual std::vector<std::string> getSaveData() {
+			std::cerr << "Using Item::any::getSaveData(), probably an error" << std::endl;
+			return {};
+		}
+
 		bool operator==(any& b) {
 			return this->name == b.name;
 		}
@@ -40,22 +46,47 @@ namespace Item
 	{
 		int spoil_level = 0; // max 100
 		ItemType junk_created = none;
+
+		std::vector<std::string> getSaveData() override {
+			return {
+				std::to_string(spoil_level)
+			};
+		}
 	};
 
 	struct BioJunk : public any
 	{
 		BioJunk() : any() { desc = "Déchet compostable"; }
+		//bool in_compost; ???
 		int compost_time = 100; // decreases to 0, then disappears
+
+		std::vector<std::string> getSaveData() override {
+			return {
+				std::to_string(compost_time)
+			};
+		}
 	};
 
 	struct Tool : public any
 	{
 		int durability = 0; // max 100, + x per use
+
+		std::vector<std::string> getSaveData() override {
+			return {
+				std::to_string(durability)
+			};
+		}
 	};
 	struct Bowl : public any
 	{
 		void UpdatePosInTextureMap();
 		int water_level = 0; // 4: filled, 0: empty
+
+		std::vector<std::string> getSaveData() override {
+			return {
+				std::to_string(water_level)
+			};
+		}
 	};
 
 	ItemType getItemTypeByName(const std::string& name);
@@ -86,9 +117,10 @@ namespace Item
 		static std::map<int, Tool*> tools;
 		static std::map<int, Bowl*> bowls;
 
-		static int CreateItem(ItemType type); // returns id
+		static int CreateItem(ItemType type, std::vector<std::string> save_data = std::vector<std::string>()); // returns id
 		static void DeleteItem(int id);
 
+		static ItemType getItemType(int id);
 		static any*		getAny		(int id) { return items[id]; }
 		static Food*	getFood		(int id) { return foods[id]; }
 		static BioJunk* getBioJunk	(int id) { return bio_junks[id]; }

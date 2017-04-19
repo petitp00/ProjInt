@@ -52,11 +52,13 @@ public:
 
 	void UseEquippedToolAt(vec2 mouse_pos_in_world);
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
+	void AddItemEnt(ItemObject* i) { if (i) entities.push_back(i); items.push_back(i); }
+	void AddTreeEnt(TreeObj* t) { if (t) entities.push_back(t); trees.push_back(t); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
 	void DeleteItemObj(int id);
 	void StartPlaceItem(ItemObject* item);
-
+	
 private:
 	Controls* controls = nullptr;
 	Inventory* inventory = nullptr;
@@ -70,6 +72,7 @@ private:
 	Player* player = nullptr;
 	std::vector<Entity*> entities;
 	std::vector<ItemObject*> items; // also in entities
+	std::vector<TreeObj*> trees; // also in entities
 
 	Entity* entity_hovered = nullptr;
 	ItemObject* item_place = nullptr;

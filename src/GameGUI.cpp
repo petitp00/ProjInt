@@ -571,13 +571,13 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	page_butt1->setTooltip(new Tooltip("Items", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt1);
 
-	auto page_butt2 = new InvPageButton({0,0}, Item::texture_map_file, {3, 0});
+	auto page_butt2 = new InvPageButton({0,0}, Item::texture_map_file, {6, 0});
 	page_butt2->setOrigin(vec2(-(-ss), -(ms*2.f + ss)));
 	page_butt2->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_tools_page), button_action_impl);
 	page_butt2->setTooltip(new Tooltip("Outils", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt2);
 
-	auto page_butt3 = new InvPageButton({0,0}, Item::texture_map_file, {1, 0});
+	auto page_butt3 = new InvPageButton({0,0}, Item::texture_map_file, {13, 0});
 	page_butt3->setOrigin(vec2(-(-ss), -(ms*3.f + ss*2.f)));
 	page_butt3->setOnClickAction(new function<void(ButtonActionImpl*)>(go_to_craft_page), button_action_impl);
 	page_butt3->setTooltip(new Tooltip("Créer", sf::seconds(0.5f)));

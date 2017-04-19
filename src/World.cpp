@@ -44,6 +44,7 @@ void World::Clear()
 	}
 	entities.clear();
 	items.clear();
+	trees.clear();
 	ground.Clear();
 }
 
@@ -89,12 +90,41 @@ void World::LoadWorld(std::string const & filename)
 	std::ifstream s("Resources/Data/Saves/" + filename);
 
 	std::string w, str;
-
+	std::map<int, int> id_map; // maps old ids (saved in the file) to new ids
 	sf::Clock clock;
 
-	cout << "loading entities";
+	cout << "loading items & entities";
 	while (s >> w) {
-		if (w == "e") {
+		if (w == "i") {
+			cout << ".";
+			int id;
+			s >> str;
+			id = stoi(str);
+
+			string iname;
+			s >> iname;
+			
+			std::vector<std::string> vec;
+			str = "";
+			bool b = false;
+			char c = 0;
+			while (s.get(c) && c != '\n') {
+				if (c == '"') {
+					if (!b) b = true;
+					else {
+						b = false;
+						vec.push_back(str);
+						str = "";
+					}
+				}
+				else if (b) {
+					str += c;
+				}
+			}
+			int new_id = Item::Manager::CreateItem(Item::getItemTypeByName(iname), vec);
+			id_map[id] = new_id;
+		}
+		else if (w == "e") {
 			cout << ".";
 			Type t;
 			s >> str;
@@ -165,10 +195,12 @@ void World::LoadWorld(std::string const & filename)
 			case APPLE_TREE:
 				to = make_tree_obj(APPLE_TREE, stoi(vec[1]), p);
 				entities.push_back(to);
+				trees.push_back(to);
 				break;
 			case BANANA_TREE:
 				to = make_tree_obj(BANANA_TREE, stoi(vec[1]), p);
 				entities.push_back(to);
+				trees.push_back(to);
 				break;
 			case HUT:
 				go = make_hut(p);
@@ -195,21 +227,8 @@ void World::LoadWorld(std::string const & filename)
 			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl << "loading inventory...";
 			while (s >> w) {
 				if (w == "[END]") break;
-				
-				if (w[0] == '"') { // remove ""
-					w = w.substr(1, w.size());
-					if (w[w.size()-1] == '"') {
-						w = w.substr(0, w.size()-1);
-					}
-					else {
-						char c;
-						while (s.get(c)) {
-							if (c == '"') break;
-							w += c;
-						}
-					}
-				}
-				inventory->AddNewItem(Item::getItemTypeByName(w));
+				int id = stoi(w);
+				inventory->AddItem(id_map[id]);
 			}
 			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl;
 		}
@@ -220,30 +239,36 @@ void World::LoadWorld(std::string const & filename)
 
 void World::Save(const string& filename)
 {
-	if (filename != "") {
-		name = filename;
-	}
+	if (filename != "") name = filename;
 	bool file_existed = false;
 	std::ifstream f("Resources/Data/Saves/" + name, std::ios::binary);
 	if (f.is_open()) file_existed = true;
-
 	if (file_existed) {
 		std::ofstream backup("Resources/Data/Saves/" + name + ".backup", std::ios::binary);
 		backup << f.rdbuf();
 		backup.close();
 	}
-
 	f.close();
 
 	std::ofstream s("Resources/Data/Saves/" + name);
-
 	sf::Clock clock;
+
+	cout << "saving items...";
+	for (int id : inventory->getItemsId()) {
+		auto ia = Item::Manager::getAny(id);
+		s << "i " << id << ' ' << ia->name << ' ';
+		for (auto& sv : ia->getSaveData()) { s << '"' << sv << "\" "; }
+		s << endl;
+	}
+	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
+
 	cout << "saving entities...";
 	for (auto e : entities) {
-		s << "e " << e->getType() << " "
-			<< e->getPos().x << " " << e->getPos().y << " "
-			<< e->getSize().x << " " << e->getSize().y << " "
-			<< e->getFlags() << " ";
+		s << "e "	<< e->getType()		<< ' '
+					<< e->getPos().x	<< ' ' << e->getPos().y		<< ' '
+					<< e->getSize().x	<< ' ' << e->getSize().y	<< ' '
+					<< e->getFlags()	<< ' ';
+
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
 	}
@@ -252,19 +277,13 @@ void World::Save(const string& filename)
 	cout << "saving tilemap...";
 	s << "[TILE_MAP]" << endl;
 	s << ground.getWidth() << endl << ground.getHeight() << endl;
-	for (auto t : ground.getTiles()) {
-		s << t.getType() << " ";
-	}
+	for (auto t : ground.getTiles()) { s << t.getType() << ' '; }
 	s << endl << "[END]" << endl;
 	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 
 	cout << "saving inventory...";
 	s << "[INVENTORY]" << endl;
-	auto items = inventory->getItemsId();
-	for (auto i : items) {
-		auto item = Item::Manager::getAny(i);
-		s << "\"" << item->name << "\"" << endl;
-	}
+	for (auto i : inventory->getItemsId()) { s << i << endl; }
 	s << "[END]" << endl;
 	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 
@@ -461,6 +480,7 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 {
 	int t = game_state->getEquippedTool();
 	if (t != -1) {
+	
 	}
 }
 
