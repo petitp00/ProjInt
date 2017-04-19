@@ -91,11 +91,17 @@ void World::LoadWorld(std::string const & filename)
 
 	std::string w, str;
 	std::map<int, int> id_map; // maps old ids (saved in the file) to new ids
+	int old_equipped_id = -1;
 	sf::Clock clock;
 
 	cout << "loading items & entities";
+
 	while (s >> w) {
-		if (w == "i") {
+		if (w == "equipped_tool") {
+			s >> w;
+			old_equipped_id = stoi(w);
+		}
+		else if (w == "i") {
 			cout << ".";
 			int id;
 			s >> str;
@@ -234,6 +240,9 @@ void World::LoadWorld(std::string const & filename)
 		}
 	}
 	player->setControls(controls);
+	if (old_equipped_id != -1 && id_map.count(old_equipped_id)) {
+		game_state->EquipTool(id_map[old_equipped_id]);
+	}
 	cout << "[Load Ended]" << endl;
 }
 
@@ -254,6 +263,8 @@ void World::Save(const string& filename)
 	sf::Clock clock;
 
 	cout << "saving items...";
+	s << "equipped_tool " << game_state->getEquippedTool() << endl;
+
 	for (int id : inventory->getItemsId()) {
 		auto ia = Item::Manager::getAny(id);
 		s << "i " << id << ' ' << ia->name << ' ';
