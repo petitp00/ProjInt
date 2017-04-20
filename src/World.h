@@ -49,6 +49,7 @@ public:
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
+	bool getCanUseTool(std::string& name);
 
 	void UseEquippedToolAt(vec2 mouse_pos_in_world);
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
@@ -56,6 +57,7 @@ public:
 	void AddTreeEnt(TreeObj* t) { if (t) entities.push_back(t); trees.push_back(t); }
 	void DuplicateEntity(int id);
 	void DeleteEntity(int id);
+	void DeleteTree(int id);
 	void DeleteItemObj(int id);
 	void StartPlaceItem(ItemObject* item);
 	

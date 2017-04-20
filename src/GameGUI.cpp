@@ -7,7 +7,6 @@
 #include <iostream>
 using namespace std;
 
-
 static void eat(ButtonActionImpl* impl) {
 	auto item = Item::Manager::getAny(impl->item);
 	if (Item::IsFood(Item::getItemTypeByName(item->name))) {
@@ -102,7 +101,6 @@ bool MouseMoveO(vector<T*>& vec, const sf::Event& event) {
 				o->UpdateHoveredMousePos(mouse);
 			}
 		}
-
 		else if (o->getHovered())
 			if (o->onHoverOut()) ret = true;
 	}
@@ -882,6 +880,10 @@ void EquippedToolObj::UpdateDurability()
 		auto t = Item::Manager::getTool(tool);
 		float perc = max(0.f, min(100.f, (1 - t->durability / 100.f)));
 		float bw = shape.getSize().x * perc;
+
+		if (t->durability >= 95)
+			shape.setOutlineColor(sf::Color::Red);
+		else shape.setOutlineColor(INV_WINDOW_COLOR);
 
 		durab_bar.setSize(vec2(bw, 2));
 		durab_bar.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));

@@ -93,6 +93,16 @@ void TreeObj::setGrowthLevel(int level)
 {
 	growth_level = level;
 
+	if (growth_level == 1 || growth_level == 2) {
+		hp = 1;
+	}
+	else if (growth_level == 3) {
+		hp = 2;
+	}
+	else if (growth_level == 4 || growth_level == 5 || growth_level == 6) {
+		hp = 3;
+	}
+
 	if (type == APPLE_TREE) {
 		cinfo = getCoordsInfo("appletree" + to_string(growth_level));
 	}

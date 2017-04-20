@@ -24,14 +24,14 @@ public:
 	void StartNewGame(std::string const& name);
 	void LoadGame(std::string const& name);
 
-	void EquipTool(int id) { tool_obj.setTool(id); }
-	void UnequipTool() { tool_obj.setTool(-1); }
+	void EquipTool(int id);// { equipped_tool = id; tool_obj.setTool(id); }
+	void UnequipTool(); // { equipped_tool = -1; tool_obj.setTool(-1); }
 
 	Inventory* getInventory() { return &inventory; }
 	World& getWorld() { return world; }
 	EquippedToolObj* getEquippedToolObj() { return &tool_obj; }
 	bool getActive() { return active; }
-	int getEquippedTool() { return tool_obj.getToolId(); }
+	int getEquippedTool() { return equipped_tool; }
 	void setActive(bool active) { this->active = active; }
 
 private:
@@ -40,6 +40,16 @@ private:
 	Game& game;
 
 	World world;
+
+	int equipped_tool = -1;
+	bool can_use_tool = false;
+	bool using_tool = false;
+	sf::Clock using_tool_clock;
+	sf::RectangleShape using_tool_bar1;
+	sf::RectangleShape using_tool_bar2;
+	sf::Sprite equipped_tool_sprite;
+
+	// GUI stuff
 	Inventory inventory;
 	InventoryButton inv_butt;
 	EquippedToolObj tool_obj;

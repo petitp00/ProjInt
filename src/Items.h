@@ -3,9 +3,11 @@
 #include <string>
 #include <map>
 #include <vector>
+
 #include "Globals.h"
 
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System/Time.hpp>
 
 namespace Item
 {
@@ -70,6 +72,7 @@ namespace Item
 	struct Tool : public any
 	{
 		int durability = 0; // max 100, + x per use
+		sf::Time use_speed = sf::seconds(0.7f);
 
 		std::vector<std::string> getSaveData() override {
 			return {

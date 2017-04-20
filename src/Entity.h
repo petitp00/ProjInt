@@ -217,6 +217,8 @@ public:
 	void Init();
 	void Update(float dt) override;
 
+	void Hit() { --hp; }
+	bool getChopped() { return hp <= 0; }
 	void setGrowthLevel(int level);
 
 	std::vector<std::string> getSavedData() override { return {

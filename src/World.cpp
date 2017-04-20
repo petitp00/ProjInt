@@ -318,8 +318,10 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 			e->Update(dt);
 			
 			if (!item_move && !item_place) {
+				auto ec = e->getCollisionBox();
 				if (mpw.x >= e->getPos().x && mpw.x <= e->getPos().x + e->getSize().x &&
 					mpw.y >= e->getPos().y && mpw.y <= e->getPos().y + e->getSize().y) {
+				//if (ec.contains(mpw)) {
 					entity_hovered = e;
 				}
 			}
@@ -487,11 +489,36 @@ ItemObject * World::FindItem(int id)
 	return nullptr;
 }
 
+bool World::getCanUseTool(std::string & name)
+{
+	if (entity_hovered) {
+		auto ent_type = entity_hovered->getType();
+		if (name == "Hache") {
+			if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) return true;
+		}
+	}
+	return false;
+}
+
 void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 {
+	auto m = mouse_pos_in_world;
 	int t = game_state->getEquippedTool();
 	if (t != -1) {
-	
+		auto tool = Item::Manager::getTool(t);
+		if (tool->name == "Hache") {
+			for (auto tree : trees) {
+				auto tp = tree->getPos();
+				auto ts = tree->getSize();
+				
+				if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+					tree->Hit();
+					if (tree->getChopped()) {
+						DeleteTree(tree->getId());
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -518,6 +545,33 @@ void World::DeleteEntity(int id)
 	if (index != -1) {
 		delete entities[index];
 		entities.erase(entities.begin() + index);
+	}
+}
+
+void World::DeleteTree(int id)
+{
+	int index = -1;
+	for (uint i = 0; i != entities.size(); ++i) {
+		if (entities[i]->getId() == id) {
+			index = i;
+			break;
+		}
+	}
+	if (index != -1) {
+		delete entities[index];
+		entities.erase(entities.begin() + index);
+	}
+
+	index = -1;
+	for (uint i = 0; i != trees.size(); ++i) {
+		if (trees[i]->getId() == id) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index != -1) {
+		trees.erase(trees.begin() + index);
 	}
 }
 
