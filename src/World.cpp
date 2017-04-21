@@ -35,6 +35,8 @@ void World::Init(Inventory* inventory, InventoryButton* inv_butt, GameState* gam
 	this->inventory = inventory;
 	this->inv_butt = inv_butt;
 	this->game_state= game_state;
+
+	particle_manager.Init();
 }
 
 void World::Clear()
@@ -240,9 +242,12 @@ void World::LoadWorld(std::string const & filename)
 		}
 	}
 	player->setControls(controls);
+#ifndef EDITOR_MODE
 	if (old_equipped_id != -1 && id_map.count(old_equipped_id)) {
 		game_state->EquipTool(id_map[old_equipped_id]);
 	}
+#endif
+	SortEntities();
 	cout << "[Load Ended]" << endl;
 }
 
@@ -336,6 +341,8 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 		++i;
 	}
 
+	particle_manager.UpdateParticles(dt);
+
 	int no_collision_id = -1; // this entity won't have collision (because it is picked up)
 	if (item_place) no_collision_id = item_place->getId();
 	if (item_move) no_collision_id = item_move->getId();
@@ -347,6 +354,11 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	if (item_move) item_move->setPos(mouse_pos_in_world - item_move->getSize()/2.f + item_move->getOrigin());
 
 	UpdateView();
+
+	if (true || entities_need_sorting) {
+		SortEntitiesImpl();
+		entities_need_sorting = false;
+	}
 }
 
 void World::UpdateView()
@@ -371,36 +383,23 @@ void World::Render(sf::RenderTarget & target)
 #endif
 
 	target.draw(ground);
-
-	vector<Entity*> entities_front;
-
 	if (player) {
+		int next_particle_to_render = 0;
 		for (auto e : entities) {
-			if (e->getType() != PLAYER) {
-				if (player->getPos().y + player->getSize().y > e->getPos().y + e->getSize().y) {
-					e->Render(target);
-				}
-				else {
-					entities_front.push_back(e);
-				}
-			}
+			next_particle_to_render = particle_manager.RenderLeafParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_particle_to_render);
+			e->Render(target);
 		}
 
-		player->Render(target);
-
-		for (auto e : entities_front) {
-			if (e->getType() != PLAYER) {
-				e->Render(target);
-			}
-		}
-
-		if (item_place) item_place->Render(target);
+		// render the remaining particles
+		particle_manager.RenderLeafParticlesLowerThan(target, 100000, next_particle_to_render);
 	}
 	else {
 		for (auto e : entities) {
 			e->Render(target);
 		}
 	}
+
+	//particle_manager.RenderParticles(target);
 
 	//target.setView(target.getDefaultView());
 }
@@ -445,6 +444,7 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 	}
 	if (event.type == sf::Event::MouseMoved) {
+
 	}
 
 
@@ -513,6 +513,15 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 				
 				if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
 					tree->Hit();
+					int leaf_amount = rng::rand_int(7, 14);
+					for (int i = 0; i != leaf_amount; ++ i) {
+						vec2 pos;
+						pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
+						pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
+						float end_y = pos.y + ts.y/2.f;
+						particle_manager.CreateLeafParticle(pos, end_y);
+					}
+					particle_manager.SortLeafParticles();
 					if (tree->getChopped()) {
 						DeleteTree(tree->getId());
 					}
@@ -590,3 +599,10 @@ void World::DeleteItemObj(int id)
 }
 
 void World::StartPlaceItem(ItemObject* item) { item_place = item; }
+
+void World::SortEntitiesImpl() // super fast for not a lot of elements (~10µs)
+{
+	sort(entities.begin(), entities.end(), [](auto e1, auto e2) {
+		return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;
+	});
+}

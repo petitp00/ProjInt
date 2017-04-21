@@ -283,6 +283,7 @@
     <ClCompile Include="src\Items.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MenuState.cpp" />
+    <ClCompile Include="src\Particles.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\StateMachine.cpp" />
     <ClCompile Include="src\GUIObjects.cpp" />
@@ -299,6 +300,7 @@
     <ClInclude Include="src\Ground.h" />
     <ClInclude Include="src\Items.h" />
     <ClInclude Include="src\MenuState.h" />
+    <ClInclude Include="src\Particles.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\rng.h" />
     <ClInclude Include="src\StateMachine.h" />

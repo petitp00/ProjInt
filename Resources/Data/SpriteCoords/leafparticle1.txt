@@ -1,0 +1,4 @@
+leafparticle1
+0 128 31 31
+0 128 31 31
+Textures_Objets.png

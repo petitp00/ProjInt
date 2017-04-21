@@ -210,6 +210,7 @@ void Editor::Start()
 			else if (event.type == sf::Event::MouseButtonReleased) {
 				auto button = event.mouseButton.button;
 				if (button == sf::Mouse::Left) {
+					world.SortEntitiesImpl();
 					minimap_drag = false;
 					left_pressed = false;
 					if (selected_entity) selected_entity = nullptr;
@@ -258,6 +259,7 @@ void Editor::Start()
 					selected_entity_pos_label->setVal("{"+ to_string(int(selected_entity->getPos().x)) + ", " + to_string(int(selected_entity->getPos().y)) + "}");
 					selected_entity_pos_label->text_obj.setPosition( vec2( window.mapCoordsToPixel(
 						selected_entity->getPos() + vec2(0, selected_entity->getSize().y + 10.f), game_view)));
+					world.SortEntitiesImpl();
 
 				}
 				else if (left_pressed && ground_edit_mode) {

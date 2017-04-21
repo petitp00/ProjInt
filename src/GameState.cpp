@@ -168,8 +168,8 @@ void GameState::EquipTool(int id)
 
 	if (id != -1) {
 		auto t = Item::Manager::getTool(id);
-		auto ts = Item::items_texture_size;
-		equipped_tool_sprite.setTextureRect(sf::IntRect(t->pos_in_texture_map*int(ts), vec2i(ts, ts)));
+		int ts = int(Item::items_texture_size);
+		equipped_tool_sprite.setTextureRect(sf::IntRect(t->pos_in_texture_map*ts, vec2i(ts, ts)));
 	}
 }
 

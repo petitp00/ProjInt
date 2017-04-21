@@ -12,6 +12,7 @@
 #include "Entity.h"
 #include "Ground.h"
 #include "GameGUI.h"
+#include "Particles.h"
 
 namespace EditorMode { class Editor; }
 
@@ -45,12 +46,14 @@ public:
 	void Render(sf::RenderTarget& target);
 	bool HandleEvent(sf::Event const& event);
 
+
 	sf::View& getGameView() { return game_view; }
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 	bool getCanUseTool(std::string& name);
 
+	void SortEntities() { std::cout << "ask for sort" << std::endl; entities_need_sorting = true; }
 	void UseEquippedToolAt(vec2 mouse_pos_in_world);
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void AddItemEnt(ItemObject* i) { if (i) entities.push_back(i); items.push_back(i); }
@@ -62,6 +65,9 @@ public:
 	void StartPlaceItem(ItemObject* item);
 	
 private:
+	void SortEntitiesImpl(); // called at beginning of Update if entities_need_sorting
+	bool entities_need_sorting = false;
+
 	Controls* controls = nullptr;
 	Inventory* inventory = nullptr;
 	GameState* game_state = nullptr;
@@ -71,6 +77,7 @@ private:
 	sf::View game_view;
 
 	Ground ground;
+	Particle::Manager particle_manager;
 	Player* player = nullptr;
 	std::vector<Entity*> entities;
 	std::vector<ItemObject*> items; // also in entities
