@@ -83,7 +83,7 @@ private:
 	std::vector<ItemObject*> items; // also in entities
 	std::vector<TreeObj*> trees; // also in entities
 
-	Entity* entity_hovered = nullptr;
+	std::vector<Entity*> entity_hovered;
 	ItemObject* item_place = nullptr;
 	ItemObject* item_move = nullptr;
 };

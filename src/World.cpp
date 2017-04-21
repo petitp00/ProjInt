@@ -315,7 +315,7 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 {
 	auto mpw = mouse_pos_in_world;
 
-	entity_hovered = nullptr;
+	entity_hovered.clear();
 
 	for (auto i = entities.begin(); i != entities.end();) {
 		auto e = *i;
@@ -326,8 +326,7 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 				auto ec = e->getCollisionBox();
 				if (mpw.x >= e->getPos().x && mpw.x <= e->getPos().x + e->getSize().x &&
 					mpw.y >= e->getPos().y && mpw.y <= e->getPos().y + e->getSize().y) {
-				//if (ec.contains(mpw)) {
-					entity_hovered = e;
+					entity_hovered.push_back(e);
 				}
 			}
 		}
@@ -402,10 +401,6 @@ void World::Render(sf::RenderTarget & target)
 			e->Render(target);
 		}
 	}
-
-	//particle_manager.RenderParticles(target);
-
-	//target.setView(target.getDefaultView());
 }
 
 vec2i drag_mouse_pos;
@@ -430,11 +425,14 @@ bool World::HandleEvent(sf::Event const & event)
 				}
 				item_place = nullptr;
 			}
-			else if (entity_hovered) {
-				if (entity_hovered->getType() == ITEM) {
-					item_move = FindItem(entity_hovered->getId());
+			else if (entity_hovered.size() != 0) {
+				for (auto e : entity_hovered) {
+					if (e->getType() == ITEM) {
+						item_move = FindItem(e->getId());
+						entity_hovered.clear();
+						break;
+					}
 				}
-				entity_hovered = nullptr;
 			}
 		}
 	}
@@ -450,7 +448,6 @@ bool World::HandleEvent(sf::Event const & event)
 	if (event.type == sf::Event::MouseMoved) {
 
 	}
-
 
 	return false;
 }
@@ -495,10 +492,12 @@ ItemObject * World::FindItem(int id)
 
 bool World::getCanUseTool(std::string & name)
 {
-	if (entity_hovered) {
-		auto ent_type = entity_hovered->getType();
-		if (name == "Hache") {
-			if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) return true;
+	if (entity_hovered.size() != 0) {
+		for (auto e : entity_hovered) {
+			auto ent_type = e->getType();
+			if (name == "Hache") {
+				if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) return true;
+			}
 		}
 	}
 	return false;
