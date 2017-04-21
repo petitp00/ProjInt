@@ -1,0 +1,4 @@
+bwoodpart1
+2 242 6 4
+2 242 6 4
+Textures_Objets.png

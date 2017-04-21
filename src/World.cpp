@@ -386,12 +386,16 @@ void World::Render(sf::RenderTarget & target)
 	if (player) {
 		int next_particle_to_render = 0;
 		for (auto e : entities) {
-			next_particle_to_render = particle_manager.RenderLeafParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_particle_to_render);
+			if (next_particle_to_render != -1)
+				next_particle_to_render = particle_manager.RenderSpriteParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_particle_to_render);
 			e->Render(target);
 		}
 
 		// render the remaining particles
-		particle_manager.RenderLeafParticlesLowerThan(target, 100000, next_particle_to_render);
+		if (next_particle_to_render != -1)
+			particle_manager.RenderSpriteParticlesLowerThan(target, 100000, next_particle_to_render);
+
+		if (item_place) item_place->Render(target);
 	}
 	else {
 		for (auto e : entities) {
@@ -519,9 +523,22 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 						pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
 						pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
 						float end_y = pos.y + ts.y/2.f;
-						particle_manager.CreateLeafParticle(pos, end_y);
+						particle_manager.CreateSpriteParticle(Particle::SpriteParticleType::Leaf, pos, end_y);
 					}
-					particle_manager.SortLeafParticles();
+
+					int wood_amount = rng::rand_int(3, 6);
+					Particle::SpriteParticleType wood_part_type;
+					if (tree->getType() == APPLE_TREE) wood_part_type = Particle::SpriteParticleType::AppleWood;
+					else if (tree->getType() == BANANA_TREE) wood_part_type = Particle::SpriteParticleType::BananaWood;
+					for (int i = 0; i != wood_amount; ++i) {
+						vec2 pos;
+						pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
+						pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
+						float end_y = pos.y + ts.y/2.f;
+						particle_manager.CreateSpriteParticle(wood_part_type, pos, end_y);
+					}
+
+					particle_manager.SortSpriteParticles();
 					if (tree->getChopped()) {
 						DeleteTree(tree->getId());
 					}

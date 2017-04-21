@@ -18,16 +18,24 @@ namespace Particle
 		float lifetime;
 	};
 
-	struct LeafParticle : public Particle
+	enum class SpriteParticleType {
+		Leaf,
+		AppleWood,
+		BananaWood
+	};
+
+	struct SpriteParticle : public Particle
 	{
 		void Update(float dt) override;
 		
+		SpriteParticleType type;
+		int var = 0;
 		float end_y;
 		vec2 move_vec;
 		float angle;
 		float scale;
 	};
-	void DrawLeafParticle(LeafParticle& part, sf::RenderTarget& target);
+	void DrawSpriteParticle(SpriteParticle& part, sf::RenderTarget& target);
 
 	class Manager
 	{
@@ -36,13 +44,13 @@ namespace Particle
 		void Clear();
 		void UpdateParticles(float dt);
 		void RenderParticles(sf::RenderTarget& target);
-		int RenderLeafParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
+		int RenderSpriteParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
 
-		void CreateLeafParticle(vec2 pos, float end_y);
-		void SortLeafParticles(); // Sorting is based on end_y (no need to resort)
+		void CreateSpriteParticle(SpriteParticleType type, vec2 pos, float end_y);
+		void SortSpriteParticles(); // Sorting is based on end_y (no need to resort)
 
 	private:
-		std::vector<LeafParticle> leaves;
+		std::vector<SpriteParticle> sprite_particles;
 	};
 
 }

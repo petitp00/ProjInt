@@ -1,0 +1,4 @@
+bwoodpart2
+12 242 6 6
+12 242 6 6
+Textures_Objets.png

@@ -1,0 +1,4 @@
+awoodpart4
+18 232 7 6
+18 232 7 6
+Textures_Objets.png
