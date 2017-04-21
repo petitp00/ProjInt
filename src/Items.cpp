@@ -152,6 +152,25 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	return ItemType(-1);
 }
 
+sf::IntRect Item::getItemTextureRect(ItemType type)
+{
+	static map<ItemType, vec2i> tmap;
+	vec2i tpos;
+
+	if (tmap.count(type)) {
+		tpos = tmap[type];
+	}
+	else {
+		int i = Manager::CreateItem(type);
+		tpos = Manager::getAny(i)->pos_in_texture_map;
+		Manager::DeleteItem(i);
+		tmap[type] = tpos;
+	}
+
+	int ts = items_texture_size;
+	return sf::IntRect(tpos * ts, vec2i(ts,ts));
+}
+
 int Manager::CreateItem(ItemType type, vector<string> save_data)
 {
 	if (IsFood(type)) {
@@ -217,4 +236,3 @@ ItemType Item::Manager::getItemType(int id)
 	auto t = getItemTypeByName(a->name);
 	return t;
 }
-

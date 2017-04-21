@@ -7,6 +7,9 @@
 #include <vector>
 
 #include "Globals.h"
+#include "Items.h"
+
+class World;
 
 namespace Particle
 {
@@ -21,7 +24,8 @@ namespace Particle
 	enum class SpriteParticleType {
 		Leaf,
 		AppleWood,
-		BananaWood
+		BananaWood,
+		WoodItem
 	};
 
 	struct SpriteParticle : public Particle
@@ -37,20 +41,37 @@ namespace Particle
 	};
 	void DrawSpriteParticle(SpriteParticle& part, sf::RenderTarget& target);
 
+	struct ItemParticle : public Particle
+	{
+		void Update(float dt) override;
+
+		Item::ItemType type;
+		float end_y;
+		vec2 move_vec;
+		float scale;
+	};
+	void DrawItemParticle(ItemParticle& part, sf::RenderTarget& target);
+
 	class Manager
 	{
 	public:
-		void Init();
+		void Init(World* world);
 		void Clear();
 		void UpdateParticles(float dt);
-		void RenderParticles(sf::RenderTarget& target);
-		int RenderSpriteParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
 
+		int RenderSpriteParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
 		void CreateSpriteParticle(SpriteParticleType type, vec2 pos, float end_y);
 		void SortSpriteParticles(); // Sorting is based on end_y (no need to resort)
 
+		int RenderItemParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
+		void CreateItemParticle(Item::ItemType type, vec2 pos, float end_y);
+		void SortItemParticles();
+
 	private:
+		World* world = nullptr;
+
 		std::vector<SpriteParticle> sprite_particles;
+		std::vector<ItemParticle> item_particles;
 	};
 
 }

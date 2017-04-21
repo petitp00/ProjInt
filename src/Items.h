@@ -93,6 +93,7 @@ namespace Item
 	};
 
 	ItemType getItemTypeByName(const std::string& name);
+	sf::IntRect getItemTextureRect(ItemType type);
 
 	static bool IsFood(ItemType type) {
 		return (type == banana || type == apple || type == carrot);

@@ -36,7 +36,7 @@ void World::Init(Inventory* inventory, InventoryButton* inv_butt, GameState* gam
 	this->inv_butt = inv_butt;
 	this->game_state= game_state;
 
-	particle_manager.Init();
+	particle_manager.Init(this);
 }
 
 void World::Clear()
@@ -383,16 +383,21 @@ void World::Render(sf::RenderTarget & target)
 
 	target.draw(ground);
 	if (player) {
-		int next_particle_to_render = 0;
+		int next_sprite_particle_to_render = 0;
+		int next_item_particle_to_render = 0;
 		for (auto e : entities) {
-			if (next_particle_to_render != -1)
-				next_particle_to_render = particle_manager.RenderSpriteParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_particle_to_render);
+			if (next_sprite_particle_to_render != -1)
+				next_sprite_particle_to_render = particle_manager.RenderSpriteParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_sprite_particle_to_render);
+			if (next_item_particle_to_render != -1)
+				next_item_particle_to_render = particle_manager.RenderItemParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_item_particle_to_render);
 			e->Render(target);
 		}
 
 		// render the remaining particles
-		if (next_particle_to_render != -1)
-			particle_manager.RenderSpriteParticlesLowerThan(target, 100000, next_particle_to_render);
+		if (next_sprite_particle_to_render != -1)
+			particle_manager.RenderSpriteParticlesLowerThan(target, 100000, next_sprite_particle_to_render);
+		if (next_item_particle_to_render != -1)
+			particle_manager.RenderItemParticlesLowerThan(target, 100000, next_item_particle_to_render);
 
 		if (item_place) item_place->Render(target);
 	}
@@ -516,6 +521,8 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 				
 				if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
 					tree->Hit();
+
+					// Create leaf particles
 					int leaf_amount = rng::rand_int(7, 14);
 					for (int i = 0; i != leaf_amount; ++ i) {
 						vec2 pos;
@@ -525,6 +532,7 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 						particle_manager.CreateSpriteParticle(Particle::SpriteParticleType::Leaf, pos, end_y);
 					}
 
+					// Create wood particles
 					int wood_amount = rng::rand_int(3, 6);
 					Particle::SpriteParticleType wood_part_type;
 					if (tree->getType() == APPLE_TREE) wood_part_type = Particle::SpriteParticleType::AppleWood;
@@ -537,10 +545,20 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 						particle_manager.CreateSpriteParticle(wood_part_type, pos, end_y);
 					}
 
-					particle_manager.SortSpriteParticles();
 					if (tree->getChopped()) {
+						wood_amount = 4;
+						for (int i = 0; i != wood_amount; ++i) {
+							vec2 pos;
+							pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
+							pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
+							float end_y = pos.y + ts.y/2.f;
+							particle_manager.CreateItemParticle(Item::ItemType::wood, pos, end_y);
+						}
 						DeleteTree(tree->getId());
 					}
+
+					particle_manager.SortSpriteParticles();
+					particle_manager.SortItemParticles();
 				}
 			}
 		}

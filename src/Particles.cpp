@@ -1,12 +1,16 @@
 #include "Particles.h"
 #include "ResourceManager.h"
 #include "rng.h"
+#include "World.h"
 
 #include <iostream>
 using namespace std;
 
 sf::Sprite leaf_particle_sprite;
 float leaf_grav = 0.005f;
+
+sf::Sprite item_particle_sprite;
+float item_grav = 0.005f;
 
 map<Particle::SpriteParticleType, vector<sf::IntRect>> trects;
 
@@ -28,8 +32,27 @@ void Particle::DrawSpriteParticle(SpriteParticle & part, sf::RenderTarget& targe
 	target.draw(leaf_particle_sprite);
 }
 
-void Particle::Manager::Init()
+void Particle::DrawItemParticle(ItemParticle & part, sf::RenderTarget & target)
 {
+	item_particle_sprite.setPosition(part.pos);
+	leaf_particle_sprite.setScale(part.scale, part.scale);
+	item_particle_sprite.setTextureRect(getItemTextureRect(part.type));
+
+	target.draw(item_particle_sprite);
+}
+
+
+void Particle::ItemParticle::Update(float dt)
+{
+	if (pos.y < end_y) {
+		move_vec.y += item_grav*dt;
+		pos += move_vec * dt;
+	}
+}
+
+void Particle::Manager::Init(World* world)
+{
+	this->world = world;
 	Clear();
 
 	auto leaf_cinfo = getCoordsInfo("leafparticle1");
@@ -56,6 +79,8 @@ void Particle::Manager::Init()
 		bwood2_cinfo.texture_rect,
 		bwood3_cinfo.texture_rect
 	};
+
+	item_particle_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
 }
 
 void Particle::Manager::Clear()
@@ -65,22 +90,29 @@ void Particle::Manager::Clear()
 
 void Particle::Manager::UpdateParticles(float dt)
 {
-	for (auto i = sprite_particles.begin(); i != sprite_particles.end();) {
+	int count = 0;
+	for (auto i = sprite_particles.begin(); i < sprite_particles.end();) {
 		i->Update(dt);
 		i->lifetime -= dt;
 
-		if (false && i->lifetime <= 0) {
-			sprite_particles.erase(i);
+		if (i->lifetime <= 0) {
+			i = sprite_particles.erase(i);
 			continue;
 		}
 		++i;
+		++count;
 	}
-}
+	for (auto i = item_particles.begin(); i < item_particles.end();) {
+		i->Update(dt);
+		i->lifetime -= dt;
 
-void Particle::Manager::RenderParticles(sf::RenderTarget & target)
-{
-	for (auto i : sprite_particles) {
-		DrawSpriteParticle(i, target);
+		if (i->pos.y >= i->end_y) {
+			int new_item = Item::Manager::CreateItem(Item::ItemType::wood);
+			world->AddItemEnt(make_item(new_item, i->pos));
+			i = item_particles.erase(i);
+			continue;
+		}
+		++i;
 	}
 }
 
@@ -112,7 +144,7 @@ void Particle::Manager::CreateSpriteParticle(SpriteParticleType type, vec2 pos, 
 		p.scale = rng::rand_float(1.f, 2.f);
 	}
 
-	p.lifetime = 5000;
+	p.lifetime = rng::rand_int(1000, 1000000);
 	p.pos = pos;
 	p.end_y = end_y;
 	p.move_vec = vec2(rng::rand_float(-0.2f, 0.2f), -0.1f);
@@ -123,6 +155,34 @@ void Particle::Manager::CreateSpriteParticle(SpriteParticleType type, vec2 pos, 
 void Particle::Manager::SortSpriteParticles() 
 {
 	sort(sprite_particles.begin(), sprite_particles.end(), [](auto a, auto b) {
+		return a.end_y < b.end_y;
+	});
+}
+
+int Particle::Manager::RenderItemParticlesLowerThan(sf::RenderTarget & target, float y, int start_at)
+{
+	for (int i = start_at; i < int(item_particles.size()); ++i) {
+		if (item_particles[i].end_y >= y) return i;
+		DrawItemParticle(item_particles[i], target);
+	}
+
+	return -1;
+}
+
+void Particle::Manager::CreateItemParticle(Item::ItemType type, vec2 pos, float end_y)
+{
+	ItemParticle p;
+	p.pos = pos;
+	p.type = type;
+	p.end_y = end_y;
+	p.lifetime = 0; // is not used
+	p.move_vec = vec2(rng::rand_float(-0.2f, 0.2f), -0.1f);
+	item_particles.push_back(p);
+}
+
+void Particle::Manager::SortItemParticles()
+{
+	sort(item_particles.begin(), item_particles.end(), [](auto a, auto b) {
 		return a.end_y < b.end_y;
 	});
 }
