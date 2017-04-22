@@ -80,7 +80,7 @@ namespace Item
 			};
 		}
 	};
-	struct Bowl : public any
+	struct Bowl : public Tool
 	{
 		void UpdatePosInTextureMap();
 		int water_level = 0; // 4: filled, 0: empty
@@ -104,7 +104,7 @@ namespace Item
 	}
 
 	static bool IsTool(ItemType type) {
-		return (type == axe || type == hoe);
+		return (type == axe || type == hoe || type == bowl);
 	}
 
 	static bool IsBowl(ItemType type) {

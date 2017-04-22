@@ -89,6 +89,18 @@ void TreeObj::Update(float dt)
 {
 }
 
+int TreeObj::getDroppedWoodAmount()
+{
+	if (growth_level == 1 || growth_level == 2)
+		return 0;
+	else if (growth_level == 3)
+		return 2;
+	else if (growth_level == 4 || growth_level == 5 || growth_level == 6)
+		return 3;
+
+	return 0;
+}
+
 void TreeObj::setGrowthLevel(int level)
 {
 	growth_level = level;

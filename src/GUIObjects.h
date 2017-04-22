@@ -514,7 +514,7 @@ private:
 
 	float bar_height = 3.f;
 	sf::RectangleShape bar_shape;
-	sf::Text durab_text;
+	bool tool_is_bowl = false;
 };
 
 class InvActionButton : public TextButton

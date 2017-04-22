@@ -167,7 +167,7 @@ sf::IntRect Item::getItemTextureRect(ItemType type)
 		tmap[type] = tpos;
 	}
 
-	int ts = items_texture_size;
+	int ts = int(items_texture_size);
 	return sf::IntRect(tpos * ts, vec2i(ts,ts));
 }
 
@@ -183,15 +183,16 @@ int Manager::CreateItem(ItemType type, vector<string> save_data)
 		items[last_id] = bj;
 		bio_junks[last_id] = bj;
 	}
+	else if (IsBowl(type)) { // must be before IsTool
+		auto b = make_bowl(type, save_data);
+		items[last_id] = b;
+		bowls[last_id] = b;
+		tools[last_id] = b;
+	}
 	else if (IsTool(type)) {
 		auto t = make_tool(type, save_data);
 		items[last_id] = t;
 		tools[last_id] = t;
-	}
-	else if (IsBowl(type)) {
-		auto b = make_bowl(type, save_data);
-		items[last_id] = b;
-		bowls[last_id] = b;
 	}
 	else {
 		auto a = make_any(type, save_data);
@@ -214,11 +215,12 @@ void Manager::DeleteItem(int id)
 		else if (IsBioJunk(type)) {
 			bio_junks[id] = nullptr;
 		}
-		else if (IsTool(type)) {
+		else if (IsBowl(type)) { // must be before IsTool
+			bowls[id] = nullptr;
 			tools[id] = nullptr;
 		}
-		else if (IsBowl(type)) {
-			bowls[id] = nullptr;
+		else if (IsTool(type)) {
+			tools[id] = nullptr;
 		}
 
 		items[id] = nullptr;

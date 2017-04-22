@@ -177,13 +177,14 @@ public:
 	void HandleEvent(sf::Event const& event);
 	void UpdateDurability();
 
-	void setTool(int id) { tool = id; Init(inventory); }
+	void setTool(int id);
 	int getToolId() { return tool; }
 
 private:
 	Inventory* inventory;
 
 	int tool = -1;
+	Item::ItemType tool_type;
 
 	sf::Sprite sprite;
 	sf::RectangleShape shape;

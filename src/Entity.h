@@ -219,6 +219,7 @@ public:
 
 	void Hit() { --hp; }
 	bool getChopped() { return hp <= 0; }
+	int getDroppedWoodAmount();
 	void setGrowthLevel(int level);
 
 	std::vector<std::string> getSavedData() override { return {

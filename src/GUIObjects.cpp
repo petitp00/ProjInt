@@ -1058,7 +1058,8 @@ void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 	target.draw(rect_shape);
 	target.draw(icon_sprite);
 	target.draw(text_obj);
-	target.draw(bar_shape);
+	if (!tool_is_bowl)
+		target.draw(bar_shape);
 
 	GUIObject::Render(target, tooltip_render_target);
 }
@@ -1085,6 +1086,13 @@ void InvToolButton::UpdateButtonParams()
 void InvToolButton::UpdateDurability()
 {
 	auto t = Item::Manager::getTool(item);
+	tool_is_bowl = Item::getItemTypeByName(t->name) == Item::ItemType::bowl;
+
+	if (tool_is_bowl) {
+		int ts = int(Item::items_texture_size);
+		icon_sprite.setTextureRect(sf::IntRect(ts * t->pos_in_texture_map.x, ts * t->pos_in_texture_map.y, ts, ts));
+	}
+
 	float perc = max(0.f, min(100.f, (1 - t->durability / 100.f)));
 	float bw = width * perc;
 

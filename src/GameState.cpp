@@ -48,7 +48,7 @@ void GameState::Update(float dt)
 	if (equipped_tool != -1) {
 		auto t = Item::Manager::getTool(equipped_tool);
 		auto old_cut = can_use_tool;
-		can_use_tool = world.getCanUseTool(t->name);
+		can_use_tool = world.getCanUseTool(equipped_tool);
 		if (old_cut && !can_use_tool) {
 			using_tool = false;
 		}
@@ -56,8 +56,9 @@ void GameState::Update(float dt)
 		if (using_tool && can_use_tool) {
 			if (using_tool_clock.getElapsedTime() >= t->use_speed) {
 				using_tool_clock.restart();
-				inventory.UseEquippedTool();
 				world.UseEquippedToolAt(mouse_pos_in_world);
+				inventory.UseEquippedTool(); // must be called after world.UseEquippedToolAt for bowls
+				EquipTool(equipped_tool); // to update bowl's sprite
 			}
 			using_tool_bar1.setSize(vec2(use_tool_bar_max_w * (1 - using_tool_clock.getElapsedTime().asSeconds() / t->use_speed.asSeconds()), use_tool_bar_h));
 		}

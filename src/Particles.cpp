@@ -144,7 +144,7 @@ void Particle::Manager::CreateSpriteParticle(SpriteParticleType type, vec2 pos, 
 		p.scale = rng::rand_float(1.f, 2.f);
 	}
 
-	p.lifetime = rng::rand_int(1000, 1000000);
+	p.lifetime = float(rng::rand_int(1000, 1000000));
 	p.pos = pos;
 	p.end_y = end_y;
 	p.move_vec = vec2(rng::rand_float(-0.2f, 0.2f), -0.1f);

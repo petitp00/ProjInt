@@ -21,14 +21,23 @@ static void eat(ButtonActionImpl* impl) {
 
 static void use_tool(ButtonActionImpl* impl) {
 	auto tool = Item::Manager::getTool(impl->item);
-	if (tool) {
-		tool->durability += 5;
-		if (tool->durability == 100) {
-			impl->game_state->getInventory()->DeleteItem(impl->item);
-			if (impl->game_state->getEquippedTool() == impl->item) {
-				impl->game_state->UnequipTool();
+	if (tool) {	
+		auto tool_type = Item::getItemTypeByName(tool->name);
+
+		if (tool_type != Item::ItemType::bowl) {
+			tool->durability += 5;
+			if (tool->durability == 100) {
+				impl->game_state->getInventory()->DeleteItem(impl->item);
+				if (impl->game_state->getEquippedTool() == impl->item) {
+					impl->game_state->UnequipTool();
+				}
 			}
 		}
+		else {
+			auto b = Item::Manager::getBowl(impl->item);
+			b->UpdatePosInTextureMap();
+		}
+
 		impl->game_state->getEquippedToolObj()->UpdateDurability();
 		impl->game_state->getInventory()->UpdateToolsDurability();
 	}
@@ -460,7 +469,7 @@ void ToolsPage::ResetItemDescription(bool item_selected)
 
 		height = b2->getSize().y;
 
-		if (si->durability >= 0) {
+		if (sit != Item::ItemType::bowl && si->durability > 0) {
 			auto b = new InvActionButton("Réparer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
 			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
 			b->setPos(window_tw->Tween());
@@ -858,7 +867,9 @@ void EquippedToolObj::Render(sf::RenderTarget & target)
 	if (tool != -1) {
 		target.draw(shape);
 		target.draw(sprite);
-		target.draw(durab_bar);
+		if (tool_type != Item::ItemType::bowl) {
+			target.draw(durab_bar);
+		}
 	}
 }
 
@@ -887,5 +898,19 @@ void EquippedToolObj::UpdateDurability()
 
 		durab_bar.setSize(vec2(bw, 2));
 		durab_bar.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
+
+		if (Item::getItemTypeByName(t->name) == Item::ItemType::bowl) {
+			float scale = 2;
+			float ts = Item::items_texture_size * scale;
+			sprite.setTextureRect(sf::IntRect((t->pos_in_texture_map)*int(ts/scale), {int(ts/scale), int(ts/scale)}));
+		}
 	}
+}
+
+void EquippedToolObj::setTool(int id)
+{
+	tool = id;
+	auto i = Item::Manager::getAny(id);
+	tool_type = Item::getItemTypeByName(i->name);
+	Init(inventory);
 }

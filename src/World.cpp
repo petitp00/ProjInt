@@ -12,6 +12,7 @@
 using namespace std;
 
 vec2 mouse_pos = {-1, -1};
+vec2 mouse_pos_in_world(-1, -1);
 
 World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
@@ -313,6 +314,7 @@ void World::Save(const string& filename)
 
 void World::Update(float dt, vec2 mouse_pos_in_world)
 {
+	::mouse_pos_in_world = mouse_pos_in_world;
 	auto mpw = mouse_pos_in_world;
 
 	entity_hovered.clear();
@@ -349,8 +351,8 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	player->DoCollisions(entities, no_collision_id);
 	player->DoMovement(dt);
 
-	if (item_place) item_place->setPos(mouse_pos_in_world - item_place->getSize()/2.f + item_place->getOrigin());
-	if (item_move) item_move->setPos(mouse_pos_in_world - item_move->getSize()/2.f + item_move->getOrigin());
+	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f + item_place->getOrigin());
+	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f + item_move->getOrigin());
 
 	UpdateView();
 
@@ -495,16 +497,42 @@ ItemObject * World::FindItem(int id)
 	return nullptr;
 }
 
-bool World::getCanUseTool(std::string & name)
+bool World::getCanUseTool(int tool)
 {
-	if (entity_hovered.size() != 0) {
-		for (auto e : entity_hovered) {
-			auto ent_type = e->getType();
-			if (name == "Hache") {
-				if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) return true;
+	if (tool) {
+		auto t = Item::Manager::getTool(tool);
+		string name = t->name;
+
+		if (name == "Bol") {
+			auto b = Item::Manager::getBowl(tool);
+			GroundType gtype = ground.getTileClicked(mouse_pos_in_world);
+
+			if (gtype == GroundType::RIVER) {
+				if (b->water_level < 4) {
+					return true;
+				}
+			}
+
+			if (b->water_level > 0) {
+				auto pp = player->getPos();
+				auto ps = player->getSize();
+				auto m = mouse_pos_in_world;
+				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
+					return true;
+				}
+			}
+
+		}
+		if (entity_hovered.size() != 0) {
+			for (auto e : entity_hovered) {
+				auto ent_type = e->getType();
+				if (name == "Hache") {
+					if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) return true;
+				}
 			}
 		}
 	}
+
 	return false;
 }
 
@@ -514,6 +542,32 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 	int t = game_state->getEquippedTool();
 	if (t != -1) {
 		auto tool = Item::Manager::getTool(t);
+
+		if (tool->name == "Bol") {
+			auto b = Item::Manager::getBowl(t);
+			GroundType gtype = ground.getTileClicked(mouse_pos_in_world);
+
+			if (gtype == GroundType::RIVER) {
+				if (b->water_level < 4) {
+					b->water_level = 4;
+				}
+			}
+
+			if (b->water_level > 0) {
+				auto pp = player->getPos();
+				auto ps = player->getSize();
+				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
+					--b->water_level;
+					// DRINKING
+
+
+				}
+			}
+
+			b->UpdatePosInTextureMap();
+		}
+
+		// TREE CUTTING
 		if (tool->name == "Hache") {
 			for (auto tree : trees) {
 				auto tp = tree->getPos();
@@ -546,7 +600,7 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 					}
 
 					if (tree->getChopped()) {
-						wood_amount = 4;
+						wood_amount = tree->getDroppedWoodAmount();
 						for (int i = 0; i != wood_amount; ++i) {
 							vec2 pos;
 							pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);

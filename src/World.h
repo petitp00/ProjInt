@@ -51,7 +51,7 @@ public:
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
-	bool getCanUseTool(std::string& name);
+	bool getCanUseTool(int tool);
 
 	void SortEntities() { std::cout << "ask for sort" << std::endl; entities_need_sorting = true; }
 	void UseEquippedToolAt(vec2 mouse_pos_in_world);
