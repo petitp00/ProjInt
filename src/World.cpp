@@ -242,8 +242,8 @@ void World::LoadWorld(std::string const & filename)
 			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl;
 		}
 	}
-	player->setControls(controls);
 #ifndef EDITOR_MODE
+	player->setControls(controls);
 	if (old_equipped_id != -1 && id_map.count(old_equipped_id)) {
 		game_state->EquipTool(id_map[old_equipped_id]);
 	}
@@ -269,7 +269,12 @@ void World::Save(const string& filename)
 	sf::Clock clock;
 
 	cout << "saving items...";
+#ifndef EDITOR_MODE
 	s << "equipped_tool " << game_state->getEquippedTool() << endl;
+#endif
+#ifdef EDITOR_MODE
+	s << "equipped_tool " << -1 << endl;
+#endif
 
 	for (int id : inventory->getItemsId()) {
 		auto ia = Item::Manager::getAny(id);
@@ -600,13 +605,15 @@ void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
 					}
 
 					if (tree->getChopped()) {
-						wood_amount = tree->getDroppedWoodAmount();
-						for (int i = 0; i != wood_amount; ++i) {
-							vec2 pos;
-							pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
-							pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
-							float end_y = pos.y + ts.y/2.f;
-							particle_manager.CreateItemParticle(Item::ItemType::wood, pos, end_y);
+						auto items_dropped = tree->getDroppedItems();
+						for (auto i : items_dropped) {
+							for (int n = 0; n != i.second; ++n) {
+								vec2 pos;
+								pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
+								pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
+								float end_y = pos.y + ts.y/2.f;
+								particle_manager.CreateItemParticle(i.first, pos, end_y);
+							}
 						}
 						DeleteTree(tree->getId());
 					}

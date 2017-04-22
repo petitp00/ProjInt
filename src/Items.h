@@ -25,7 +25,8 @@ namespace Item
 		apple = 6,
 		apple_core = 7,
 		carrot = 8,
-		carrot_top = 9
+		carrot_top = 9,
+		banana_leaf = 10,
 	};
 
 	struct any

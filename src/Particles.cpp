@@ -107,7 +107,7 @@ void Particle::Manager::UpdateParticles(float dt)
 		i->lifetime -= dt;
 
 		if (i->pos.y >= i->end_y) {
-			int new_item = Item::Manager::CreateItem(Item::ItemType::wood);
+			int new_item = Item::Manager::CreateItem(i->type);
 			world->AddItemEnt(make_item(new_item, i->pos));
 			i = item_particles.erase(i);
 			continue;

@@ -219,7 +219,7 @@ public:
 
 	void Hit() { --hp; }
 	bool getChopped() { return hp <= 0; }
-	int getDroppedWoodAmount();
+	std::vector<std::pair<Item::ItemType,int>> getDroppedItems();
 	void setGrowthLevel(int level);
 
 	std::vector<std::string> getSavedData() override { return {

@@ -89,16 +89,26 @@ void TreeObj::Update(float dt)
 {
 }
 
-int TreeObj::getDroppedWoodAmount()
+std::vector<std::pair<Item::ItemType, int>> TreeObj::getDroppedItems()
 {
-	if (growth_level == 1 || growth_level == 2)
-		return 0;
-	else if (growth_level == 3)
-		return 2;
-	else if (growth_level == 4 || growth_level == 5 || growth_level == 6)
-		return 3;
+	vector<pair<Item::ItemType, int>> vec;
 
-	return 0;
+	if (type == APPLE_TREE) {
+		if (growth_level == 3)
+			vec.push_back({Item::ItemType::wood, 2});
+		else if (growth_level == 4 || growth_level == 5 || growth_level == 6)
+			vec.push_back({Item::ItemType::wood, 3});
+		if (growth_level == 6)
+			vec.push_back({Item::ItemType::apple, 3});
+	}
+	else if (type == BANANA_TREE) {
+		if (growth_level == 4 || growth_level == 5 || growth_level == 6)
+			vec.push_back({Item::ItemType::banana_leaf, 3});
+		if (growth_level == 6)
+			vec.push_back({Item::ItemType::banana, 3});
+	}
+
+	return vec;
 }
 
 void TreeObj::setGrowthLevel(int level)

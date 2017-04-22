@@ -130,6 +130,12 @@ any* make_any(ItemType type, vector<string>& save_data) {
 		a->pos_in_texture_map = {13,0};
 		return a;
 	}
+	if (type == banana_leaf) {
+		a->name = "Feuille de bananier";
+		a->desc = "Utilisé pour construire d'autres objets.";
+		a->pos_in_texture_map = {6, 1};
+		return a;
+	}
 
 	a->name = "Probably missing a condition in make_any!";
 	return a;
@@ -147,6 +153,7 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	if (name == "Coeur de pomme")		return apple_core;
 	if (name == "Carotte")				return carrot;
 	if (name == "Bout de carotte")		return carrot_top;
+	if (name == "Feuille de bananier")	return banana_leaf;
 
 	cerr << "item name \"" << name << "\" is not valid." << endl;
 	return ItemType(-1);

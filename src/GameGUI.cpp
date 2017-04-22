@@ -910,7 +910,9 @@ void EquippedToolObj::UpdateDurability()
 void EquippedToolObj::setTool(int id)
 {
 	tool = id;
-	auto i = Item::Manager::getAny(id);
-	tool_type = Item::getItemTypeByName(i->name);
+	if (id != -1) {
+		auto i = Item::Manager::getAny(id);
+		tool_type = Item::getItemTypeByName(i->name);
+	}
 	Init(inventory);
 }
