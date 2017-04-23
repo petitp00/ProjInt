@@ -52,9 +52,11 @@ public:
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 	bool getCanUseTool(int tool);
+	bool getCanCollect(Item::ItemType& item_type);
 
 	void SortEntities() { std::cout << "ask for sort" << std::endl; entities_need_sorting = true; }
-	void UseEquippedToolAt(vec2 mouse_pos_in_world);
+	void UseEquippedToolAt();
+	void Collect();
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void AddItemEnt(ItemObject* i) { if (i) entities.push_back(i); items.push_back(i); }
 	void AddTreeEnt(TreeObj* t) { if (t) entities.push_back(t); trees.push_back(t); }

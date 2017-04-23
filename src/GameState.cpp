@@ -10,8 +10,9 @@ using namespace std;
 static vec2 mouse_pos = {-1, -1};
 static vec2 mouse_pos_in_world = {-1, -1};
 
-float use_tool_bar_max_w = 40.f;
-float use_tool_bar_h = 6.f;
+float interact_bar_max_w = 40.f;
+float interact_bar_h = 6.f;
+sf::Time interact_time = sf::seconds(0.7f);
 
 vec2 ets_size = vec2(Item::items_texture_size, Item::items_texture_size);
 
@@ -33,17 +34,19 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 	tool_obj.Init(&inventory);
 	world.Init(&inventory, &inv_butt, this);
 
-	using_tool_bar1.setFillColor(sf::Color::Yellow);
-	using_tool_bar2.setFillColor(sf::Color(255, 150, 0)); // orange
-	using_tool_bar2.setSize(vec2(use_tool_bar_max_w, use_tool_bar_h));
+	interact_bar1.setFillColor(sf::Color::Yellow);
+	interact_bar2.setFillColor(sf::Color(255, 150, 0)); // orange
+	interact_bar2.setSize(vec2(interact_bar_max_w, interact_bar_h));
 	equipped_tool_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
+	collecting_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
+
 }
 
 void GameState::Update(float dt)
 {
-	auto p = mouse_pos - vec2(use_tool_bar_max_w / 2.f, - 14);
-	using_tool_bar1.setPosition(p);
-	using_tool_bar2.setPosition(p);
+	auto p = mouse_pos - vec2(interact_bar_max_w / 2.f, - 14);
+	interact_bar1.setPosition(p);
+	interact_bar2.setPosition(p);
 
 	if (equipped_tool != -1) {
 		auto t = Item::Manager::getTool(equipped_tool);
@@ -54,15 +57,43 @@ void GameState::Update(float dt)
 		}
 
 		if (using_tool && can_use_tool) {
-			if (using_tool_clock.getElapsedTime() >= t->use_speed) {
-				using_tool_clock.restart();
-				world.UseEquippedToolAt(mouse_pos_in_world);
+			if (interact_clock.getElapsedTime() >= t->use_speed) {
+				interact_clock.restart();
+				world.UseEquippedToolAt();
 				inventory.UseEquippedTool(); // must be called after world.UseEquippedToolAt for bowls
 				EquipTool(equipped_tool); // to update bowl's sprite
 			}
-			using_tool_bar1.setSize(vec2(use_tool_bar_max_w * (1 - using_tool_clock.getElapsedTime().asSeconds() / t->use_speed.asSeconds()), use_tool_bar_h));
+			interact_bar1.setSize(vec2(interact_bar_max_w * (1 - interact_clock.getElapsedTime().asSeconds() / t->use_speed.asSeconds()), interact_bar_h));
 		}
 
+	}
+
+	auto old_coll = can_collect;
+	can_collect = world.getCanCollect(collect_type);
+	if (old_coll && !can_collect) {
+		collecting = false;
+	}
+	if (!old_coll && can_collect) {
+		auto text_rect = Item::getItemTextureRect(collect_type);
+		collecting_sprite.setTextureRect(sf::IntRect(text_rect));
+	}
+	if (collecting && can_collect) {
+		if (interact_clock.getElapsedTime() >= interact_time) {
+			interact_clock.restart();
+			world.Collect();
+		}
+		interact_bar1.setSize(vec2(interact_bar_max_w * (1 - interact_clock.getElapsedTime().asSeconds() / interact_time.asSeconds()), interact_bar_h));
+	}
+
+	if (collecting) can_use_tool = false;
+	if (using_tool) can_collect = false;
+
+	if (can_collect && can_use_tool) {
+		collecting_sprite.setPosition(mouse_pos - ets_size/2.f - vec2(ets_size.x * 1.f, 0));
+		equipped_tool_sprite.setPosition(mouse_pos - ets_size/2.f + vec2(ets_size.x * 1.f, 0));
+	}
+	else {
+		collecting_sprite.setPosition(mouse_pos - ets_size/2.f);
 		equipped_tool_sprite.setPosition(mouse_pos - ets_size/2.f);
 	}
 
@@ -83,9 +114,12 @@ void GameState::Render(sf::RenderTarget & target)
 	if (can_use_tool) {
 		target.draw(equipped_tool_sprite);
 	}
-	if (using_tool) {
-		target.draw(using_tool_bar2);
-		target.draw(using_tool_bar1);
+	if (can_collect) {
+		target.draw(collecting_sprite);
+	}
+	if (using_tool || collecting) {
+		target.draw(interact_bar2);
+		target.draw(interact_bar1);
 	}
 
 	inventory.Render(target);
@@ -136,13 +170,26 @@ bool GameState::HandleEvent(sf::Event const & event)
 			if (event.mouseButton.button == sf::Mouse::Right) {
 				if (can_use_tool) {
 					using_tool = true;
-					using_tool_clock.restart();
+					collecting = false;
+					can_collect = false;
+					interact_clock.restart();
+				}
+			}
+			else if (event.mouseButton.button == sf::Mouse::Left) {
+				if (can_collect) {
+					collecting = true;
+					using_tool = false;
+					can_use_tool = false;
+					interact_clock.restart();
 				}
 			}
 		}
 		else if (event.type == sf::Event::MouseButtonReleased) {
 			if (event.mouseButton.button == sf::Mouse::Right) {
 				using_tool = false;
+			}
+			if (event.mouseButton.button == sf::Mouse::Left) {
+				collecting = false;
 			}
 		}
 

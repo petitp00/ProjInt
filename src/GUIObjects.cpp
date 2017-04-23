@@ -1013,17 +1013,19 @@ void InvItemButton::Init()
 
 	float ts = Item::items_texture_size;
 
-	auto item_obj = Item::Manager::getAny(item);
 
+	if (item != -1) {
+		auto item_obj = Item::Manager::getAny(item);
+		icon_sprite.setTextureRect(sf::IntRect(int(ts * item_obj->pos_in_texture_map.x), int(ts * item_obj->pos_in_texture_map.y), int(ts), int(ts)));
+		text_obj.setString(item_obj->name);
+	}
 	icon_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
-	icon_sprite.setTextureRect(sf::IntRect(int(ts * item_obj->pos_in_texture_map.x), int(ts * item_obj->pos_in_texture_map.y), int(ts), int(ts)));
 	icon_sprite.setOrigin(origin);
 	icon_sprite.setScale(icon_scale, icon_scale);
 
 	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
 	text_obj.setCharacterSize(character_size);
 	text_obj.setFillColor(text_color);
-	text_obj.setString(item_obj->name);
 	
 	UpdateButtonParams();
 }
@@ -1048,11 +1050,6 @@ InvToolButton::InvToolButton(int item, vec2 pos, float width):
 	Init();
 }
 
-void InvToolButton::Update()
-{
-	InvItemButton::Update();
-}
-
 void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
 {
 	target.draw(rect_shape);
@@ -1066,7 +1063,7 @@ void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 
 bool InvToolButton::onClick(vec2i pos)
 {
-	UpdateDurability();
+	//UpdateDurability();
 	return InvItemButton::onClick(pos);
 }
 
@@ -1098,6 +1095,54 @@ void InvToolButton::UpdateDurability()
 
 	bar_shape.setSize(vec2(bw, bar_height));
 	bar_shape.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
+}
+
+InvRecipeButton::InvRecipeButton(Item::Recipe recipe, vec2 pos, float width):
+	InvItemButton(-1, pos, width), recipe(recipe)
+{
+	Init();
+}
+
+void InvRecipeButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render_target, bool draw_on_tooltip_render_target)
+{
+	target.draw(rect_shape);
+	target.draw(icon_sprite);
+	target.draw(text_obj);
+	target.draw(craftable_sprite);
+
+	GUIObject::Render(target, tooltip_render_target);
+}
+
+void InvRecipeButton::setCraftable(bool craftable)
+{
+	this->craftable = craftable;
+	if (craftable) {
+		craftable_sprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	}
+	else {
+		craftable_sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
+	}
+}
+
+void InvRecipeButton::Init()
+{
+	InvItemButton::Init();
+	craftable_sprite.setTexture(ResourceManager::getTexture("GUICraftOk.png"));
+	icon_sprite.setOrigin(origin);
+	auto temp = Item::Manager::CreateItem(recipe.first);
+	auto tempi = Item::Manager::getAny(temp);
+	auto ts = int(Item::items_texture_size);
+	icon_sprite.setTextureRect(sf::IntRect(tempi->pos_in_texture_map*ts, vec2i(ts, ts)));
+	text_obj.setString(tempi->name);
+	Item::Manager::DeleteItem(temp);
+	UpdateButtonParams();
+}
+
+void InvRecipeButton::UpdateButtonParams()
+{
+	InvItemButton::UpdateButtonParams();
+	craftable_sprite.setPosition(pos.x - 32 + width - margin - origin.x,
+								 pos.y + margin - origin.y);
 }
 
 /*
@@ -1219,3 +1264,4 @@ void InvPageButton::UpdateButtonParams()
 	rect_shape.setPosition(pos - origin);
 	sprite.setPosition(pos - origin + vec2 {margin, margin});
 }
+

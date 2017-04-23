@@ -5,6 +5,66 @@
 using namespace Item;
 using namespace std;
 
+
+std::vector<Recipe> Item::recipes;
+
+std::string Item::getRecipeString(Recipe recipe, std::vector<int> items, bool * can_craft)
+{
+	string ret_str;
+	
+	*can_craft = true;
+
+	for (auto i : recipe.second) {
+
+		auto s1 = getItemName(i.first);
+		ret_str += s1;
+
+		string s2(max(uint(0), 18 - s1.size()), ' ');
+		ret_str += s2;
+
+		int in_inventory = 0;
+		for (auto it : items) {
+			auto t = Item::Manager::getItemType(it);
+			if (t == i.first) ++in_inventory;
+		}
+
+		if (in_inventory < i.second) *can_craft = false;
+
+		string s3("("+to_string(in_inventory)+"/"+to_string(i.second)+")");
+		ret_str += s3;
+
+		ret_str += '\n';
+	}
+	return ret_str;
+}
+
+bool Item::getCanCraft(Recipe recipe, std::vector<int> items)
+{
+	bool b = true;
+
+	for (auto i : recipe.second) {
+		int in_inventory = 0;
+		for (auto it : items) {
+			auto t = Item::Manager::getItemType(it);
+			if (t == i.first) ++in_inventory;
+		}
+
+		if (in_inventory < i.second) {
+			b = false;
+			break;
+		}
+	}
+
+	return b;
+}
+
+void Item::InitRecipes()
+{
+	recipes.push_back({ItemType::axe, {{wood, 4}}});
+	recipes.push_back({ItemType::hoe, {{wood, 4}}});
+}
+
+
 void Bowl::UpdatePosInTextureMap()
 {
 	if (water_level == 0) pos_in_texture_map = {8,0};
@@ -141,7 +201,7 @@ any* make_any(ItemType type, vector<string>& save_data) {
 	return a;
 }
 
-ItemType Item::getItemTypeByName(const std::string& name) 
+ItemType Item::getItemTypeByName(const std::string& name)
 {
 	if (name == "Banane")				return banana;
 	if (name == "Bois")					return wood;
@@ -176,6 +236,21 @@ sf::IntRect Item::getItemTextureRect(ItemType type)
 
 	int ts = int(items_texture_size);
 	return sf::IntRect(tpos * ts, vec2i(ts,ts));
+}
+
+const std::string & Item::getItemName(ItemType type)
+{
+	static map<ItemType, string> nmap;
+
+	if (nmap.count(type)) {
+		return nmap[type];
+	}
+	else {
+		int i = Manager::CreateItem(type);
+		nmap[type] = Manager::getAny(i)->name;
+		Manager::DeleteItem(i);
+		return nmap[type];
+	}
 }
 
 int Manager::CreateItem(ItemType type, vector<string> save_data)

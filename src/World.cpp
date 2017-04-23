@@ -202,12 +202,12 @@ void World::LoadWorld(std::string const & filename)
 				items.push_back(io);
 				break;
 			case APPLE_TREE:
-				to = make_tree_obj(APPLE_TREE, stoi(vec[1]), p);
+				to = make_tree_obj(APPLE_TREE, stoi(vec[1]), p, vec);
 				entities.push_back(to);
 				trees.push_back(to);
 				break;
 			case BANANA_TREE:
-				to = make_tree_obj(BANANA_TREE, stoi(vec[1]), p);
+				to = make_tree_obj(BANANA_TREE, stoi(vec[1]), p, vec);
 				entities.push_back(to);
 				trees.push_back(to);
 				break;
@@ -541,7 +541,73 @@ bool World::getCanUseTool(int tool)
 	return false;
 }
 
-void World::UseEquippedToolAt(vec2 mouse_pos_in_world)
+bool World::getCanCollect(Item::ItemType& item_type)
+{
+	for (auto t : trees) {
+		auto tp = t->getPos();
+		auto ts = t->getSize();
+		auto m = mouse_pos_in_world;
+
+		if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+			if (t->getGrowthLevel() == 6) {
+				if (t->getType() == APPLE_TREE)
+					item_type = Item::ItemType::apple;
+				else if (t->getType() == BANANA_TREE)
+					item_type = Item::ItemType::banana;
+				
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void World::Collect()
+{
+	auto m = mouse_pos_in_world;
+
+	for (auto t : trees) {
+		auto tp = t->getPos();
+		auto ts = t->getSize();
+
+		if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+			if (t->getGrowthLevel() == 6) {
+				int leaf_amount = rng::rand_int(3, 8);
+				for (int i = 0; i != leaf_amount; ++ i) {
+					vec2 pos;
+					pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
+					pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
+					float end_y = pos.y + ts.y/2.f;
+					particle_manager.CreateSpriteParticle(Particle::SpriteParticleType::Leaf, pos, end_y);
+				}
+
+				if (t->getFruitsAmount()) {
+					Item::ItemType type;
+					if (t->getType() == APPLE_TREE) {
+						type = Item::ItemType::apple;
+					}
+					else if (t->getType() == BANANA_TREE) {
+						type = Item::ItemType::banana;
+					}
+					vec2 pos;
+					pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
+					pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
+					float end_y = pos.y + ts.y/2.f;
+					particle_manager.CreateItemParticle(type, pos, end_y);
+
+					t->TakeOneFruit();
+				}
+				particle_manager.SortSpriteParticles();
+				particle_manager.SortItemParticles();
+				break;
+			}
+		}
+
+		
+	}
+}
+
+void World::UseEquippedToolAt()
 {
 	auto m = mouse_pos_in_world;
 	int t = game_state->getEquippedTool();
@@ -695,7 +761,7 @@ void World::DeleteItemObj(int id)
 
 void World::StartPlaceItem(ItemObject* item) { item_place = item; }
 
-void World::SortEntitiesImpl() // super fast for not a lot of elements (~10µs)
+void World::SortEntitiesImpl() // seems to be super fast for not a lot of elements (~10µs)
 {
 	sort(entities.begin(), entities.end(), [](auto e1, auto e2) {
 		return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;

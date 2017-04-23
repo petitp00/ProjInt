@@ -208,7 +208,9 @@ private:
 
 class TreeObj : public GameObject
 {
-	friend TreeObj* make_tree_obj(Type type, int variation, vec2 pos);
+	friend TreeObj* make_tree_obj(
+		Type type, int variation, vec2 pos, 
+		std::vector<std::string> saved_data);// = std::vector<std::string>());
 public:
 	TreeObj()=default;
 	TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags = SOLID,
@@ -220,15 +222,23 @@ public:
 	void Hit() { --hp; }
 	bool getChopped() { return hp <= 0; }
 	std::vector<std::pair<Item::ItemType,int>> getDroppedItems();
+	int getGrowthLevel() { return growth_level; }
+	int getFruitsAmount() { return fruits; }
+	void TakeOneFruit() { --fruits; }
+	void setFruitAmount(int amount) {fruits = amount;}
 	void setGrowthLevel(int level);
 
 	std::vector<std::string> getSavedData() override { return {
-		std::to_string(int(type)), std::to_string(growth_level), std::to_string(hp)
+		std::to_string(int(type)),
+		std::to_string(growth_level),
+		std::to_string(hp),
+		std::to_string(fruits)
 	}; }
 
 
 private:
-	int growth_level = 0; // 0 to 5
+	int growth_level = 0; // 1 to 6
+	int fruits = 0;
 	int hp;
 };
 
@@ -283,17 +293,21 @@ private:
 	--- ### --- ### --- MAKE ENTITY FUNCTIONS --- ### --- ### --- ### ---
 */
 
-static Entity* make_entity(Type type, vec2 pos={0,0}, int variation=0) {
+static Entity* make_entity(
+	Type type, vec2 pos= {0,0}, int variation=0,
+	std::vector<std::string> saved_data = std::vector<std::string>()) {
+
 	Entity* e = nullptr;
 
-	if (type == ROCK)	e = make_rock(pos, variation);
-	else if (type == APPLE_TREE) e = make_tree_obj(type, variation, pos);
-	else if (type == BANANA_TREE) e = make_tree_obj(type, variation, pos);
-	else if (type == HUT) e = make_hut(pos);
+	if (type == ROCK)				e = make_rock(pos, variation);
+	else if (type == APPLE_TREE)	e = make_tree_obj(type, variation, pos, saved_data);
+	else if (type == BANANA_TREE)	e = make_tree_obj(type, variation, pos, saved_data);
+	else if (type == HUT)			e = make_hut(pos);
 	return e;
 }
 
-static GameObject* make_rock(vec2 pos = {0,0}, int variation = 1) {
+static GameObject* make_rock( vec2 pos = {0,0}, int variation = 1) {
+
 	auto rock = new GameObject(variation, SOLID|IMMORTAL);
 
 	CoordsInfo info;
@@ -326,8 +340,11 @@ static GameObject* make_hut(vec2 pos = {0,0}) {
 	return hut;
 }
 
-static TreeObj* make_tree_obj(Type type, int variation = 5, vec2 pos= {0,0}) {
-	auto tree = new TreeObj(type, pos, {0,0}, SOLID);
+static TreeObj* make_tree_obj(
+	Type type, int variation = 5, vec2 pos= {0,0},
+	std::vector<std::string> saved_data = std::vector<std::string>()) {
+
+	auto tree = new TreeObj(type, pos, {0,0}, SOLID, saved_data);
 	tree->setGrowthLevel(variation);
 	tree->Init();
 	return tree;

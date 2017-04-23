@@ -12,6 +12,7 @@ class InvItemButton;
 class InvActionButton;
 class InvPageButton;
 class InvToolButton;
+class InvRecipeButton;
 class ButtonActionImpl;
 struct Controls;
 
@@ -33,15 +34,23 @@ struct InvPage
 	InvPage()=default;
 	virtual ~InvPage();
 
-	virtual void Init()=0;
+	virtual void Init();
 	virtual void Clear();
 	virtual void Update()=0;
 	virtual void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target)=0;
 	virtual bool HandleEvents(sf::Event const& event)=0;
 
+
+	// with kept vars for position
+	// void AddActionButton(PageType ptype, string name, action_t func, Item::ItemType itype)
+
+
 	ButtonActionImpl* button_action_impl = nullptr;
 	PosTweener* window_tw = nullptr;
+	sf::RectangleShape item_desc_shape;
+	TextBox* item_desc_obj;
 	std::vector<GUIObject*> gui_objects;
+	std::vector<InvActionButton*> actions_buttons;
 };
 
 struct ItemsPage : public InvPage
@@ -57,9 +66,6 @@ struct ItemsPage : public InvPage
 
 	int* selected_item;
 	std::vector<InvItemButton*> inv_buttons;
-	std::vector<InvActionButton*> actions_buttons;
-	sf::RectangleShape item_desc_shape;
-	TextBox* item_desc_obj;
 };
 
 struct ToolsPage : public InvPage
@@ -76,9 +82,6 @@ struct ToolsPage : public InvPage
 
 	int* selected_tool;
 	std::vector<InvToolButton*> inv_buttons;
-	std::vector<InvActionButton*> actions_buttons;
-	sf::RectangleShape item_desc_shape;
-	TextBox* item_desc_obj;
 };
 
 struct CraftPage : public InvPage
@@ -89,6 +92,14 @@ struct CraftPage : public InvPage
 	void Update() override;
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target) override;
 	bool HandleEvents(sf::Event const& event) override;
+	void ResetRecipeButtons();
+	void ResetItemDescription(bool item_selected = true);
+	void UpdateCanCraft();
+
+	Item::Recipe* selected_recipe;
+	std::vector<int>* items;
+	std::vector<InvRecipeButton*> inv_recipes;
+	TextBox* recipe_box;
 };
 
 class Inventory
@@ -131,6 +142,7 @@ private:
 	std::vector<int> items;
 	int selected_item;
 	int selected_tool;
+	Item::Recipe selected_recipe;
 
 	sf::RenderTexture tooltip_render_target; // on top
 	sf::Sprite tooltip_render_target_sprite;

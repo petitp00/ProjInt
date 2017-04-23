@@ -41,13 +41,19 @@ private:
 
 	World world;
 
+	sf::RectangleShape interact_bar1;
+	sf::RectangleShape interact_bar2;
+	sf::Clock interact_clock;
+
 	int equipped_tool = -1;
 	bool can_use_tool = false;
 	bool using_tool = false;
-	sf::Clock using_tool_clock;
-	sf::RectangleShape using_tool_bar1;
-	sf::RectangleShape using_tool_bar2;
 	sf::Sprite equipped_tool_sprite;
+
+	Item::ItemType collect_type;
+	bool can_collect = false;
+	bool collecting = false;
+	sf::Sprite collecting_sprite;
 
 	// GUI stuff
 	Inventory inventory;

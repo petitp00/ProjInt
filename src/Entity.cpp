@@ -72,6 +72,7 @@ TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std:
 		variation = growth_level;
 		if (saved_data.size() >= 3) {
 			hp = atoi(saved_data[2].c_str());
+			fruits = atoi(saved_data[3].c_str());
 		}
 	}
 }
@@ -99,13 +100,13 @@ std::vector<std::pair<Item::ItemType, int>> TreeObj::getDroppedItems()
 		else if (growth_level == 4 || growth_level == 5 || growth_level == 6)
 			vec.push_back({Item::ItemType::wood, 3});
 		if (growth_level == 6)
-			vec.push_back({Item::ItemType::apple, 3});
+			vec.push_back({Item::ItemType::apple, fruits});
 	}
 	else if (type == BANANA_TREE) {
 		if (growth_level == 4 || growth_level == 5 || growth_level == 6)
 			vec.push_back({Item::ItemType::banana_leaf, 3});
 		if (growth_level == 6)
-			vec.push_back({Item::ItemType::banana, 3});
+			vec.push_back({Item::ItemType::banana, fruits});
 	}
 
 	return vec;
@@ -123,6 +124,10 @@ void TreeObj::setGrowthLevel(int level)
 	}
 	else if (growth_level == 4 || growth_level == 5 || growth_level == 6) {
 		hp = 3;
+	}
+
+	if (growth_level == 6 && fruits == -1) {
+		fruits = 6;
 	}
 
 	if (type == APPLE_TREE) {

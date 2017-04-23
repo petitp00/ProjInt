@@ -497,15 +497,14 @@ protected:
 class InvToolButton : public InvItemButton
 {
 public:
-	InvToolButton()=default;
+	InvToolButton()=default; // probably can be removed
 	InvToolButton(int item, vec2 pos, float width);
 
-	void Update() override;
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(vec2i pos) override;
+	bool onClick(vec2i pos) override; // probably can be removed
 
 	void UpdateDurability();
 private:
@@ -517,6 +516,25 @@ private:
 	bool tool_is_bowl = false;
 };
 
+class InvRecipeButton : public InvItemButton
+{
+public:
+	InvRecipeButton(Item::Recipe recipe, vec2 pos, float width);
+	void Render(sf::RenderTarget& target,
+				sf::RenderTarget& tooltip_render_target,
+				bool draw_on_tooltip_render_target=false) override;
+	void setCraftable(bool craftable);
+	Item::Recipe getItemRecipe() { return recipe; }
+
+private:
+	void Init() override;
+	void UpdateButtonParams() override;
+
+	sf::Sprite craftable_sprite;
+	bool craftable = false;
+	Item::Recipe recipe;
+};
+	
 class InvActionButton : public TextButton
 {
 public:

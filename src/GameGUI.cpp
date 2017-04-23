@@ -63,6 +63,10 @@ static void put_down(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PutDownItem(impl->item);
 }
 
+static void craft(ButtonActionImpl* impl) {
+	
+}
+
 static void go_to_items_page(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->GoToPage(PageType::Items);
 }
@@ -124,20 +128,7 @@ InvPage::~InvPage()
 	Clear();
 }
 
-void InvPage::Clear()
-{
-	for (int i = 0; i != gui_objects.size(); ++i) {
-		delete gui_objects[i];
-	}
-	gui_objects.clear();
-}
-
-ItemsPage::~ItemsPage()
-{
-	Clear();
-}
-
-void ItemsPage::Init()
+void InvPage::Init()
 {
 	Clear();
 	auto ms = margin_sides;
@@ -150,6 +141,30 @@ void ItemsPage::Init()
 	gui_objects.push_back(item_desc_obj);
 }
 
+void InvPage::Clear()
+{
+	for (int i = 0; i != gui_objects.size(); ++i) {
+		delete gui_objects[i];
+	}
+	gui_objects.clear();
+
+	for (int i = 0; i != actions_buttons.size(); ++i) {
+		delete actions_buttons[i];
+	}
+	actions_buttons.clear();
+}
+
+ItemsPage::~ItemsPage()
+{
+	Clear();
+}
+
+void ItemsPage::Init()
+{
+	Clear();
+	InvPage::Init();
+}
+
 void ItemsPage::Clear()
 {
 	InvPage::Clear();
@@ -157,11 +172,6 @@ void ItemsPage::Clear()
 		delete inv_buttons[i];
 	}
 	inv_buttons.clear();
-
-	for (int i = 0; i != actions_buttons.size(); ++i) {
-		delete actions_buttons[i];
-	}
-	actions_buttons.clear();
 }
 
 void ItemsPage::Update()
@@ -175,7 +185,6 @@ void ItemsPage::Update()
 void ItemsPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
 {
 	target.draw(item_desc_shape);
-	//item_desc_obj->Render(target, tooltip_render_target);
 	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
 	for (auto o : inv_buttons) o->Render(target, tooltip_render_target);
 	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
@@ -320,15 +329,7 @@ ToolsPage::~ToolsPage()
 void ToolsPage::Init()
 {
 	Clear();
-
-	auto ms = margin_sides;
-	auto mm = margin_middle;
-	item_desc_shape.setSize({INV_WINDOW_WIDTH/2.f - mm*2.f - ms*2.f, INV_WINDOW_HEIGHT/2.f - mm*2.f - ms*2.f});
-	item_desc_shape.setFillColor(INV_ACCENT_COLOR);
-	item_desc_shape.setOrigin(-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms), -(ms));
-	item_desc_obj = new TextBox("Description:", vec2{0,0}, item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
-	item_desc_obj->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + mm)});
-	gui_objects.push_back(item_desc_obj);
+	InvPage::Init();
 }
 
 void ToolsPage::Clear()
@@ -350,7 +351,6 @@ void ToolsPage::Update()
 void ToolsPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
 {
 	target.draw(item_desc_shape);
-	//item_desc_obj->Render(target, tooltip_render_target);
 	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
 	for (auto o : inv_buttons) o->Render(target, tooltip_render_target);
 	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
@@ -496,30 +496,183 @@ void ToolsPage::UpdateToolsDurability()
 
 // 
 
-CraftPage::~CraftPage()
-{
-}
+CraftPage::~CraftPage() { Clear(); }
+
+float craft_item_desc_shape_height;
 
 void CraftPage::Init()
 {
+	Clear();
+	InvPage::Init();
+
+	auto is = item_desc_shape.getSize();
+	item_desc_shape.setSize(vec2(is.x, is.y*1.5f));
+	craft_item_desc_shape_height = is.y*1.5f;
+
+	recipe_box = new TextBox("Recette: ", vec2(0, 0), item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	auto ms = margin_sides;
+	auto mm = margin_middle;
+	recipe_box->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + item_desc_shape.getSize().y/2.f)});
+	gui_objects.push_back(recipe_box);
 }
 
 void CraftPage::Clear()
 {
+	for (int i = 0; i != inv_recipes.size(); ++i) {
+		delete inv_recipes[i];
+	}
+	inv_recipes.clear();
 }
 
 void CraftPage::Update()
 {
+	item_desc_shape.setPosition(window_tw->Tween());
+	UpdateObj<GUIObject>(gui_objects, *window_tw);
+	UpdateObj<InvRecipeButton>(inv_recipes, *window_tw);
+	UpdateObj<InvActionButton>(actions_buttons, *window_tw);
 }
 
 void CraftPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
 {
+	target.draw(item_desc_shape);
+	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
+	for (auto o : inv_recipes) o->Render(target, tooltip_render_target);
+	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
 }
 
 bool CraftPage::HandleEvents(sf::Event const & event)
 {
-	return false;
+	bool ret = false;
+	if (event.type == sf::Event::MouseMoved) {
+		MouseMoveO<GUIObject>(gui_objects, event);
+		MouseMoveO<InvRecipeButton>(inv_recipes, event);
+		MouseMoveO<InvActionButton>(actions_buttons, event);
+	}
+	else if (event.type == sf::Event::MouseButtonPressed) {
+		auto old_selected = *selected_recipe;
+		bool reselect = false;
+		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+
+		for (auto o : inv_recipes) o->setSelected(false); // unselect every item
+
+		for (auto o : gui_objects)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : inv_recipes)
+			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : actions_buttons) {
+			if (o->getHovered()) {
+				if (o->onClick(mouse)) {
+					ResetItemDescription(false);
+					*selected_recipe = old_selected;
+					reselect = true;
+					break;
+				}
+			}
+		}
+		if (!reselect) {
+			ResetItemDescription(false); // clears the description box
+		}
+		else { // keep item selected
+			bool found = false;
+			for (auto o : inv_recipes) {
+				if (o->getItemRecipe() == old_selected) {
+					o->setSelected(true);
+					found = true;
+					break;
+				}
+			}
+			if (!found) return true;
+		}
+
+		// for newly selected items
+		for (auto o : inv_recipes) {
+			if (o->getSelected()) {
+				*selected_recipe = o->getItemRecipe();
+				ResetItemDescription();
+				break;
+			}
+		}
+	}
+	else if (event.type == sf::Event::MouseButtonReleased) {
+		for (auto o : gui_objects)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+		for (auto o : actions_buttons)
+			if (o->isClicked() && o->onClickRelease()) ret = true;
+	}
+	return ret;
 }
+
+void CraftPage::ResetRecipeButtons()
+{
+	for (int i = 0; i != inv_recipes.size(); ++i) {
+		delete inv_recipes[i];
+	}
+	inv_recipes.clear();
+
+	int iy = 0;
+	for (auto i : Item::recipes) {
+		auto b = new InvRecipeButton(i, {0,0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
+		b->setOrigin({-margin_sides, -(margin_sides*(iy+1) + (Item::items_texture_size + 20.f) * iy)});
+		inv_recipes.push_back(b);
+		++iy;
+	}
+}
+
+void CraftPage::ResetItemDescription(bool item_selected)
+{
+	if (item_selected) {
+		auto sit = selected_recipe->first;
+		auto tempid = Item::Manager::CreateItem(sit);
+		auto temp = Item::Manager::getAny(tempid);
+			
+		item_desc_obj->setTextString("Description:\n" + temp->desc);
+
+		auto ms = margin_sides;
+		auto mm = margin_middle;
+
+		float ry = max(ms + mm + mm + item_desc_obj->getSize().y, ms + item_desc_shape.getSize().y/2.f);
+
+		recipe_box->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ry)});
+
+		bool can_craft; // set in Item::getRecipeString()
+		recipe_box->setTextString("Recette:\n" + Item::getRecipeString(*selected_recipe, *items, &can_craft));
+
+		for (auto b : inv_recipes) {
+			if (b->getItemRecipe() == *selected_recipe) {
+				b->setCraftable(can_craft);
+			}
+		}
+
+		if (actions_buttons.size() == 0) {
+			float width = INV_WINDOW_WIDTH/2.f - margin_middle*2.f - margin_sides*2.f;
+			float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
+			float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
+			auto b1 = new InvActionButton("Créer", sit, {margin_sides + margin_middle + width, margin_sides}, width);
+			b1->setOrigin({-(ox), -(oy)});
+			b1->setPos(window_tw->Tween());
+			b1->setOnClickAction(new function<void(ButtonActionImpl*)>(craft), button_action_impl);
+			actions_buttons.push_back(b1);
+		}
+
+		Item::Manager::DeleteItem(tempid);
+	}
+	else {
+		// Clear description
+		item_desc_obj->setTextString("Description: ");
+		recipe_box->setTextString("Recette:");
+		// Clear actions buttons
+		for (int i = 0; i != actions_buttons.size(); ++i) { delete actions_buttons[i]; }
+		actions_buttons.clear();
+	}
+}
+
+void CraftPage::UpdateCanCraft()
+{
+	for (auto i : inv_recipes) {
+		i->setCraftable(Item::getCanCraft(i->getItemRecipe(), *items));
+	}
+}
+
 // INVENTORY //
 
 Inventory::Inventory(Controls* controls) : controls(controls)
@@ -551,7 +704,10 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	tools_page.Init();
 	craft_page.button_action_impl = button_action_impl;
 	craft_page.window_tw = &window_tw;
+	craft_page.selected_recipe = &selected_recipe;
+	craft_page.items = &items;
 	craft_page.Init();
+	craft_page.UpdateCanCraft();
 
 	for (int i = 0; i != page_buttons.size(); ++i) {
 		delete page_buttons[i];
@@ -662,6 +818,7 @@ void Inventory::ResetItemButtons()
 {
 	items_page.ResetItemButtons(items);
 	tools_page.ResetItemButtons(items);
+	craft_page.ResetRecipeButtons();
 }
 
 void Inventory::ResetItemDescription(bool item_selected)
@@ -706,6 +863,7 @@ bool Inventory::AddItem(int id)
 
 #ifndef EDITOR_MODE
 	ResetItemButtons();
+	craft_page.UpdateCanCraft();
 #endif
 	return true;
 }
@@ -714,6 +872,8 @@ void Inventory::AddNewItem(Item::ItemType type)
 {
 	int item = Item::Manager::CreateItem(type);
 	if (!AddItem(item)) Item::Manager::DeleteItem(item);
+	
+	craft_page.UpdateCanCraft();
 }
 
 void Inventory::RemoveItem(int item)
@@ -726,6 +886,7 @@ void Inventory::RemoveItem(int item)
 	}
 
 	ResetItemButtons();
+	craft_page.UpdateCanCraft();
 }
 
 void Inventory::DeleteItem(int id)
@@ -740,6 +901,7 @@ void Inventory::DeleteItem(int id)
 	Item::Manager::DeleteItem(id);
 
 	ResetItemButtons();
+	craft_page.UpdateCanCraft();
 	//ResetItemDescription();
 }
 

@@ -14,6 +14,7 @@ namespace Item
 	static const std::string texture_map_file = "Textures_Icones.png";
 	static const float items_texture_size = 32.f;
 
+
 	enum ItemType {
 		none = -1,
 		banana = 0,
@@ -28,6 +29,16 @@ namespace Item
 		carrot_top = 9,
 		banana_leaf = 10,
 	};
+
+	using Recipe =
+		std::pair<ItemType, // Recipe for what
+		std::vector<std::pair<ItemType, int>>>; // What item and how many are needed
+
+	extern std::vector<Recipe> recipes;
+
+	std::string getRecipeString(Recipe recipe, std::vector<int> items, bool* can_craft = nullptr);
+	void InitRecipes();
+	bool getCanCraft(Recipe recipe, std::vector<int> items);
 
 	struct any
 	{
@@ -94,7 +105,12 @@ namespace Item
 	};
 
 	ItemType getItemTypeByName(const std::string& name);
-	sf::IntRect getItemTextureRect(ItemType type);
+	sf::IntRect getItemTextureRect(ItemType type); // creates a temp item (only once per type)
+	const std::string& getItemName(ItemType type); // creates a temp item (only once per type)
+
+	// don't know why static works here ???
+	// http://stackoverflow.com/questions/10812769/static-function-declared-but-not-defined-in-c
+	// maybe because the functions are inlined?
 
 	static bool IsFood(ItemType type) {
 		return (type == banana || type == apple || type == carrot);
