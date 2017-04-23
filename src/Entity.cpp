@@ -112,6 +112,15 @@ std::vector<std::pair<Item::ItemType, int>> TreeObj::getDroppedItems()
 	return vec;
 }
 
+void TreeObj::TakeOneFruit()
+{
+	--fruits;
+	if (fruits <= 0) {
+		fruits = 0;
+		setGrowthLevel(4);
+	}
+}
+
 void TreeObj::setGrowthLevel(int level)
 {
 	growth_level = level;

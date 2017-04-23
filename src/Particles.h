@@ -45,6 +45,8 @@ namespace Particle
 	{
 		void Update(float dt) override;
 
+		bool create_new;
+		int existing_id = -1;
 		Item::ItemType type;
 		float end_y;
 		vec2 move_vec;
@@ -64,7 +66,9 @@ namespace Particle
 		void SortSpriteParticles(); // Sorting is based on end_y (no need to resort)
 
 		int RenderItemParticlesLowerThan(sf::RenderTarget& target, float y, int start_at = 0);
-		void CreateItemParticle(Item::ItemType type, vec2 pos, float end_y);
+		void CreateItemParticle(Item::ItemType type, vec2 pos, float end_y, vec2 move_vec=vec2(0,0));
+		void CreateItemParticle(int id, vec2 pos, float end_y, vec2 move_vec=vec2(0,0)); // for existing items
+
 		void SortItemParticles();
 
 	private:

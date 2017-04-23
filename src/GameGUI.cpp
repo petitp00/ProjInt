@@ -852,6 +852,8 @@ void Inventory::GoToPage(PageType type)
 
 bool Inventory::AddItem(int id)
 {
+	bool full = false;
+
 	int tools_nb = 0;
 	for (auto i : items) {
 		auto item = Item::Manager::getAny(i);
@@ -865,24 +867,30 @@ bool Inventory::AddItem(int id)
 		if (tools_nb < INV_MAX) {
 			items.push_back(id);
 		}
-		else return false;
+		else full = true;
 	}
 	else if (items.size() - tools_nb < INV_MAX) {
 		items.push_back(id);
 	}
-	else return false;
+	else full = true;
+
+	if (full) {
+		button_action_impl->game_state->getWorld().DropItemFromInventory(id);
+	}
 
 #ifndef EDITOR_MODE
 	ResetItemButtons();
 	craft_page.UpdateCanCraft();
 #endif
-	return true;
+
+	return !full;
 }
 
 void Inventory::AddNewItem(Item::ItemType type)
 {
 	int item = Item::Manager::CreateItem(type);
-	if (!AddItem(item)) Item::Manager::DeleteItem(item);
+	AddItem(item);
+	//if (!AddItem(item)) Item::Manager::DeleteItem(item);
 	
 	craft_page.UpdateCanCraft();
 }

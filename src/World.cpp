@@ -607,6 +607,21 @@ void World::Collect()
 	}
 }
 
+void World::DropItemFromInventory(int id)
+{
+	vec2 pos;
+	vec2 pp = player->getPos();
+	vec2 ps = player->getSize();
+	pos.x = rng::rand_float(pp.x + ps.x/6.f, pp.x+ps.x - ps.x/6.f);
+	pos.y = rng::rand_float(pp.y + ps.y/6.f, pp.y+ps.y/3.f);
+	float end_y = pos.y + ps.y/2.f;
+	vec2 move_vec;
+	move_vec.x = rng::rand_float(-0.4f, 0.4f);
+	move_vec.y = rng::rand_float(-0.3f, -0.1f);
+	particle_manager.CreateItemParticle(id, pos, end_y, move_vec);
+	particle_manager.SortItemParticles();
+}
+
 void World::UseEquippedToolAt()
 {
 	auto m = mouse_pos_in_world;

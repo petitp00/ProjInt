@@ -107,8 +107,14 @@ void Particle::Manager::UpdateParticles(float dt)
 		i->lifetime -= dt;
 
 		if (i->pos.y >= i->end_y) {
-			int new_item = Item::Manager::CreateItem(i->type);
-			world->AddItemEnt(make_item(new_item, i->pos));
+			int item;
+			if (i->create_new) {
+				item = Item::Manager::CreateItem(i->type);
+			}
+			else {
+				item = i->existing_id;
+			}
+			world->AddItemEnt(make_item(item, i->pos));
 			i = item_particles.erase(i);
 			continue;
 		}
@@ -169,14 +175,31 @@ int Particle::Manager::RenderItemParticlesLowerThan(sf::RenderTarget & target, f
 	return -1;
 }
 
-void Particle::Manager::CreateItemParticle(Item::ItemType type, vec2 pos, float end_y)
+void Particle::Manager::CreateItemParticle(Item::ItemType type, vec2 pos, float end_y, vec2 move_vec)
 {
 	ItemParticle p;
+	p.create_new = true;
 	p.pos = pos;
 	p.type = type;
 	p.end_y = end_y;
 	p.lifetime = 0; // is not used
 	p.move_vec = vec2(rng::rand_float(-0.2f, 0.2f), -0.1f);
+	if (move_vec != vec2(0, 0)) p.move_vec = move_vec;
+	item_particles.push_back(p);
+}
+
+void Particle::Manager::CreateItemParticle(int id, vec2 pos, float end_y, vec2 move_vec)
+{
+	ItemParticle p;
+	p.create_new = false;
+	p.existing_id = id;
+	p.pos = pos;
+	auto type = Item::Manager::getItemType(id);
+	p.type = type;
+	p.end_y = end_y;
+	p.lifetime = 0; // is not used
+	p.move_vec = vec2(rng::rand_float(-0.2f, 0.2f), -0.1f);
+	if (move_vec != vec2(0, 0)) p.move_vec = move_vec;
 	item_particles.push_back(p);
 }
 

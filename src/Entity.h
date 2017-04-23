@@ -224,7 +224,7 @@ public:
 	std::vector<std::pair<Item::ItemType,int>> getDroppedItems();
 	int getGrowthLevel() { return growth_level; }
 	int getFruitsAmount() { return fruits; }
-	void TakeOneFruit() { --fruits; }
+	void TakeOneFruit();// { --fruits; }
 	void setFruitAmount(int amount) {fruits = amount;}
 	void setGrowthLevel(int level);
 
