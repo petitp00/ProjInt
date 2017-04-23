@@ -8,6 +8,15 @@ using namespace std;
 
 std::vector<Recipe> Item::recipes;
 
+const Recipe & Item::getItemRecipe(ItemType type)
+{
+	for (auto r : recipes) {
+		if (r.first == type) return r;
+	}
+	cerr << "Can not find recipe for item: " << getItemName(type) << endl;
+	return {apple, {{banana, -1}}};
+}
+
 std::string Item::getRecipeString(Recipe recipe, std::vector<int> items, bool * can_craft)
 {
 	string ret_str;

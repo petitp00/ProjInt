@@ -122,6 +122,7 @@ public:
 	bool AddItem(int id);
 	void AddNewItem(Item::ItemType type);
 	void RemoveItem(int id);
+	void DeleteItemWithType(Item::ItemType type, size_t n);
 	void DeleteItem(int id);
 	void EatItem(int id);
 	void PutDownItem(int id);

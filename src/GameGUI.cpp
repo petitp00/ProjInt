@@ -64,7 +64,18 @@ static void put_down(ButtonActionImpl* impl) {
 }
 
 static void craft(ButtonActionImpl* impl) {
-	
+	auto recipe = impl->recipe;
+	auto inv = impl->game_state->getInventory();
+	if (Item::getCanCraft(recipe, inv->getItemsId())) {
+		for (auto i : recipe.second) {
+			inv->DeleteItemWithType(i.first, i.second);
+		}
+
+		inv->AddNewItem(recipe.first);
+	}
+	else {
+		cout << "Can not craft item: " << Item::getItemName(recipe.first) << endl;
+	}
 }
 
 static void go_to_items_page(ButtonActionImpl* impl) {
@@ -611,7 +622,7 @@ void CraftPage::ResetRecipeButtons()
 
 	int iy = 0;
 	for (auto i : Item::recipes) {
-		auto b = new InvRecipeButton(i, {0,0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides);
+		auto b = new InvRecipeButton(i, {0,0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides, button_action_impl);
 		b->setOrigin({-margin_sides, -(margin_sides*(iy+1) + (Item::items_texture_size + 20.f) * iy)});
 		inv_recipes.push_back(b);
 		++iy;
@@ -889,6 +900,24 @@ void Inventory::RemoveItem(int item)
 	craft_page.UpdateCanCraft();
 }
 
+void Inventory::DeleteItemWithType(Item::ItemType type, size_t n)
+{
+	int deleted = 0;
+	for (auto i = items.begin(); i != items.end();) {
+		auto itype = Item::Manager::getItemType(*i);
+		if (itype == type) {
+			int id = *i;
+			i = items.erase(i);
+			DeleteItem(id); // the for-loop at the start won't find the item, but the rest will work
+
+			++deleted;
+			if (deleted == n) return;
+			continue;
+		}
+		++i;
+	}
+}
+
 void Inventory::DeleteItem(int id)
 {
 	for (uint i = 0; i != items.size(); ++i) {
@@ -902,7 +931,6 @@ void Inventory::DeleteItem(int id)
 
 	ResetItemButtons();
 	craft_page.UpdateCanCraft();
-	//ResetItemDescription();
 }
 
 void Inventory::EatItem(int item)

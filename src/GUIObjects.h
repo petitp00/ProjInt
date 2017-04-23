@@ -35,6 +35,7 @@ public:
 	std::vector<sf::Keyboard::Key*> controls_values;
 	std::string* world_name_ref;
 	std::string load_world_name;
+	Item::Recipe recipe;
 	int item;
 };
 
@@ -519,13 +520,13 @@ private:
 class InvRecipeButton : public InvItemButton
 {
 public:
-	InvRecipeButton(Item::Recipe recipe, vec2 pos, float width);
+	InvRecipeButton(Item::Recipe recipe, vec2 pos, float width, ButtonActionImpl* button_action_impl);
 	void Render(sf::RenderTarget& target,
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 	void setCraftable(bool craftable);
 	Item::Recipe getItemRecipe() { return recipe; }
-
+	bool onClick(vec2i pos) override;
 private:
 	void Init() override;
 	void UpdateButtonParams() override;

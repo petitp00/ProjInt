@@ -36,9 +36,10 @@ namespace Item
 
 	extern std::vector<Recipe> recipes;
 
+	const Recipe& getItemRecipe(ItemType type);
 	std::string getRecipeString(Recipe recipe, std::vector<int> items, bool* can_craft = nullptr);
-	void InitRecipes();
 	bool getCanCraft(Recipe recipe, std::vector<int> items);
+	void InitRecipes();
 
 	struct any
 	{

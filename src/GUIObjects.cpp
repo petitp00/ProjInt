@@ -1097,9 +1097,10 @@ void InvToolButton::UpdateDurability()
 	bar_shape.setFillColor(LerpColor(sf::Color::Red, sf::Color::Green, perc));
 }
 
-InvRecipeButton::InvRecipeButton(Item::Recipe recipe, vec2 pos, float width):
+InvRecipeButton::InvRecipeButton(Item::Recipe recipe, vec2 pos, float width, ButtonActionImpl* impl):
 	InvItemButton(-1, pos, width), recipe(recipe)
 {
+	button_action_impl = impl;
 	Init();
 }
 
@@ -1122,6 +1123,12 @@ void InvRecipeButton::setCraftable(bool craftable)
 	else {
 		craftable_sprite.setTextureRect(sf::IntRect(32, 0, 32, 32));
 	}
+}
+
+bool InvRecipeButton::onClick(vec2i pos)
+{
+	button_action_impl->recipe = recipe;
+	return InvItemButton::onClick(pos);
 }
 
 void InvRecipeButton::Init()
