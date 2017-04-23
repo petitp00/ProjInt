@@ -8,7 +8,7 @@ using namespace std;
 
 std::vector<Recipe> Item::recipes;
 
-const Recipe & Item::getItemRecipe(ItemType type)
+Recipe Item::getItemRecipe(ItemType type)
 {
 	for (auto r : recipes) {
 		if (r.first == type) return r;
@@ -24,11 +24,10 @@ std::string Item::getRecipeString(Recipe recipe, std::vector<int> items, bool * 
 	*can_craft = true;
 
 	for (auto i : recipe.second) {
-
 		auto s1 = getItemName(i.first);
 		ret_str += s1;
 
-		string s2(max(uint(0), 18 - s1.size()), ' ');
+		string s2(uint(max(0, int(24 - s1.size()))), ' ');
 		ret_str += s2;
 
 		int in_inventory = 0;
@@ -69,8 +68,11 @@ bool Item::getCanCraft(Recipe recipe, std::vector<int> items)
 
 void Item::InitRecipes()
 {
-	recipes.push_back({ItemType::axe, {{wood, 4}}});
-	recipes.push_back({ItemType::hoe, {{wood, 4}}});
+	recipes.push_back({ItemType::axe, {{wood, 2}}});
+	recipes.push_back({ItemType::hoe, {{wood, 2}}});
+	recipes.push_back({ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}}});
+
+	recipes.push_back({ItemType::banana_string, {{banana_leaf, 1}}});
 }
 
 
@@ -169,6 +171,13 @@ Tool* make_tool(ItemType type, vector<string>& save_data) {
 		t->use_speed = sf::seconds(0);
 		return t;
 	}
+	if (type == fishing_pole) {
+		t->name = "Canne à pêche";
+		t->desc = "Utiliser pour pêcher des poissons dans la rivière.";
+		t->pos_in_texture_map = {1, 1};
+		t->use_speed = sf::seconds(0.1f);
+		return t;
+	}
 
 	t->name = "Item was not a Tool";
 	return t;
@@ -205,6 +214,12 @@ any* make_any(ItemType type, vector<string>& save_data) {
 		a->pos_in_texture_map = {6, 1};
 		return a;
 	}
+	if (type == banana_string) {
+		a->name = "Corde";
+		a->desc = "Utilisé pour construire d'autres objets.";
+		a->pos_in_texture_map = {2, 1};
+		return a;
+	}
 
 	a->name = "Probably missing a condition in make_any!";
 	return a;
@@ -223,6 +238,8 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	if (name == "Carotte")				return carrot;
 	if (name == "Bout de carotte")		return carrot_top;
 	if (name == "Feuille de bananier")	return banana_leaf;
+	if (name == "Corde")				return banana_string;
+	if (name == "Canne à pêche")		return fishing_pole;
 
 	cerr << "item name \"" << name << "\" is not valid." << endl;
 	return ItemType(-1);

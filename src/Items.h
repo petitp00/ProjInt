@@ -28,6 +28,9 @@ namespace Item
 		carrot = 8,
 		carrot_top = 9,
 		banana_leaf = 10,
+		banana_string = 11,
+		fishing_pole = 12,
+
 	};
 
 	using Recipe =
@@ -36,7 +39,7 @@ namespace Item
 
 	extern std::vector<Recipe> recipes;
 
-	const Recipe& getItemRecipe(ItemType type);
+	Recipe getItemRecipe(ItemType type);
 	std::string getRecipeString(Recipe recipe, std::vector<int> items, bool* can_craft = nullptr);
 	bool getCanCraft(Recipe recipe, std::vector<int> items);
 	void InitRecipes();
@@ -122,7 +125,7 @@ namespace Item
 	}
 
 	static bool IsTool(ItemType type) {
-		return (type == axe || type == hoe || type == bowl);
+		return (type == axe || type == hoe || type == bowl || type == fishing_pole);
 	}
 
 	static bool IsBowl(ItemType type) {

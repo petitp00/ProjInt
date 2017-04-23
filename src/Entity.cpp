@@ -38,10 +38,10 @@ void GameObject::setCoordsInfo(CoordsInfo ci)
 	cinfo.collision_rect.left -= cinfo.texture_rect.left;
 	cinfo.collision_rect.top -= cinfo.texture_rect.top;
 
-	cinfo.collision_rect.left = int(cinfo.collision_rect.left * scale);
-	cinfo.collision_rect.top = int(cinfo.collision_rect.top * scale);
-	cinfo.collision_rect.width = int(cinfo.collision_rect.width * scale);
-	cinfo.collision_rect.height = int(cinfo.collision_rect.height * scale);
+	cinfo.collision_rect.left =		int(cinfo.collision_rect.left * scale);
+	cinfo.collision_rect.top =		int(cinfo.collision_rect.top * scale);
+	cinfo.collision_rect.width =	int(cinfo.collision_rect.width * scale);
+	cinfo.collision_rect.height =	int(cinfo.collision_rect.height * scale);
 }
 
 sf::FloatRect const GameObject::getCollisionBox()
