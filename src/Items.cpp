@@ -5,7 +5,6 @@
 using namespace Item;
 using namespace std;
 
-
 std::vector<Recipe> Item::recipes;
 
 Recipe Item::getItemRecipe(ItemType type)
@@ -74,7 +73,6 @@ void Item::InitRecipes()
 
 	recipes.push_back({ItemType::banana_string, {{banana_leaf, 1}}});
 }
-
 
 void Bowl::UpdatePosInTextureMap()
 {

@@ -72,7 +72,7 @@ TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std:
 		variation = growth_level;
 		if (saved_data.size() >= 3) {
 			hp = atoi(saved_data[2].c_str());
-			fruits = atoi(saved_data[3].c_str());
+			fruits = min(4, atoi(saved_data[3].c_str()));
 		}
 	}
 }
@@ -95,6 +95,7 @@ std::vector<std::pair<Item::ItemType, int>> TreeObj::getDroppedItems()
 	vector<pair<Item::ItemType, int>> vec;
 
 	if (type == APPLE_TREE) {
+
 		if (growth_level == 3)
 			vec.push_back({Item::ItemType::wood, 2});
 		else if (growth_level == 4 || growth_level == 5 || growth_level == 6)
@@ -115,6 +116,7 @@ std::vector<std::pair<Item::ItemType, int>> TreeObj::getDroppedItems()
 void TreeObj::TakeOneFruit()
 {
 	--fruits;
+
 	if (fruits <= 0) {
 		fruits = 0;
 		setGrowthLevel(4);
@@ -136,7 +138,7 @@ void TreeObj::setGrowthLevel(int level)
 	}
 
 	if (growth_level == 6 && fruits == -1) {
-		fruits = 6;
+		fruits = 4;
 	}
 
 	if (type == APPLE_TREE) {
@@ -254,7 +256,6 @@ void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 			auto ebox = e->getCollisionBox();
 			vec2 epos = {ebox.left, ebox.top};
 			vec2 esize ={ebox.width, ebox.height};
-		
 
 			float tolerance = 10;
 
@@ -289,6 +290,23 @@ void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 			}
 
 		}
+	}
+
+	if (pos.x + size.x > WORLD_W) {
+		pos.x = WORLD_W - size.x;
+		movement.x = 0;
+	}
+	else if (pos.x < 0) {
+		pos.x = 0;
+		movement.x = 0;
+	}
+	if (pos.y + size.y > WORLD_H) {
+		pos.y = WORLD_H - size.y;
+		movement.y = 0;
+	}
+	else if (pos.y < 0) {
+		pos.y = 0;
+		movement.y = 0;
 	}
 }
 
