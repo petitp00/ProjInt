@@ -5,7 +5,8 @@
 using namespace Item;
 using namespace std;
 
-std::vector<Recipe> Item::recipes;
+vector<Recipe> Item::recipes;
+vector<Recipe> Item::repair_recipes;
 
 Recipe Item::getItemRecipe(ItemType type)
 {
@@ -14,6 +15,15 @@ Recipe Item::getItemRecipe(ItemType type)
 	}
 	cerr << "Can not find recipe for item: " << getItemName(type) << endl;
 	return {apple, {{banana, -1}}};
+}
+
+Recipe Item::getToolRepairRecipe(ItemType type)
+{
+	for (auto r : repair_recipes) {
+		if (r.first == type) return r;
+	}
+	cerr << "Can not find recipe for repair: " << getItemName(type) << endl;
+	return { banana, {{apple, -1}} };
 }
 
 std::string Item::getRecipeString(Recipe recipe, std::vector<int> items, bool * can_craft)
@@ -67,11 +77,14 @@ bool Item::getCanCraft(Recipe recipe, std::vector<int> items)
 
 void Item::InitRecipes()
 {
-	recipes.push_back({ItemType::axe, {{wood, 2}}});
-	recipes.push_back({ItemType::hoe, {{wood, 2}}});
-	recipes.push_back({ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}}});
+	recipes.push_back({ ItemType::axe, {{wood, 2}} });
+	recipes.push_back({ ItemType::hoe, {{wood, 2}} });
+	recipes.push_back({ ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}} });
+	recipes.push_back({ ItemType::banana_string, {{banana_leaf, 1}} });
 
-	recipes.push_back({ItemType::banana_string, {{banana_leaf, 1}}});
+	repair_recipes.push_back({ItemType::axe, {{wood, 1}}});
+	repair_recipes.push_back({ItemType::hoe, {{wood, 1}}});
+	repair_recipes.push_back({ItemType::fishing_pole, {{banana_string, 1}}});
 }
 
 void Bowl::UpdatePosInTextureMap()

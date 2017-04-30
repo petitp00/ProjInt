@@ -543,19 +543,21 @@ bool World::getCanUseTool(int tool)
 
 bool World::getCanCollect(Item::ItemType& item_type)
 {
-	for (auto t : trees) {
-		auto tp = t->getPos();
-		auto ts = t->getSize();
-		auto m = mouse_pos_in_world;
+	if (item_place == nullptr && item_move == nullptr) {
+		for (auto t : trees) {
+			auto tp = t->getPos();
+			auto ts = t->getSize();
+			auto m = mouse_pos_in_world;
 
-		if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
-			if (t->getGrowthLevel() == 6) {
-				if (t->getType() == APPLE_TREE)
-					item_type = Item::ItemType::apple;
-				else if (t->getType() == BANANA_TREE)
-					item_type = Item::ItemType::banana;
-				
-				return true;
+			if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+				if (t->getGrowthLevel() == 6) {
+					if (t->getType() == APPLE_TREE)
+						item_type = Item::ItemType::apple;
+					else if (t->getType() == BANANA_TREE)
+						item_type = Item::ItemType::banana;
+
+					return true;
+				}
 			}
 		}
 	}
@@ -774,7 +776,9 @@ void World::DeleteItemObj(int id)
 
 }
 
-void World::StartPlaceItem(ItemObject* item) { item_place = item; }
+void World::StartPlaceItem(ItemObject* item) {
+	item_place = item;
+}
 
 void World::SortEntitiesImpl() // seems to be super fast for not a lot of elements (~10µs)
 {

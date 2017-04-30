@@ -1,5 +1,6 @@
 uniform sampler2D texture;
 uniform float time;
+uniform vec3 ripple[16];
 
 in vec2 vert_pos;
 

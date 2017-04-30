@@ -62,7 +62,7 @@ struct ItemsPage : public InvPage
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target) override;
 	bool HandleEvents(sf::Event const& event) override;
 	void ResetItemButtons(std::vector<int>& items);
-	void ResetItemDescription(bool item_selected = true);
+	void ResetItemDescription();
 
 	int* selected_item;
 	std::vector<InvItemButton*> inv_buttons;
@@ -77,7 +77,7 @@ struct ToolsPage : public InvPage
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target) override;
 	bool HandleEvents(sf::Event const& event) override;
 	void ResetItemButtons(std::vector<int>& items);
-	void ResetItemDescription(bool item_selected = true);
+	void ResetItemDescription();
 	void UpdateToolsDurability();
 
 	int* selected_tool;
@@ -93,7 +93,7 @@ struct CraftPage : public InvPage
 	void Render(sf::RenderTarget& target, sf::RenderTarget& tooltip_render_target) override;
 	bool HandleEvents(sf::Event const& event) override;
 	void ResetRecipeButtons();
-	void ResetItemDescription(bool item_selected = true);
+	void ResetItemDescription();
 	void UpdateCanCraft();
 
 	Item::Recipe* selected_recipe;
@@ -112,9 +112,7 @@ public:
 	void Update();
 	void Render(sf::RenderTarget& target);
 	bool HandleEvents(sf::Event const& event);
-	void ResetItemButtons();
-	void ResetItemDescription(bool item_selected = true);
-	void UpdateToolsDurability();
+	void Refresh();
 
 	void GoToPage(PageType type);
 
@@ -126,6 +124,7 @@ public:
 	void DeleteItem(int id);
 	void EatItem(int id);
 	void PutDownItem(int id);
+	void UnequipTool();
 	void UseEquippedTool();
 
 	// Getters
@@ -141,8 +140,8 @@ private:
 	ButtonActionImpl* button_action_impl;
 	bool active = false;
 	std::vector<int> items;
-	int selected_item;
-	int selected_tool;
+	int selected_item = -1;
+	int selected_tool = -1;
 	Item::Recipe selected_recipe;
 
 	sf::RenderTexture tooltip_render_target; // on top

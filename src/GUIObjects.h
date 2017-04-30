@@ -505,8 +505,6 @@ public:
 				sf::RenderTarget& tooltip_render_target,
 				bool draw_on_tooltip_render_target=false) override;
 
-	bool onClick(vec2i pos) override; // probably can be removed
-
 	void UpdateDurability();
 private:
 	void Init() override;

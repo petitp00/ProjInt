@@ -224,6 +224,7 @@ void GameState::EquipTool(int id)
 void GameState::UnequipTool()
 {
 	equipped_tool = -1;
+	inventory.UnequipTool();
 	tool_obj.setTool(-1);
 	can_use_tool = false;
 	using_tool = false;

@@ -199,11 +199,6 @@ void Ground::ReloadTileMap()
 				if (!main_tile_checked && GroundType(tile_nb) == GroundType::RIVER) c.r = 0; // signals our shader to draw water on top
 				main_tile_checked = true;
 
-
-				// fi,fj = float(i,j)
-				// vts = visual_tile_size
-				// ts = tile_size
-
 				q.verts.push_back(sf::Vertex(vec2(fi*vts,		fj*vts), c, vec2(t.x*ts, t.y*ts)));
 				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts,	fj*vts), c, vec2((t.x+1)*ts, t.y*ts)));
 				q.verts.push_back(sf::Vertex(vec2((fi+1)*vts,	(fj+1)*vts), c, vec2((t.x+1)*ts, (t.y+1)*ts)));

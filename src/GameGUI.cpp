@@ -30,6 +30,7 @@ static void use_tool(ButtonActionImpl* impl) {
 				impl->game_state->getInventory()->DeleteItem(impl->item);
 				if (impl->game_state->getEquippedTool() == impl->item) {
 					impl->game_state->UnequipTool();
+					tool = nullptr;
 				}
 			}
 		}
@@ -38,17 +39,27 @@ static void use_tool(ButtonActionImpl* impl) {
 			b->UpdatePosInTextureMap();
 		}
 
+		impl->game_state->getInventory()->Refresh();
 		impl->game_state->getEquippedToolObj()->UpdateDurability();
-		impl->game_state->getInventory()->UpdateToolsDurability();
+
+		//impl->game_state->getInventory()->UpdateToolsDurability();
+		//impl->game_state->getInventory()->ResetItemDescription();
 	}
 }
 
 static void repair_tool(ButtonActionImpl* impl) {
 	auto tool = Item::Manager::getTool(impl->item);
 	if (tool) {
-		tool->durability = 0;
-		impl->game_state->getEquippedToolObj()->UpdateDurability();
-		impl->game_state->getInventory()->UpdateToolsDurability();
+		auto recipe = Item::getToolRepairRecipe(Item::getItemTypeByName(tool->name));
+		auto inv = impl->game_state->getInventory();
+		if (Item::getCanCraft(recipe, inv->getItemsId())) {
+			for (auto i : recipe.second) {
+				inv->DeleteItemWithType(i.first, i.second);
+			}
+			tool->durability = 0;
+			impl->game_state->getEquippedToolObj()->UpdateDurability();
+			impl->game_state->getInventory()->Refresh();
+		}
 	}
 }
 
@@ -201,6 +212,16 @@ void ItemsPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_rend
 	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
 }
 
+
+		/*
+			when mouse is clicked
+			we unselect every item and set selected_item to -1
+			if the mouse clicked on an other item, we select it
+			if the mouse clicked on an action button, we try to reselect the previously selected item
+			if the item is not in the inventory anymore, we return from the function
+			if it is found, we update the item description
+		*/
+	
 bool ItemsPage::HandleEvents(sf::Event const & event)
 {
 	bool ret = false;
@@ -211,45 +232,46 @@ bool ItemsPage::HandleEvents(sf::Event const & event)
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+
 		int old_item = *selected_item;
-		bool reselect = false;
+		*selected_item = -1;
+		bool reselect = false; // if we need to reselect the old item (we clicked on a button)
 
 		for (auto o : inv_buttons) o->setSelected(false); // unselect every item
-		for (auto o : gui_objects)
-			if (o->getHovered() && o->onClick(mouse)) return true;
-		for (auto o : inv_buttons)
-			if (o->getHovered() && o->onClick(mouse)) return true;
+
+		for (auto o : inv_buttons) {
+			if (o->getHovered() && o->onClick(mouse)) {
+				*selected_item = o->getItem();
+				ResetItemDescription();
+				return true; // we selected another item so we do not need to execute the rest of the function
+			}
+		}
+
 		for (auto o : actions_buttons) {
 			if (o->getHovered()) {
 				if (o->onClick(mouse)) { 
-					ResetItemDescription(false);
+					ResetItemDescription(); // in case the action deleted the item from the inventory
 					*selected_item = old_item;
 					reselect = true;
+					ret = true; // important
 					break;
 				}
 			}
 		}
 
-		if (!reselect) {
-			ResetItemDescription(false);
-		}
-		else {
-			bool found = false;
+		if (reselect) {
 			for (auto o : inv_buttons) {
 				if (o->getItem() == old_item) {
 					o->setSelected(true);
-					found = true;
-					break;
+					*selected_item = o->getItem();
+					ResetItemDescription();
+					return true;
 				}
 			}
-			if (!found) return true; // the item is not in the inventory anymore so we return
+			*selected_item = -1; // the item was not found, so we know it has been removed
 		}
-
-		for (auto o : inv_buttons) {
-			if (o->getSelected()) {
-				*selected_item = o->getItem();
-				ResetItemDescription();
-			}
+		else { // if we clicked away
+			ResetItemDescription();
 		}
 	}
 	else if (event.type == sf::Event::MouseButtonReleased) {
@@ -258,6 +280,7 @@ bool ItemsPage::HandleEvents(sf::Event const & event)
 		for (auto o : actions_buttons)
 			if (o->isClicked() && o->onClickRelease()) ret = true;
 	}
+
 	return ret;
 }
 
@@ -285,9 +308,9 @@ void ItemsPage::ResetItemButtons(std::vector<int>& items)
 	}
 }
 
-void ItemsPage::ResetItemDescription(bool item_selected)
+void ItemsPage::ResetItemDescription()
 {
-	if (item_selected) {
+	if (selected_item && *selected_item != -1) {
 		auto si = Item::Manager::getAny(*selected_item);
 		auto sit = Item::getItemTypeByName(si->name);
 
@@ -376,47 +399,45 @@ bool ToolsPage::HandleEvents(sf::Event const & event)
 		MouseMoveO<InvActionButton>(actions_buttons, event);
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
-		auto old_selected = *selected_tool;
-		bool reselect = false;
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+
+		auto old_selected = *selected_tool;
+		*selected_tool = -1;
+		bool reselect = false;
 
 		for (auto o : inv_buttons) o->setSelected(false); // unselect every item
 
-		for (auto o : gui_objects)
-			if (o->getHovered() && o->onClick(mouse)) return true;
-		for (auto o : inv_buttons)
-			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : inv_buttons) {
+			if (o->getHovered() && o->onClick(mouse)) {
+				*selected_tool = o->getItem();
+				ResetItemDescription();
+				return true;
+			}
+		}
 		for (auto o : actions_buttons) {
 			if (o->getHovered()) {
 				if (o->onClick(mouse)) { 
-					ResetItemDescription(false);
+					ResetItemDescription();
 					*selected_tool = old_selected;
 					reselect = true;
+					ret = true;
 					break;
 				}
 			}
 		}
-		if (!reselect) {
-			ResetItemDescription(false); // clears the description box
-		}
-		else { // keep item selected
-			bool found = false;
+		if (reselect) {
 			for (auto o : inv_buttons) {
 				if (o->getItem() == old_selected) {
 					o->setSelected(true);
-					found = true;
-					break;
+					*selected_tool = old_selected;
+					ResetItemDescription();
+					return true;
 				}
 			}
-			if (!found) return true;
+			*selected_tool = -1;
 		}
-
-		// for newly selected items
-		for (auto o : inv_buttons) {
-			if (o->getSelected()) {
-				*selected_tool = o->getItem();
-				ResetItemDescription();
-			}
+		else {
+			ResetItemDescription();
 		}
 	}
 	else if (event.type == sf::Event::MouseButtonReleased) {
@@ -452,9 +473,9 @@ void ToolsPage::ResetItemButtons(std::vector<int>& items)
 	}
 }
 
-void ToolsPage::ResetItemDescription(bool item_selected)
+void ToolsPage::ResetItemDescription()
 {
-	if (item_selected) {
+	if (*selected_tool != -1) {
 		auto si = Item::Manager::getTool(*selected_tool);
 		auto sit = Item::getItemTypeByName(si->name);
 
@@ -480,13 +501,21 @@ void ToolsPage::ResetItemDescription(bool item_selected)
 
 		height = b2->getSize().y;
 
-		if (sit != Item::ItemType::bowl && si->durability > 0) {
-			auto b = new InvActionButton("Réparer", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
-			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
-			b->setPos(window_tw->Tween());
-			b->setOnClickAction(new function<void(ButtonActionImpl*)>(repair_tool), button_action_impl);
-			actions_buttons.push_back(b);
-			++i;
+		if (sit != Item::ItemType::bowl) {
+			auto recipe = Item::getToolRepairRecipe(sit);
+			bool can_repair = false;
+			string repair_str = Item::getRecipeString(recipe, button_action_impl->game_state->getInventory()->getItemsId(), &can_repair);
+
+			if (si->durability > 0 && can_repair) {
+				auto b = new InvActionButton("Réparer", *selected_tool, { margin_sides + margin_middle + width, margin_sides }, width);
+				b->setOrigin({ -(ox), -(oy + (height + margin_middle) * i) });
+				b->setPos(window_tw->Tween());
+				b->setOnClickAction(new function<void(ButtonActionImpl*)>(repair_tool), button_action_impl);
+				actions_buttons.push_back(b);
+				++i;
+
+				item_desc_obj->setTextString("Description: " + si->desc + '\n' + '\n' + repair_str);
+			}
 		}
 	}
 	else {
@@ -560,48 +589,46 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 		MouseMoveO<InvActionButton>(actions_buttons, event);
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
-		auto old_selected = *selected_recipe;
-		bool reselect = false;
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+
+		auto old_selected = *selected_recipe;
+		*selected_recipe = {};
+		bool reselect = false;
 
 		for (auto o : inv_recipes) o->setSelected(false); // unselect every item
 
-		for (auto o : gui_objects)
-			if (o->getHovered() && o->onClick(mouse)) return true;
-		for (auto o : inv_recipes)
-			if (o->getHovered() && o->onClick(mouse)) return true;
+		for (auto o : inv_recipes) {
+			if (o->getHovered() && o->onClick(mouse)) {
+				*selected_recipe = o->getItemRecipe();
+				ResetItemDescription();
+				return true;
+			}
+		}
+
 		for (auto o : actions_buttons) {
 			if (o->getHovered()) {
 				if (o->onClick(mouse)) {
-					ResetItemDescription(false);
+					ResetItemDescription(); 
 					*selected_recipe = old_selected;
 					reselect = true;
+					ret = true;
 					break;
 				}
 			}
 		}
-		if (!reselect) {
-			ResetItemDescription(false); // clears the description box
-		}
-		else { // keep item selected
-			bool found = false;
+		if (reselect) {
 			for (auto o : inv_recipes) {
 				if (o->getItemRecipe() == old_selected) {
 					o->setSelected(true);
-					found = true;
-					break;
+					*selected_recipe = old_selected;
+					ResetItemDescription(); 
+					return true;
 				}
 			}
-			if (!found) return true;
+			*selected_recipe = {};
 		}
-
-		// for newly selected items
-		for (auto o : inv_recipes) {
-			if (o->getSelected()) {
-				*selected_recipe = o->getItemRecipe();
-				ResetItemDescription();
-				break;
-			}
+		else {
+			ResetItemDescription();
 		}
 	}
 	else if (event.type == sf::Event::MouseButtonReleased) {
@@ -629,9 +656,9 @@ void CraftPage::ResetRecipeButtons()
 	}
 }
 
-void CraftPage::ResetItemDescription(bool item_selected)
+void CraftPage::ResetItemDescription()
 {
-	if (item_selected) {
+	if (selected_recipe) {
 		auto sit = selected_recipe->first;
 		auto tempid = Item::Manager::CreateItem(sit);
 		auto temp = Item::Manager::getAny(tempid);
@@ -757,7 +784,8 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	page_butt3->setTooltip(new Tooltip("Créer", sf::seconds(0.5f)));
 	page_buttons.push_back(page_butt3);
 
-	ResetItemButtons();
+	//ResetItemButtons();
+	Refresh();
 }
 
 
@@ -825,22 +853,19 @@ bool Inventory::HandleEvents(sf::Event const & event)
 	return ret;
 }
 
-void Inventory::ResetItemButtons()
+void Inventory::Refresh()
 {
 	items_page.ResetItemButtons(items);
 	tools_page.ResetItemButtons(items);
 	craft_page.ResetRecipeButtons();
-}
 
-void Inventory::ResetItemDescription(bool item_selected)
-{
-	items_page.ResetItemDescription(item_selected);
-	tools_page.ResetItemDescription(item_selected);
-}
+	items_page.ResetItemDescription();
+	tools_page.ResetItemDescription();
+	craft_page.ResetItemDescription();
 
-void Inventory::UpdateToolsDurability()
-{
 	tools_page.UpdateToolsDurability();
+	
+	craft_page.UpdateCanCraft();
 }
 
 void Inventory::GoToPage(PageType type)
@@ -879,8 +904,7 @@ bool Inventory::AddItem(int id)
 	}
 
 #ifndef EDITOR_MODE
-	ResetItemButtons();
-	craft_page.UpdateCanCraft();
+	Refresh();
 #endif
 
 	return !full;
@@ -892,7 +916,7 @@ void Inventory::AddNewItem(Item::ItemType type)
 	AddItem(item);
 	//if (!AddItem(item)) Item::Manager::DeleteItem(item);
 	
-	craft_page.UpdateCanCraft();
+	Refresh();
 }
 
 void Inventory::RemoveItem(int item)
@@ -904,8 +928,7 @@ void Inventory::RemoveItem(int item)
 		}
 	}
 
-	ResetItemButtons();
-	craft_page.UpdateCanCraft();
+	Refresh();
 }
 
 void Inventory::DeleteItemWithType(Item::ItemType type, size_t n)
@@ -937,13 +960,14 @@ void Inventory::DeleteItem(int id)
 
 	Item::Manager::DeleteItem(id);
 
-	ResetItemButtons();
+	Refresh();
 	craft_page.UpdateCanCraft();
 }
 
 void Inventory::EatItem(int item)
 {
 	RemoveItem(item);
+	Refresh();
 }
 
 void Inventory::PutDownItem(int item)
@@ -952,6 +976,13 @@ void Inventory::PutDownItem(int item)
 	ItemObject* i = make_item(item);
 	button_action_impl->game_state->getWorld().StartPlaceItem(i);
 	setActive(false);
+	Refresh();
+}
+
+void Inventory::UnequipTool()
+{
+	selected_tool = -1;
+	Refresh();
 }
 
 void Inventory::UseEquippedTool()
@@ -960,6 +991,7 @@ void Inventory::UseEquippedTool()
 	if (tool != -1) {
 		button_action_impl->item = tool;
 		use_tool(button_action_impl);
+		Refresh();
 	}
 }
 

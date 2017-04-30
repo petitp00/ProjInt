@@ -38,8 +38,10 @@ namespace Item
 		std::vector<std::pair<ItemType, int>>>; // What item and how many are needed
 
 	extern std::vector<Recipe> recipes;
+	extern std::vector<Recipe> repair_recipes;
 
 	Recipe getItemRecipe(ItemType type);
+	Recipe getToolRepairRecipe(ItemType type);
 	std::string getRecipeString(Recipe recipe, std::vector<int> items, bool* can_craft = nullptr);
 	bool getCanCraft(Recipe recipe, std::vector<int> items);
 	void InitRecipes();

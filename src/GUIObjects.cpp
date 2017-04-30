@@ -958,7 +958,7 @@ bool InvItemButton::onClick(vec2i mouse_pos)
 		(*action)(button_action_impl);
 		return true;
 	}
-	return false;
+	return true; // for HandleEvents in inventory pages
 }
 
 bool InvItemButton::onHoverIn(vec2i mouse_pos)
@@ -1059,12 +1059,6 @@ void InvToolButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 		target.draw(bar_shape);
 
 	GUIObject::Render(target, tooltip_render_target);
-}
-
-bool InvToolButton::onClick(vec2i pos)
-{
-	//UpdateDurability();
-	return InvItemButton::onClick(pos);
 }
 
 void InvToolButton::Init()
