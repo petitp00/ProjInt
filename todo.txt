@@ -1,84 +1,105 @@
-[ À FAIRE ]
+[ Ã€ FAIRE ]
 
 [ PHILIPPE ET/OU MALLAURY ]
 + la recherche
-+ préparer l'oral
++ prÃ©parer l'oral
 
 [ MALLAURY ]
 + textures du sol
-	- gazon
+	- gazon - OK
 	- terre pour agriculture
-		- sèche (normale)
-		- arrosée
+		- sÃ¨che (normale) - OK
+		- arrosÃ©e
 
 + textures du personnage
-	- animé
-	- directions (dans le même fichier (une couche par animation))
+	- animÃ©
+	- directions (dans le mÃªme fichier (une couche par animation))
 		- haut
 		- bas
 		- droite (pas besoin de gauche)
 
-+ texture de la cabane (environ 5 tuiles par 4 tuiles)
-	- pas besoin d'intérieur
++ texture de la cabane (environ 5 tuiles par 4 tuiles) - OK
+	- pas besoin d'intÃ©rieur
 
 + textures des objets
-	- arbres
+	- arbres - OK
 		- pommier
-			- différents niveaux de pousses (plant, petit, moyen, complet)
+			- diffÃ©rents niveaux de pousses (plant, petit, moyen, complet)
 			- avec et sans pommes
 		- bananier
 			- avec et sans banane
 			- pas de feuille
-			- moyennes feuilles (pas complétement poussées)
+			- moyennes feuilles (pas complÃ©tement poussÃ©es)
 			- avec feuilles
-	- feuilles (pour les particules)
+	- feuilles (pour les particules) - OK
 		- bananier
 		- pommier
-	- roches
+	- roches - OK
 		- petites (~ 1 tuile)
 		- grandes (~ 1.5-2 tuiles)
-	- pousses (agriculture)
+	- pousses (agriculture) - OK
 		- graines de carottes dans la terre (seulement les graines, pas la terre)
 		- petites pousses de carottes (petits bouts verts)
 		- pousses de carottes (on voit un peu le orange)
-	- bac de compost
+	- bac de compost - OK
 		- ouvert
-		- fermé
+		- fermÃ©
 
-+ textures des icônes d'items (dans le fichier Items.pyxel)
-	- feuilles de bananier (roulées ?)
-	- corde
-	- canne à pêche
-	- poisson
++ textures des icÃ´nes d'items (dans le fichier Items.pyxel)
+	- feuilles de bananier (roulÃ©es ?) - OK
+	- corde - OK
+	- canne Ã  pÃªche - OK
+	- poisson - OK
 		- cuit et pas cuit
-	- graines
-	- coeur de pomme
-	- pelure de banane
-	- bout de carotte
-	- hache
-	- faux
-	- bol
+	- graines - OK
+	- coeur de pomme - OK
+	- pelure de banane - OK
+	- bout de carotte - OK
+	- hache - OK
+	- faux - OK
+	- bol - OK
 		- vide
 		- 1/4 d'eau
 		- 1/2 d'eau
 		- 3/4 d'eau
 		- rempli
-	- bois
-
+	- bois - OK
+	- bac de compost
+	- cabane
+	
++ Sons (format .wav ou .mp3, Dans le dossier Sounds, RenommÃ©s (ex. eau_canne1.wav))
+	- Menus et interface
+		- clicks
+			- plus aigu
+			- plus grave
+	- RiviÃ¨re (loop)
+	- Pas
+		- Gazon
+		- Eau
+		- Sable
+	- Hache sur bois (toc)
+	- Feuilles d'arbres qui bougent (quand on coupe l'arbre)
+	- Croquement dans une pomme
+	- Boire de l'eau (son d'eau)
+	- Ouverture/fermeture bac de compost
+	- Son de branche qui brise (pour les outils qui brisent)
+	- Son de feu (loop)
+	- Son de grillons (pour la nuit) (loop)
+		
 + Probablement d'autres choses
 
 [ PHILIPPE ]
-+ Crafting
++ Crafting - OK
 + Agriculture
-+ Système de coupe/pousse d'arbres
-+ Système de fatigue/faim/soif du joueur avec interface
++ SystÃ¨me de coupe/pousse d'arbres
++ SystÃ¨me de fatigue/faim/soif du joueur avec interface
 + Sons
 + Cabane
 + Cycle jour nuit
-+ Utilisation des outils
-+ Utilisation du bol (boire et arroser)
++ Utilisation des outils - OK
++ Utilisation du bol (boire et arroser) - Ok
 + Feu et cuisson de poissons
-+ Pêche
++ PÃªche
 + Pourissement de la nourriture
 + Compost
 + Probablement d'autres choses
