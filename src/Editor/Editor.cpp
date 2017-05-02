@@ -190,7 +190,7 @@ void Editor::Start()
 				else if (button == sf::Mouse::Right) {
 					// Copy tile type if ground edit mode
 					if (ground_edit_mode) {
-						ground_type = int(world.ground.getTileClicked(mouse_pos_in_world));
+						ground_type = int(world.ground.getTileClickedType(mouse_pos_in_world));
 						ground_edit_info->setVal(getGroundTypeString(GroundType(ground_type)));
 					}
 				}

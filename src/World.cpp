@@ -504,13 +504,13 @@ ItemObject * World::FindItem(int id)
 
 bool World::getCanUseTool(int tool)
 {
-	if (tool) {
+	if (tool && !item_place && !item_move) {
 		auto t = Item::Manager::getTool(tool);
 		string name = t->name;
 
 		if (name == "Bol") {
 			auto b = Item::Manager::getBowl(tool);
-			GroundType gtype = ground.getTileClicked(mouse_pos_in_world);
+			GroundType gtype = ground.getTileClickedType(mouse_pos_in_world);
 
 			if (gtype == GroundType::RIVER) {
 				if (b->water_level < 4) {
@@ -527,6 +527,14 @@ bool World::getCanUseTool(int tool)
 				}
 			}
 
+		}
+		else if (name == "Faux") {
+			GroundTile gtile = ground.getTileClicked(mouse_pos_in_world);
+			auto gtype = gtile.getType();
+
+			if (gtype == GroundType::GRASS) {
+				return true;
+			}
 		}
 		if (entity_hovered.size() != 0) {
 			for (auto e : entity_hovered) {
@@ -633,7 +641,7 @@ void World::UseEquippedToolAt()
 
 		if (tool->name == "Bol") {
 			auto b = Item::Manager::getBowl(t);
-			GroundType gtype = ground.getTileClicked(mouse_pos_in_world);
+			GroundType gtype = ground.getTileClickedType(mouse_pos_in_world);
 
 			if (gtype == GroundType::RIVER) {
 				if (b->water_level < 4) {
@@ -653,6 +661,15 @@ void World::UseEquippedToolAt()
 			}
 
 			b->UpdatePosInTextureMap();
+		}
+
+		if (tool->name == "Faux") {
+			auto& gtile = ground.getTileClicked(mouse_pos_in_world);
+
+			if (gtile.getType() == GroundType::GRASS) {
+				gtile.setType(GroundType::DIRT);
+				ground.ReloadTileMap();
+			}
 		}
 
 		// TREE CUTTING

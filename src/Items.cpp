@@ -179,7 +179,7 @@ Tool* make_tool(ItemType type, vector<string>& save_data) {
 		t->name = "Faux";
 		t->desc = "Outil. Utilisé pour préparer la terre pour l'agriculture.";
 		t->pos_in_texture_map = {7, 0};
-		t->use_speed = sf::seconds(0);
+		t->use_speed = sf::seconds(0.5f);
 		return t;
 	}
 	if (type == fishing_pole) {

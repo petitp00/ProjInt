@@ -297,15 +297,9 @@ void Ground::setTileClicked(vec2 mpos, GroundType type)
 	}
 }
 
-GroundType Ground::getTileClicked(vec2 mpos)
+GroundType Ground::getTileClickedType(vec2 mpos)
 {
-	vec2 tpos;
-	tpos.x = float(int(mpos.x / visual_tile_size));
-	tpos.y = float(int(mpos.y / visual_tile_size));
-
-	return getTile(tpos).getType();
-
-	return NONE;
+	return getTileClicked(mpos).getType();
 }
 
 GroundTile& Ground::getTile(vec2 pos)
@@ -324,6 +318,14 @@ GroundTile& Ground::getTile(float x, float y)
 		return tiles[i];
 	}
 	return not_found;
+}
+
+GroundTile & Ground::getTileClicked(vec2 mpos)
+{
+	vec2 tpos;
+	tpos.x = float(int(mpos.x / visual_tile_size));
+	tpos.y = float(int(mpos.y / visual_tile_size));
+	return getTile(tpos);
 }
 
 float Ground::getVisualTileSize()

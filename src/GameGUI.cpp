@@ -27,6 +27,7 @@ static void use_tool(ButtonActionImpl* impl) {
 		if (tool_type != Item::ItemType::bowl) {
 			tool->durability += 5;
 			if (tool->durability == 100) {
+				impl->game_state->getInventory()->UnequipTool();
 				impl->game_state->getInventory()->DeleteItem(impl->item);
 				if (impl->game_state->getEquippedTool() == impl->item) {
 					impl->game_state->UnequipTool();
@@ -991,7 +992,9 @@ void Inventory::UseEquippedTool()
 	if (tool != -1) {
 		button_action_impl->item = tool;
 		use_tool(button_action_impl);
-		Refresh();
+		if (tool != -1) {
+			Refresh();
+		}
 	}
 }
 

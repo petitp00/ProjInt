@@ -61,8 +61,7 @@ enum TYPE_DIRS {
 	CORNER_DOWN_RIGHT = 15
 };
 
-struct Overlap
-{
+struct Overlap {
 	GroundType type;
 	int dir;
 };
@@ -70,25 +69,18 @@ struct Overlap
 class Tileset {
 public:
 	Tileset(std::string filename);
-	void getUV(std::vector<sf::Vector3i>* vec, GroundType main_type,
-			   std::vector<Overlap>& overlaps);
+	void getUV(std::vector<sf::Vector3i>* vec, GroundType main_type, std::vector<Overlap>& overlaps);
 	sf::Texture const& getTexture() const { return texture; }
-
 private:
 	sf::Texture texture;
-
 };
 	
 class GroundTile {
 public:
-
 	GroundTile(GroundType type, vec2 pos);
-
 	void setType(GroundType type) { this->type = type; }
-
 	GroundType getType() { return type; }
 	vec2 getPos() { return pos; }
-
 private:
 	GroundType type;
 	vec2 pos;
@@ -101,16 +93,17 @@ public:
 	void LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height);
 	void ReloadTileMap();
 	void Clear();
-
 	void Fill(vec2 mpos, GroundType type);
 	void setTileClicked(vec2 mpos, GroundType type);
-	GroundType getTileClicked(vec2 mpos);
+
+	// Getters
+	GroundType getTileClickedType(vec2 mpos);
 	GroundTile& getTile(vec2 pos);
 	GroundTile& getTile(float x, float y);
-	std::vector<GroundTile>& getTiles() { return tiles; }
-	int getWidth() { return width; }
-	int getHeight() { return height; }
-	
+	GroundTile& getTileClicked(vec2 mpos);
+	std::vector<GroundTile>& getTiles()		{ return tiles; }
+	int getWidth()							{ return width; }
+	int getHeight()							{ return height; }
 	static float getVisualTileSize();
 
 private:
