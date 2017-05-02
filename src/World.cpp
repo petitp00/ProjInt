@@ -655,8 +655,6 @@ void World::UseEquippedToolAt()
 				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
 					--b->water_level;
 					// DRINKING
-
-
 				}
 			}
 

@@ -30,7 +30,9 @@ namespace Item
 		banana_leaf = 10,
 		banana_string = 11,
 		fishing_pole = 12,
-
+		apple_seed = 13,
+		banana_seed = 14,
+		carrot_seed = 15,
 	};
 
 	using Recipe =

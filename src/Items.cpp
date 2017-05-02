@@ -81,6 +81,9 @@ void Item::InitRecipes()
 	recipes.push_back({ ItemType::hoe, {{wood, 2}} });
 	recipes.push_back({ ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}} });
 	recipes.push_back({ ItemType::banana_string, {{banana_leaf, 1}} });
+	recipes.push_back({ ItemType::apple_seed, {{apple_core, 1}} });
+	recipes.push_back({ ItemType::banana_seed, {{banana_peel, 1}} });
+	recipes.push_back({ ItemType::carrot_seed, {{carrot_top, 1}} });
 
 	repair_recipes.push_back({ItemType::axe, {{wood, 1}}});
 	repair_recipes.push_back({ItemType::hoe, {{wood, 1}}});
@@ -231,8 +234,26 @@ any* make_any(ItemType type, vector<string>& save_data) {
 		a->pos_in_texture_map = {2, 1};
 		return a;
 	}
+	if (type == apple_seed) {
+		a->name = "Graine de pommier";
+		a->desc = "Utilisée pour planter un pommier. Doit être arrosé";
+		a->pos_in_texture_map = {3, 1};
+		return a;
+	}
+	if (type == banana_seed) {
+		a->name = "Graine de bananier";
+		a->desc = "Utilisée pour planter un bananier. Doit être arrosé";
+		a->pos_in_texture_map = {4, 1};
+		return a;
+	}
+	if (type == carrot_seed) {
+		a->name = "Graine de carotte";
+		a->desc = "Utilisée pour planter un plan de carottes. Doit être arrosé";
+		a->pos_in_texture_map = {5, 1};
+		return a;
+	}
 
-	a->name = "Probably missing a condition in make_any!";
+	a->name = "Probably forgot to return in make_any";
 	return a;
 }
 
@@ -251,6 +272,9 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	if (name == "Feuille de bananier")	return banana_leaf;
 	if (name == "Corde")				return banana_string;
 	if (name == "Canne à pêche")		return fishing_pole;
+	if (name == "Graine de pommier")	return apple_seed;
+	if (name == "Graine de bananier")	return banana_seed;
+	if (name == "Graine de carotte")	return carrot_seed;
 
 	cerr << "item name \"" << name << "\" is not valid." << endl;
 	return ItemType(-1);
