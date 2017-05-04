@@ -1308,7 +1308,18 @@ void InvPageButton::Init()
 	rect_shape.setSize(size);
 
 	float ts = sprite_size / sprite_scale;
+
+	// Temporarily disable output to console
+	streambuf* orig_buf = cerr.rdbuf();
+	streambuf* orig_buf2 = sf::err().rdbuf();
+	cerr.rdbuf(NULL);
+	sf::err().rdbuf(NULL);
+
 	sprite.setTexture(ResourceManager::getTexture(texture_name));
+
+	cerr.rdbuf(orig_buf);
+	sf::err().rdbuf(orig_buf2);
+
 	sprite.setTextureRect(sf::IntRect(vec2i(pos_in_texture * ts), vec2i(int(ts), int(ts))));
 	sprite.setScale(sprite_scale, sprite_scale);
 

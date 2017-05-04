@@ -85,6 +85,13 @@ void Item::InitRecipes()
 	recipes.push_back({ ItemType::apple_seed, {{apple_core, 1}} });
 	recipes.push_back({ ItemType::banana_seed, {{banana_peel, 1}} });
 	recipes.push_back({ ItemType::carrot_seed, {{carrot_top, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
+	recipes.push_back({ ItemType::apple_core, {{apple, 1}} });
 
 	repair_recipes.push_back({ItemType::axe, {{wood, 1}}});
 	repair_recipes.push_back({ItemType::hoe, {{wood, 1}}});

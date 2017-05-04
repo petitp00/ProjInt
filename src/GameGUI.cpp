@@ -554,7 +554,18 @@ void CraftPage::Init()
 	Clear();
 	InvPage::Init();
 
-	for (int i = 0; i != max_page + 1; ++i) {
+	int ri = Item::recipes.size();
+	cout << "Item::recipes.size(): " << Item::recipes.size() << endl;
+
+	float result = float(ri) / float(max_recipes_per_page);
+	cout << "result: " << result << endl;
+
+	max_page = int(result);
+	cout << "max_page: " << max_page << endl;
+	if (max_page < result) ++max_page;
+	cout << "max_page: " << max_page << endl;
+
+	for (int i = 0; i != max_page; ++i) {
 		inv_recipes.push_back(vector<InvRecipeButton*>());
 	}
 
@@ -577,7 +588,7 @@ void CraftPage::Init()
 	page_button2->setOnClickAction(new function<void(ButtonActionImpl*)>(craft_next_page), button_action_impl);
 
 	auto sz = page_button1->getSize();
-	page_text = new TextBox(to_string(page + 1) + " sur " + to_string(max_page + 1),
+	page_text = new TextBox(to_string(page + 1) + " sur " + to_string(max_page),
 		vec2(0,0), 85, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
 }
 
@@ -702,11 +713,7 @@ void CraftPage::ResetRecipeButtons()
 		for (int i2 = 0; i2 != inv_recipes[i].size(); ++i2) {
 			delete inv_recipes[i][i2];
 		}
-	}
-	inv_recipes.clear();
-
-	for (int i = 0; i != max_page+1; ++i) {
-		inv_recipes.push_back(vector<InvRecipeButton*>());
+		inv_recipes[i].clear();
 	}
 
 	int iy = 0;
@@ -790,7 +797,7 @@ void CraftPage::PrevPage()
 
 void CraftPage::NextPage()
 {
-	if (page < max_page) {
+	if (page != max_page - 1) {
 		++page;
 	}
 	UpdatePageText();
@@ -798,7 +805,7 @@ void CraftPage::NextPage()
 
 void CraftPage::UpdatePageText()
 {
-	page_text->setTextString(to_string(page + 1) + " sur " + to_string(max_page + 1));
+	page_text->setTextString(to_string(page + 1) + " sur " + to_string(max_page));
 }
 
 // INVENTORY //
@@ -849,8 +856,8 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 
 	auto temp = new InvPageButton({0,0}, "", {0,0});
 	delete temp;
-	system("cls");
-	cout << "The console has been cleared in Inventory::Init()" << endl;
+	//system("cls"); //////////////////////////////////////////////// CLEAR THE CONSOLE
+	//cout << "The console has been cleared in Inventory::Init()" << endl;
 
 	auto ms = margin_sides;
 	auto mm = margin_middle;

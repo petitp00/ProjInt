@@ -72,6 +72,8 @@ Game::Game()
 
 	game_settings.controls.LoadUserControls();
 
+	Item::InitRecipes();
+
 	ButtonActionImpl* impl = new ButtonActionImpl(this, nullptr, nullptr);
 
 	// game_state must be initialized before menu_state (because of button_action_impl)
@@ -87,7 +89,6 @@ Game::Game()
 
 	console = new ConsoleNamespace::Console(*this, *menu_state, *game_state); // !!!!!!!!!!!!!! clears the console !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	Item::InitRecipes();
 }
 
 Game::~Game()
