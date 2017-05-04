@@ -6,6 +6,8 @@
 #include <SFML/Graphics.hpp>
 
 class GUIObject;
+class SquareButton;
+class Scrollbar;
 class TextBox;
 class TextButton;
 class InvItemButton;
@@ -86,6 +88,7 @@ struct ToolsPage : public InvPage
 
 struct CraftPage : public InvPage
 {
+	CraftPage()=default;
 	~CraftPage() override;
 	void Init() override;
 	void Clear() override;
@@ -96,10 +99,20 @@ struct CraftPage : public InvPage
 	void ResetItemDescription();
 	void UpdateCanCraft();
 
+	void PrevPage();
+	void NextPage();
+	void UpdatePageText();
+
+	int page = 0;
+	int max_page = 1;
+	int max_recipes_per_page = 6;
+	TextBox* page_text;
+
 	Item::Recipe* selected_recipe;
 	std::vector<int>* items;
-	std::vector<InvRecipeButton*> inv_recipes;
+	std::vector<std::vector<InvRecipeButton*>> inv_recipes;
 	TextBox* recipe_box;
+	SquareButton *page_button1, *page_button2;
 };
 
 class Inventory
@@ -115,6 +128,8 @@ public:
 	void Refresh();
 
 	void GoToPage(PageType type);
+	void RecipePrevPage() { craft_page.PrevPage(); }
+	void RecipeNextPage() { craft_page.NextPage(); }
 
 	// Items
 	bool AddItem(int id);

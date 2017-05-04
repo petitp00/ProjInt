@@ -90,6 +90,14 @@ static void craft(ButtonActionImpl* impl) {
 	}
 }
 
+static void craft_previous_page(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->RecipePrevPage();
+}
+
+static void craft_next_page(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->RecipeNextPage();
+}
+
 static void go_to_items_page(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->GoToPage(PageType::Items);
 }
@@ -540,27 +548,45 @@ void ToolsPage::UpdateToolsDurability()
 CraftPage::~CraftPage() { Clear(); }
 
 float craft_item_desc_shape_height;
-
+float recipe_button_width = INV_WINDOW_WIDTH / 2.f - margin_middle - margin_sides;
 void CraftPage::Init()
 {
 	Clear();
 	InvPage::Init();
 
+	for (int i = 0; i != max_page + 1; ++i) {
+		inv_recipes.push_back(vector<InvRecipeButton*>());
+	}
+
 	auto is = item_desc_shape.getSize();
 	item_desc_shape.setSize(vec2(is.x, is.y*1.5f));
 	craft_item_desc_shape_height = is.y*1.5f;
 
-	recipe_box = new TextBox("Recette: ", vec2(0, 0), item_desc_shape.getSize().x - 20.f, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+	recipe_box = new TextBox("Recette: ", vec2(0, 0), item_desc_shape.getSize().x - 20.f,
+		BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
 	auto ms = margin_sides;
 	auto mm = margin_middle;
 	recipe_box->setOrigin({-(INV_WINDOW_WIDTH/2.f + mm*2.f + ms + mm), -(ms + item_desc_shape.getSize().y/2.f)});
 	gui_objects.push_back(recipe_box);
+
+	page_button1 = new SquareButton("<", vec2(0, 0), 40, FontSize::TINY,
+		INV_TEXT_COLOR, INV_ACCENT_COLOR, INV_ACCENT_COLOR2);
+	page_button2 = new SquareButton(">", vec2(0, 0), 40, FontSize::TINY,
+		INV_TEXT_COLOR, INV_ACCENT_COLOR, INV_ACCENT_COLOR2);
+	page_button1->setOnClickAction(new function<void(ButtonActionImpl*)>(craft_previous_page), button_action_impl);
+	page_button2->setOnClickAction(new function<void(ButtonActionImpl*)>(craft_next_page), button_action_impl);
+
+	auto sz = page_button1->getSize();
+	page_text = new TextBox(to_string(page + 1) + " sur " + to_string(max_page + 1),
+		vec2(0,0), 85, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
 }
 
 void CraftPage::Clear()
 {
 	for (int i = 0; i != inv_recipes.size(); ++i) {
-		delete inv_recipes[i];
+		for (int i2 = 0; i2 != inv_recipes[i].size(); ++i2) {
+			delete inv_recipes[i][i2];
+		}
 	}
 	inv_recipes.clear();
 }
@@ -568,16 +594,24 @@ void CraftPage::Clear()
 void CraftPage::Update()
 {
 	item_desc_shape.setPosition(window_tw->Tween());
+	page_button1->setPos(vec2(-item_desc_shape.getOrigin().x, INV_WINDOW_HEIGHT - margin_sides - 56) + window_tw->Tween());
+	page_button2->setPos(vec2(INV_WINDOW_WIDTH - margin_sides - 40, INV_WINDOW_HEIGHT - margin_sides - 56) + window_tw->Tween());
+	page_text->setPos(vec2(-85/2.f + INV_WINDOW_WIDTH/4.f * 3.f, INV_WINDOW_HEIGHT - margin_sides - 52) + window_tw->Tween());
 	UpdateObj<GUIObject>(gui_objects, *window_tw);
-	UpdateObj<InvRecipeButton>(inv_recipes, *window_tw);
+	UpdateObj<InvRecipeButton>(inv_recipes[page], *window_tw);
 	UpdateObj<InvActionButton>(actions_buttons, *window_tw);
 }
 
 void CraftPage::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_render_target)
 {
 	target.draw(item_desc_shape);
+
+	page_button1->Render(target, tooltip_render_target);
+	page_button2->Render(target, tooltip_render_target);
+	page_text->Render(target, tooltip_render_target);
+
 	for (auto o : gui_objects) o->Render(target, tooltip_render_target);
-	for (auto o : inv_recipes) o->Render(target, tooltip_render_target);
+	for (auto o : inv_recipes[page]) o->Render(target, tooltip_render_target);
 	for (auto o : actions_buttons) o->Render(target, tooltip_render_target);
 }
 
@@ -586,19 +620,33 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 	bool ret = false;
 	if (event.type == sf::Event::MouseMoved) {
 		MouseMoveO<GUIObject>(gui_objects, event);
-		MouseMoveO<InvRecipeButton>(inv_recipes, event);
+		MouseMoveO<InvRecipeButton>(inv_recipes[page], event);
 		MouseMoveO<InvActionButton>(actions_buttons, event);
+
+		vec2i mouse = vec2i(event.mouseMove.x, event.mouseMove.y);
+		if (page_button1->isMouseIn(mouse)) {
+			if (!page_button1->getHovered()) { page_button1->onHoverIn(); }
+		}
+		else if (page_button1->getHovered()) { page_button1->onHoverOut(); }
+
+		if (page_button2->isMouseIn(mouse)) {
+			if (!page_button2->getHovered()) { page_button2->onHoverIn(); }
+		}
+		else if (page_button2->getHovered()) { page_button2->onHoverOut(); }
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
 
 		auto old_selected = *selected_recipe;
-		*selected_recipe = {};
+		*selected_recipe = Item::no_recipe;
 		bool reselect = false;
 
-		for (auto o : inv_recipes) o->setSelected(false); // unselect every item
+		if (page_button1->getHovered()) page_button1->onClick(mouse);
+		if (page_button2->getHovered()) page_button2->onClick(mouse);
 
-		for (auto o : inv_recipes) {
+		for (auto o : inv_recipes[page]) o->setSelected(false); // unselect every item
+
+		for (auto o : inv_recipes[page]) {
 			if (o->getHovered() && o->onClick(mouse)) {
 				*selected_recipe = o->getItemRecipe();
 				ResetItemDescription();
@@ -618,7 +666,7 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 			}
 		}
 		if (reselect) {
-			for (auto o : inv_recipes) {
+			for (auto o : inv_recipes[page]) {
 				if (o->getItemRecipe() == old_selected) {
 					o->setSelected(true);
 					*selected_recipe = old_selected;
@@ -626,17 +674,24 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 					return true;
 				}
 			}
-			*selected_recipe = {};
+			*selected_recipe = Item::no_recipe;
 		}
 		else {
 			ResetItemDescription();
 		}
 	}
 	else if (event.type == sf::Event::MouseButtonReleased) {
+		if (page_button1->isClicked()) { page_button1->onClickRelease(); }
+		if (page_button2->isClicked()) { page_button2->onClickRelease(); }
+
 		for (auto o : gui_objects)
 			if (o->isClicked() && o->onClickRelease()) ret = true;
 		for (auto o : actions_buttons)
 			if (o->isClicked() && o->onClickRelease()) ret = true;
+	}
+	else if (event.type == sf::Event::MouseWheelScrolled) {
+		float scroll_speed = 20;
+		auto delta = event.mouseWheelScroll.delta;
 	}
 	return ret;
 }
@@ -644,22 +699,33 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 void CraftPage::ResetRecipeButtons()
 {
 	for (int i = 0; i != inv_recipes.size(); ++i) {
-		delete inv_recipes[i];
+		for (int i2 = 0; i2 != inv_recipes[i].size(); ++i2) {
+			delete inv_recipes[i][i2];
+		}
 	}
 	inv_recipes.clear();
 
+	for (int i = 0; i != max_page+1; ++i) {
+		inv_recipes.push_back(vector<InvRecipeButton*>());
+	}
+
 	int iy = 0;
+	int add_to_page = 0;
 	for (auto i : Item::recipes) {
 		auto b = new InvRecipeButton(i, {0,0}, INV_WINDOW_WIDTH/2.f - margin_middle - margin_sides, button_action_impl);
 		b->setOrigin({-margin_sides, -(margin_sides*(iy+1) + (Item::items_texture_size + 20.f) * iy)});
-		inv_recipes.push_back(b);
+		inv_recipes[add_to_page].push_back(b);
 		++iy;
+		if (iy == max_recipes_per_page) {
+			iy = 0;
+			++add_to_page;
+		}
 	}
 }
 
 void CraftPage::ResetItemDescription()
 {
-	if (selected_recipe) {
+	if (selected_recipe && *selected_recipe != Item::no_recipe) {
 		auto sit = selected_recipe->first;
 		auto tempid = Item::Manager::CreateItem(sit);
 		auto temp = Item::Manager::getAny(tempid);
@@ -676,7 +742,7 @@ void CraftPage::ResetItemDescription()
 		bool can_craft; // set in Item::getRecipeString()
 		recipe_box->setTextString("Recette:\n" + Item::getRecipeString(*selected_recipe, *items, &can_craft));
 
-		for (auto b : inv_recipes) {
+		for (auto b : inv_recipes[page]) {
 			if (b->getItemRecipe() == *selected_recipe) {
 				b->setCraftable(can_craft);
 			}
@@ -707,9 +773,32 @@ void CraftPage::ResetItemDescription()
 
 void CraftPage::UpdateCanCraft()
 {
-	for (auto i : inv_recipes) {
-		i->setCraftable(Item::getCanCraft(i->getItemRecipe(), *items));
+	for (auto p : inv_recipes) {
+		for (auto i : p) {
+			i->setCraftable(Item::getCanCraft(i->getItemRecipe(), *items));
+		}
 	}
+}
+
+void CraftPage::PrevPage()
+{
+	if (page > 0) {
+		--page;
+	}
+	UpdatePageText();
+}
+
+void CraftPage::NextPage()
+{
+	if (page < max_page) {
+		++page;
+	}
+	UpdatePageText();
+}
+
+void CraftPage::UpdatePageText()
+{
+	page_text->setTextString(to_string(page + 1) + " sur " + to_string(max_page + 1));
 }
 
 // INVENTORY //
@@ -732,6 +821,8 @@ Inventory::~Inventory()
 void Inventory::Init(ButtonActionImpl* button_action_impl)
 {
 	this->button_action_impl = button_action_impl;
+	
+	selected_recipe = Item::no_recipe;
 
 	items_page.button_action_impl = button_action_impl;
 	items_page.window_tw = &window_tw;

@@ -41,6 +41,7 @@ namespace Item
 
 	extern std::vector<Recipe> recipes;
 	extern std::vector<Recipe> repair_recipes;
+	extern Recipe no_recipe;
 
 	Recipe getItemRecipe(ItemType type);
 	Recipe getToolRepairRecipe(ItemType type);

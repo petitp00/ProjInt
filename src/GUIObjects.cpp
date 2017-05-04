@@ -221,6 +221,12 @@ void TextButton::setPos(vec2 pos) {
 	UpdateTextButton(false);
 }
 
+void TextButton::setSize(vec2 size)
+{
+	GUIObject::setSize(size);
+	//UpdateTextButton(false);
+}
+
 void TextButton::setOrigin(vec2 origin) {
 	GUIObject::setOrigin(origin);
 	UpdateTextButton(false);
@@ -264,8 +270,47 @@ void TextButton::UpdateTextButton(bool set_params) {
 
 	rect_shape.setOrigin(origin);
 	rect_shape.setPosition(pos);
-	rect_shape.setFillColor(background_color);
+	rect_shape.setFillColor(LerpColor(background_color, background_color_hover, color_tw.Tween()));
 	setSize(rect_shape.getSize());
+}
+
+SquareButton::SquareButton(const std::string & text_string, vec2 pos, float side_size, unsigned int character_size, sf::Color text_color, sf::Color background_color, sf::Color background_color_hover, std::string const & font_name) :
+	TextButton(text_string, pos, side_size, character_size, text_color, background_color, background_color_hover, font_name), side_size(side_size)
+{
+	UpdateTextButton(true);
+}
+
+void SquareButton::setPos(vec2 pos)
+{
+	this->pos = pos;
+	UpdateTextButton(false);
+}
+
+bool SquareButton::onClick(vec2i mouse_pos)
+{
+	if (action) {
+		(*action)(button_action_impl);
+		return true;
+	}
+	return false;
+}
+
+void SquareButton::UpdateTextButton(bool set_params)
+{
+	text_obj.setCharacterSize(character_size);
+	text_obj.setFillColor(text_color);
+	text_obj.setString(text_string);
+	text_obj.setFont(*font);
+	text_obj.setPosition(pos + vec2(size.x/2.f, size.y/5.f));
+	auto trect = text_obj.getLocalBounds();
+	text_obj.setOrigin(trect.width / 2.f, 0);
+
+	size = vec2(side_size, side_size);
+
+	rect_shape.setPosition(pos);
+	rect_shape.setSize(size);
+	rect_shape.setFillColor(LerpColor(background_color,
+		background_color_hover, color_tw.Tween()));
 }
 
 /*
@@ -580,8 +625,18 @@ void Scrollbar::UpdateClickDrag(vec2i mouse_pos) {
 	if (action) (*action)(button_action_impl);
 }
 
-void Scrollbar::UpdateScrollbar(float val) {
-	value = val;
+void Scrollbar::setPos(vec2 pos)
+{
+	bar_pos = pos;
+	bar_shape.setPosition(bar_pos);
+	this->pos.x = bar_pos.x;
+	UpdateScrollbar(value, false);
+}
+
+void Scrollbar::UpdateScrollbar(float val, bool set_val) {
+	if (set_val) {
+		value = val;
+	}
 	pos.y = bar_pos.y + (value-min_value)/max_value * (bar_height-30);
 	rect_shape.setPosition(pos);
 	rect_shape.setSize(size);

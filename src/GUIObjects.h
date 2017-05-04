@@ -157,8 +157,7 @@ public:
 			   sf::Color text_color = sf::Color::Black,
 			   sf::Color background_color = BG_COLOR,
 			   sf::Color background_color_hover = BG_HOVER,
-			   std::string const& font_name=BASE_FONT_NAME);
-
+			   std::string const& font_name = BASE_FONT_NAME);
 
 	void Update() override;
 	void Render(sf::RenderTarget& target,
@@ -170,11 +169,11 @@ public:
 	bool onHoverOut() override;
 
 	void setPos(vec2 pos) override;
+	void setSize(vec2 size) override;
 	void setOrigin(vec2 origin) override;
 
 protected:
 	void UpdateTextButton(bool set_params = true);
-
 
 	sf::Font* font;
 	unsigned int character_size;
@@ -190,6 +189,21 @@ protected:
 	std::string text_string;
 	sf::Text text_obj;
 	sf::RectangleShape rect_shape;
+};
+
+class SquareButton : public TextButton {
+public:
+	SquareButton(const std::string& text_string, vec2 pos, float size, 
+				unsigned int character_size = FontSize::NORMAL,
+				sf::Color text_color = sf::Color::Black,
+				sf::Color background_color = BG_COLOR,
+				sf::Color background_color_hover = BG_HOVER,
+				std::string const& font_name = BASE_FONT_NAME);
+	void setPos(vec2 pos) override;
+	bool onClick(vec2i mouse_pos) override;
+private:
+	void UpdateTextButton(bool set_params = true);
+	float side_size;
 };
 
 /*
@@ -352,8 +366,9 @@ public:
 	float* getValueRef() { return &value; }
 
 	void setMaxValue(float max_value) { this->max_value = max_value; }
+	void setPos(vec2 pos) override;
 
-	void UpdateScrollbar(float val);
+	void UpdateScrollbar(float val, bool set_val = true);
 private:
 
 	sf::RectangleShape bar_shape;
@@ -391,7 +406,6 @@ public:
 	bool onHoverIn(vec2i mouse_pos={0,0}) override;
 	bool onHoverOut() override;
 	bool onMouseWheel(float delta) override;
-	//bool onKeyPressed(sf::Keyboard::Key key) override;
 	bool onKeyType(sf::Event::KeyEvent e) override;
 
 	void UpdateClickDrag(vec2i mouse_pos) override;

@@ -7,6 +7,7 @@ using namespace std;
 
 vector<Recipe> Item::recipes;
 vector<Recipe> Item::repair_recipes;
+Recipe Item::no_recipe = { Item::ItemType::none, {} };
 
 Recipe Item::getItemRecipe(ItemType type)
 {
