@@ -162,7 +162,7 @@ void Game::Start()
 						ChangeActiveState(State::Game, State::MainMenu);
 					}
 				}
-				else if (event.key.code == sf::Keyboard::F1) {
+				else if (event.key.code == game_settings.controls.get("Console")) {
 					console->setActive(true);
 				}
 				else {

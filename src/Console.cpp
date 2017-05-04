@@ -242,8 +242,15 @@ bool Console::HandleEvent(sf::Event const & event)
 			UpdateInputCaret(true);
 
 		}
+
+#ifdef EDITOR_MODE
 		if (event.key.code != sf::Keyboard::F1 && typing_active)
 			return true;
+#endif
+#ifndef EDITOR_MODE
+		if (event.key.code != command_action_impl.game->getControls().get("Console") && typing_active)
+			return true;
+#endif
 
 	}
 	return false;

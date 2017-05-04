@@ -4,4 +4,4 @@
 "Droite" 3		;D
 "Retour/Pause" 36	;Escape
 "Inventaire" 16		;Q
-"Infos" 85		;F1
+"Console" 85		;F1

@@ -4,4 +4,4 @@
 "Droite" 3
 "Retour/Pause" 36
 "Inventaire" 16
-"Infos" 85
+"Console" 85

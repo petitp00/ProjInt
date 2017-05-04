@@ -555,15 +555,9 @@ void CraftPage::Init()
 	InvPage::Init();
 
 	int ri = Item::recipes.size();
-	cout << "Item::recipes.size(): " << Item::recipes.size() << endl;
-
 	float result = float(ri) / float(max_recipes_per_page);
-	cout << "result: " << result << endl;
-
 	max_page = int(result);
-	cout << "max_page: " << max_page << endl;
 	if (max_page < result) ++max_page;
-	cout << "max_page: " << max_page << endl;
 
 	for (int i = 0; i != max_page; ++i) {
 		inv_recipes.push_back(vector<InvRecipeButton*>());
@@ -856,8 +850,6 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 
 	auto temp = new InvPageButton({0,0}, "", {0,0});
 	delete temp;
-	//system("cls"); //////////////////////////////////////////////// CLEAR THE CONSOLE
-	//cout << "The console has been cleared in Inventory::Init()" << endl;
 
 	auto ms = margin_sides;
 	auto mm = margin_middle;
