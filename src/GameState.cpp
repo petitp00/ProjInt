@@ -48,25 +48,39 @@ void GameState::Update(float dt)
 	interact_bar1.setPosition(p);
 	interact_bar2.setPosition(p);
 
+	Item::Tool* t = nullptr;
 	if (equipped_tool != -1) {
-		auto t = Item::Manager::getTool(equipped_tool);
-		auto old_cut = can_use_tool;
-		can_use_tool = world.getCanUseTool(equipped_tool);
-		if (old_cut && !can_use_tool) {
-			using_tool = false;
-		}
-
-		if (using_tool && can_use_tool) {
-			if (interact_clock.getElapsedTime() >= t->use_speed) {
-				interact_clock.restart();
-				world.UseEquippedToolAt();
-				inventory.UseEquippedTool(); // must be called after world.UseEquippedToolAt for bowls
-				EquipTool(equipped_tool); // to update bowl's sprite
-			}
-			interact_bar1.setSize(vec2(interact_bar_max_w * (1 - interact_clock.getElapsedTime().asSeconds() / t->use_speed.asSeconds()), interact_bar_h));
-		}
-
+		t = Item::Manager::getTool(equipped_tool);
 	}
+
+	auto old_cut = can_use_tool;
+	Item::ItemType icon_type;
+	can_use_tool = world.getCanUseTool(equipped_tool, icon_type);
+
+	if (old_cut && !can_use_tool) {
+		using_tool = false;
+	}
+	else if (!old_cut && can_use_tool) {
+		if (equipped_tool == -1) {
+			equipped_tool_sprite.setTextureRect(Item::getItemTextureRect(icon_type));
+		}
+		else {
+			int ts = int(Item::items_texture_size);
+			equipped_tool_sprite.setTextureRect(sf::IntRect(t->pos_in_texture_map*ts, vec2i(ts, ts)));
+		}
+	}
+
+	if (using_tool && can_use_tool) {
+		sf::Time use_speed = (equipped_tool != -1) ? t->use_speed : sf::seconds(2);
+		if (interact_clock.getElapsedTime() >= use_speed) {
+			interact_clock.restart();
+			world.UseEquippedToolAt();
+			inventory.UseEquippedTool(); // must be called after world.UseEquippedToolAt for bowls
+			EquipTool(equipped_tool); // to update bowl's sprite
+		}
+		interact_bar1.setSize(vec2(interact_bar_max_w * (1 - interact_clock.getElapsedTime().asSeconds() / use_speed.asSeconds()), interact_bar_h));
+	}
+
 
 	auto old_coll = can_collect;
 	can_collect = world.getCanCollect(collect_type);

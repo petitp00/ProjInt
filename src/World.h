@@ -51,7 +51,7 @@ public:
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
-	bool getCanUseTool(int tool);
+	bool getCanUseTool(int tool, Item::ItemType& icon);
 	bool getCanCollect(Item::ItemType& item_type);
 
 	void SortEntities() { entities_need_sorting = true; }

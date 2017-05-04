@@ -502,9 +502,9 @@ ItemObject * World::FindItem(int id)
 	return nullptr;
 }
 
-bool World::getCanUseTool(int tool)
+bool World::getCanUseTool(int tool, Item::ItemType& icon)
 {
-	if (tool && !item_place && !item_move) {
+	if (tool != -1 && !item_place && !item_move) {
 		auto t = Item::Manager::getTool(tool);
 		string name = t->name;
 
@@ -544,6 +544,18 @@ bool World::getCanUseTool(int tool)
 				}
 			}
 		}
+	}
+	else if (tool == -1 && !item_place && !item_move) {
+		if (entity_hovered.size() != 0) {
+			for (auto e : entity_hovered) {
+				auto ent_type = e->getType();
+				if (ent_type == APPLE_TREE) {
+					icon = Item::ItemType::wood;
+					return true;
+				}
+			}
+		}
+
 	}
 
 	return false;
@@ -632,6 +644,51 @@ void World::DropItemFromInventory(int id)
 	particle_manager.SortItemParticles();
 }
 
+void HitTree(TreeObj* tree, Particle::Manager* particle_manager, World* world)
+{
+	auto tp = tree->getPos();
+	auto ts = tree->getSize();
+	// Create leaf particles
+	int leaf_amount = rng::rand_int(7, 14);
+	for (int i = 0; i != leaf_amount; ++ i) {
+		vec2 pos;
+		pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
+		pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
+		float end_y = pos.y + ts.y/2.f;
+		particle_manager->CreateSpriteParticle(Particle::SpriteParticleType::Leaf, pos, end_y);
+	}
+
+	// Create wood particles
+	int wood_amount = rng::rand_int(3, 6);
+	Particle::SpriteParticleType wood_part_type;
+	if (tree->getType() == APPLE_TREE) wood_part_type = Particle::SpriteParticleType::AppleWood;
+	else if (tree->getType() == BANANA_TREE) wood_part_type = Particle::SpriteParticleType::BananaWood;
+	for (int i = 0; i != wood_amount; ++i) {
+		vec2 pos;
+		pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
+		pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
+		float end_y = pos.y + ts.y/2.f;
+		particle_manager->CreateSpriteParticle(wood_part_type, pos, end_y);
+	}
+
+	if (tree->getChopped()) {
+		auto items_dropped = tree->getDroppedItems();
+		for (auto i : items_dropped) {
+			for (int n = 0; n != i.second; ++n) {
+				vec2 pos;
+				pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
+				pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
+				float end_y = pos.y + ts.y/2.f;
+				particle_manager->CreateItemParticle(i.first, pos, end_y);
+			}
+		}
+		world->DeleteTree(tree->getId());
+	}
+
+	particle_manager->SortSpriteParticles();
+	particle_manager->SortItemParticles();
+}
+
 void World::UseEquippedToolAt()
 {
 	auto m = mouse_pos_in_world;
@@ -675,52 +732,23 @@ void World::UseEquippedToolAt()
 			for (auto tree : trees) {
 				auto tp = tree->getPos();
 				auto ts = tree->getSize();
-				
 				if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
 					tree->Hit();
-
-					// Create leaf particles
-					int leaf_amount = rng::rand_int(7, 14);
-					for (int i = 0; i != leaf_amount; ++ i) {
-						vec2 pos;
-						pos.x = rng::rand_float(tp.x + ts.x/6.f, tp.x+ts.x - ts.x/6.f);
-						pos.y = rng::rand_float(tp.y + ts.y/6.f, tp.y+ts.y/3.f*2.f);
-						float end_y = pos.y + ts.y/2.f;
-						particle_manager.CreateSpriteParticle(Particle::SpriteParticleType::Leaf, pos, end_y);
-					}
-
-					// Create wood particles
-					int wood_amount = rng::rand_int(3, 6);
-					Particle::SpriteParticleType wood_part_type;
-					if (tree->getType() == APPLE_TREE) wood_part_type = Particle::SpriteParticleType::AppleWood;
-					else if (tree->getType() == BANANA_TREE) wood_part_type = Particle::SpriteParticleType::BananaWood;
-					for (int i = 0; i != wood_amount; ++i) {
-						vec2 pos;
-						pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
-						pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
-						float end_y = pos.y + ts.y/2.f;
-						particle_manager.CreateSpriteParticle(wood_part_type, pos, end_y);
-					}
-
-					if (tree->getChopped()) {
-						auto items_dropped = tree->getDroppedItems();
-						for (auto i : items_dropped) {
-							for (int n = 0; n != i.second; ++n) {
-								vec2 pos;
-								pos.x = rng::rand_float(tp.x + ts.x/3.f, tp.x+ts.x - ts.x/3.f);
-								pos.y = rng::rand_float(tp.y + ts.y/2.f, tp.y+ts.y/4.f*3.5f);
-								float end_y = pos.y + ts.y/2.f;
-								particle_manager.CreateItemParticle(i.first, pos, end_y);
-							}
-						}
-						DeleteTree(tree->getId());
-					}
-
-					particle_manager.SortSpriteParticles();
-					particle_manager.SortItemParticles();
+					HitTree(tree, &particle_manager, this);
 				}
 			}
 		}
+	}
+	else { // no tool equipped
+		for (auto tree : trees) {
+			auto tp = tree->getPos();
+			auto ts = tree->getSize();
+			if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+				tree->Hit();
+				HitTree(tree, &particle_manager, this);
+			}
+		}
+			
 	}
 }
 

@@ -105,7 +105,7 @@ struct CraftPage : public InvPage
 
 	int page = 0;
 	int max_page = 1;
-	int max_recipes_per_page = 6;
+	int max_recipes_per_page = 7;
 	TextBox* page_text;
 
 	Item::Recipe* selected_recipe;

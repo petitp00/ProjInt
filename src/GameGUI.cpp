@@ -1051,6 +1051,8 @@ void Inventory::DeleteItem(int id)
 	}
 
 	Item::Manager::DeleteItem(id);
+	if (selected_item == id) selected_item = -1;
+	if (selected_tool == id) selected_tool = -1;
 
 	Refresh();
 	craft_page.UpdateCanCraft();
