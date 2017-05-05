@@ -10,18 +10,19 @@ int Entity::last_id = 0;
 
 std::vector<std::string> Entity::getSavedData()
 {
+	cout << "Warning: Entity::getSavedData() called." << endl;
 	return std::vector<std::string>();
 }
 
-GameObject::GameObject(int variation, unsigned long flags, std::vector<std::string> const & saved_data):
-	Entity({0,0}, {0,0}, flags), variation(variation) {}
-
-GameObject::GameObject(unsigned long flags, std::vector<std::string> const & saved_data):
-	Entity({0,0}, {0,0}, flags)
+std::string Entity::getHoverInfo()
 {
-	type = GAME_OBJECT;
-	variation = stoi(saved_data[0]);
+	cout << "Warning: Entity::getHoverInfo() called." << endl;
+	return std::string();
 }
+
+GameObject::GameObject(Type type, int variation, vec2 pos, vec2 size,
+	std::vector<std::string> const & saved_data):
+	Entity(type, pos, size), variation(variation) {}
 
 void GameObject::Init()
 {
@@ -36,34 +37,34 @@ void GameObject::setCoordsInfo(CoordsInfo ci)
 {
 	cinfo = ci;
 	cinfo.collision_rect.left -= cinfo.texture_rect.left;
-	cinfo.collision_rect.top -= cinfo.texture_rect.top;
+	cinfo.collision_rect.top  -= cinfo.texture_rect.top;
 
-	cinfo.collision_rect.left =		int(cinfo.collision_rect.left * scale);
-	cinfo.collision_rect.top =		int(cinfo.collision_rect.top * scale);
-	cinfo.collision_rect.width =	int(cinfo.collision_rect.width * scale);
-	cinfo.collision_rect.height =	int(cinfo.collision_rect.height * scale);
+	cinfo.collision_rect.left	=	int(cinfo.collision_rect.left * scale);
+	cinfo.collision_rect.top	=	int(cinfo.collision_rect.top * scale);
+	cinfo.collision_rect.width	=	int(cinfo.collision_rect.width * scale);
+	cinfo.collision_rect.height	=	int(cinfo.collision_rect.height * scale);
 }
 
 sf::FloatRect const GameObject::getCollisionBox()
 {
-	return sf::FloatRect(pos.x + cinfo.collision_rect.left, pos.y + cinfo.collision_rect.top, float(cinfo.collision_rect.width), float(cinfo.collision_rect.height));
+	return sf::FloatRect(
+		pos.x + cinfo.collision_rect.left,
+		pos.y + cinfo.collision_rect.top,
+		float(cinfo.collision_rect.width),
+		float(cinfo.collision_rect.height)
+	);
 }
 
-ItemObject::ItemObject(int item_id, unsigned long flags, std::vector<std::string> const & saved_data) :
-	item_id(item_id), GameObject(0, flags, saved_data)
+ItemObject::ItemObject(int item_id, vec2 pos, vec2 size,
+	std::vector<std::string> const & saved_data) :
+	item_id(item_id), GameObject(Type::ITEM, 0, pos, size, saved_data)
 {
-	type = ITEM;
 	cinfo.texture_name = Item::texture_map_file;
 }
 
-TreeObj::TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags, const std::vector<std::string>& saved_data):
-	GameObject(0, flags, saved_data)
+TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data):
+	GameObject(type, 0, pos, vec2(0,0), saved_data)
 {
-	this->type = type;
-	this->pos = pos;
-	this->size = size;
-	this->flags = flags;
-
 	scale = 2.f;
 
 	if (saved_data.size() != 0) {
@@ -196,8 +197,8 @@ Player::Player() : Entity()
 	Init();
 }
 
-Player::Player(vec2 pos, vec2 size, unsigned long flags, std::vector<std::string> const & saved_data) :
-	Entity(pos, size, flags, saved_data)
+Player::Player(vec2 pos, vec2 size, std::vector<std::string> const & saved_data) :
+	Entity(PLAYER, pos, size, saved_data)
 {
 	type = PLAYER;
 	Init();
@@ -252,7 +253,7 @@ void Player::Render(sf::RenderTarget & target)
 void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 {
 	for (auto e : entities) {
-		if (e->HasFlag(SOLID) && e->getId() != entity_move_id) {
+		if (e->getSolid() && e->getId() != entity_move_id) {
 			auto ebox = e->getCollisionBox();
 			vec2 epos = {ebox.left, ebox.top};
 			vec2 esize ={ebox.width, ebox.height};

@@ -44,6 +44,7 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 
 void GameState::Update(float dt)
 {
+	// Update of use tool and collect
 	auto p = mouse_pos - vec2(interact_bar_max_w / 2.f, - 14);
 	interact_bar1.setPosition(p);
 	interact_bar2.setPosition(p);
@@ -110,6 +111,8 @@ void GameState::Update(float dt)
 		collecting_sprite.setPosition(mouse_pos - ets_size/2.f);
 		equipped_tool_sprite.setPosition(mouse_pos - ets_size/2.f);
 	}
+
+	// Updates
 
 	if (!game.getConsole().getActive())
 		world.Update(dt, mouse_pos_in_world);

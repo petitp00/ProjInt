@@ -15,12 +15,6 @@
 
 struct Controls;
 
-// FLAGS
-#define NO_FLAG 0
-#define IMMORTAL 1 // never dies (should be sorted at head of vector)
-#define	SOLID 2 // can't walk through (has collisions)
-#define PICKUP 4 // can be picked up
-
 /*
 Entity Saving:
 	- pos
@@ -52,7 +46,6 @@ enum Type {
 	GAME_OBJECT = 3,
 	ROCK = 4,
 	BUSH = 5,
-	TREE = 6,
 	ITEM = 7,
 	APPLE_TREE = 8,
 	BANANA_TREE = 9,
@@ -67,7 +60,6 @@ static std::string getEntityTypeString(Type t) {
 	case GAME_OBJECT:	return "GAME_OBJECT";
 	case ROCK:			return "ROCK";
 	case BUSH:			return "BUSH";
-	case TREE:			return "TREE";
 	case ITEM:			return "ITEM";
 	case APPLE_TREE:	return "APPLE_TREE";
 	case BANANA_TREE:	return "BANANA_TREE";
@@ -77,13 +69,29 @@ static std::string getEntityTypeString(Type t) {
 	}
 }
 
+static std::string getEntityName(Type t) {
+	switch (t)
+	{
+	case ERROR:			return "Erreur";
+	case ENTITY:		return "Entité";
+	case PLAYER:		return "Joueur";
+	case GAME_OBJECT:	return "GameObject";
+	case ROCK:			return "Roche";
+	case BUSH:			return "Buisson";
+	case ITEM:			return "Item";
+	case APPLE_TREE:	return "Pommier";
+	case BANANA_TREE:	return "Bananier";
+	case HUT:			return "Cabane";
+	default:			return "case missing in getEntityName()";
+	}
+}
+
 static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "ENTITY")		return ENTITY;
 	if (str == "PLAYER")		return PLAYER;
 	if (str == "GAME_OBJECT")	return GAME_OBJECT;
 	if (str == "ROCK")			return ROCK;
 	if (str == "BUSH")			return BUSH;
-	if (str == "TREE")			return TREE;
 	if (str == "ITEM")			return ITEM;
 	if (str == "APPLE_TREE")	return APPLE_TREE;
 	if (str == "BANANA_TREE")	return BANANA_TREE;
@@ -91,50 +99,50 @@ static Type getEntityTypeFromString(const std::string& str) {
 	return Type::ERROR;
 }
 
+/*
+	Base class, is pure virtual
+*/
 class Entity
 {
 public:
-
 	Entity() {
 		++last_id;
 		id = last_id;
 	}
-	Entity(vec2 pos, vec2 size, unsigned long flags=NO_FLAG,
-		   std::vector<std::string> const& saved_data={}) {
+	Entity(Type type, vec2 pos, vec2 size, std::vector<std::string> const& saved_data={}) {
+		this->type = type;
 		this->pos = pos;
 		this->size = size;
-		this->flags = flags;
-
 		++last_id;
 		id = last_id;
 	}
 	virtual ~Entity() = 0 {}
-
 	virtual void Update(float dt) {};
 	virtual void Render(sf::RenderTarget& target) = 0;
 
+	// Setters
 	virtual void setPos(vec2 pos) { this->pos = pos; }
 	void setDead(bool dead) { this->dead = dead; }
 
-	virtual std::vector<std::string> getSavedData();
-	vec2 const& getPos() { return pos; }
-	virtual vec2 getOrigin() { return {0,0}; }
-	vec2 const& getSize() { return size; }
+	// Getters
+	Type		getType()	{ return type; }
+	const vec2& getPos()	{ return pos; }
+	const vec2& getSize()	{ return size; }
+	bool		getDead()	{ return dead; }
+	bool		getSolid()	{ return solid; }
+	int			getId()		{ return id; }
 	virtual sf::FloatRect const getCollisionBox() { return {pos,size}; }
-	bool getDead() { return dead; }
-	Type getType() { return type; }
-	unsigned long getFlags() { return flags; }
-	int getId() { return id; }
 
-	void AddFlag(unsigned long flag) { flags |= flag; }
-	bool HasFlag(unsigned long flag) { return (flags & flag) == flag; }
+	virtual std::vector<std::string> getSavedData();
+	virtual std::string getHoverInfo();
 
 protected:
+	Type type = ENTITY;
 	vec2 pos;
 	vec2 size;
+
 	bool dead = false;
-	Type type = ENTITY;
-	unsigned long flags;
+	bool solid = true;
 
 	int id;
 	static int last_id;
@@ -145,32 +153,17 @@ class GameObject : public Entity
 	friend GameObject* make_rock(vec2 pos, int variation);
 	friend GameObject* make_hut(vec2 pos);
 public:
-	GameObject()=default;
-	GameObject(int variation, unsigned long flags=NO_FLAG,
-					  std::vector<std::string> const& saved_data={});
-	GameObject(unsigned long flags,
-					  std::vector<std::string> const& saved_data={}); // for loading
+	GameObject(Type type, int variation, vec2 pos = vec2(0, 0), vec2 size = vec2(0, 0), const std::vector<std::string>& saved_data={});
 
 	void Init(); // call this after members are set
 	void Render(sf::RenderTarget& target) override { 
 		target.draw(sprite);
-
-		sf::RectangleShape shape(vec2(getCollisionBox().width, getCollisionBox().height));
-		shape.setPosition(vec2(getCollisionBox().left, getCollisionBox().top));
-		shape.setFillColor(sf::Color(255, 0, 0, 60));
-		//target.draw(shape);
-
-		shape.setSize(size);
-		shape.setPosition(pos);
-		shape.setFillColor(sf::Color(0, 255, 0, 60));
-		//target.draw(shape);
 	}
 
 	void setPos(vec2 pos) override { Entity::setPos(pos); sprite.setPosition(pos); }
 	void setCoordsInfo(CoordsInfo ci);
 
 	sf::FloatRect const getCollisionBox() override;
-
 	std::vector<std::string> getSavedData() override { return {
 		std::to_string(variation)
 	}; }
@@ -185,16 +178,11 @@ class ItemObject : public GameObject
 {
 	friend ItemObject* make_item(int id, vec2 pos);
 public:
-	ItemObject()=default;
-	ItemObject(int item_id, unsigned long flags=NO_FLAG,
-					  std::vector<std::string> const& saved_data={});
-	
-	ItemObject(unsigned long flags,
-					  std::vector<std::string> const& saved_data={}) = delete; // for loading
+	ItemObject(int item_id, vec2 pos = vec2(0,0), vec2 size = vec2(0,0), std::vector<std::string> const& saved_data={});
 
 	std::vector<std::string> getSavedData() override {
 		auto item = Item::Manager::getAny(item_id);
-		return { // save with item id (referring to another part of the save file) ???????
+		return {
 			item->name, std::to_string(variation)
 		};
 	}
@@ -203,17 +191,15 @@ public:
 
 private:
 	int item_id;
-
 };
 
 class TreeObj : public GameObject
 {
-	friend TreeObj* make_tree_obj(
-		Type type, int variation, vec2 pos, 
-		std::vector<std::string> saved_data);// = std::vector<std::string>());
+	friend TreeObj* make_tree_obj( Type type, int variation, vec2 pos, 
+		std::vector<std::string> saved_data);
 public:
 	TreeObj()=default;
-	TreeObj(Type type, vec2 pos, vec2 size, unsigned long flags = SOLID,
+	TreeObj(Type type, vec2 pos,
 			const std::vector<std::string>& saved_data = {});
 
 	void Init();
@@ -269,8 +255,7 @@ class Player : public Entity
 {
 public:
 	Player();
-	Player(vec2 pos, vec2 size, unsigned long flags=NO_FLAG,
-		   std::vector<std::string> const& saved_data={});
+	Player(vec2 pos, vec2 size, std::vector<std::string> const& saved_data={});
 
 	void Init();
 	void Update(float dt) override;
@@ -308,7 +293,7 @@ static Entity* make_entity(
 
 static GameObject* make_rock( vec2 pos = {0,0}, int variation = 1) {
 
-	auto rock = new GameObject(variation, SOLID|IMMORTAL);
+	auto rock = new GameObject(ROCK, variation);
 
 	CoordsInfo info;
 	if (variation == 1) {
@@ -321,7 +306,6 @@ static GameObject* make_rock( vec2 pos = {0,0}, int variation = 1) {
 		info = getCoordsInfo("rock3");
 	}
 
-	rock->type = ROCK;
 	rock->pos = pos;
 	rock->scale = 2.f;
 	rock->setCoordsInfo(info);
@@ -330,9 +314,8 @@ static GameObject* make_rock( vec2 pos = {0,0}, int variation = 1) {
 }
 
 static GameObject* make_hut(vec2 pos = {0,0}) {
-	auto hut = new GameObject(0, SOLID);
+	auto hut = new GameObject(HUT, 0);
 	CoordsInfo i = getCoordsInfo("hut");
-	hut->type = HUT;
 	hut->pos = pos;
 	hut->scale = 2.f;
 	hut->setCoordsInfo(i);
@@ -344,7 +327,7 @@ static TreeObj* make_tree_obj(
 	Type type, int variation = 5, vec2 pos= {0,0},
 	std::vector<std::string> saved_data = std::vector<std::string>()) {
 
-	auto tree = new TreeObj(type, pos, {0,0}, SOLID, saved_data);
+	auto tree = new TreeObj(type, pos, saved_data);
 	tree->setGrowthLevel(variation);
 	tree->Init();
 	return tree;
@@ -352,11 +335,11 @@ static TreeObj* make_tree_obj(
 
 static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	float ts = Item::items_texture_size;
-	auto i = new ItemObject(id, SOLID);
-	i->type = ITEM;
-	i->pos = pos;
+
 	auto scale = 1.f;
-	i->size = {ts*scale, ts*scale};
+	vec2 size = {ts*scale, ts*scale};
+
+	auto i = new ItemObject(id, pos, size);
 	i->scale = scale;
 
 	auto item = Item::Manager::getAny(id);

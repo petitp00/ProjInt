@@ -151,10 +151,6 @@ void World::LoadWorld(std::string const & filename)
 			s >> str;
 			sz.y = stof(str);
 
-			unsigned long f;
-			s >> str;
-			f = atol(str.c_str()); // Might need to be unsigned
-
 			std::vector<std::string> vec;
 			str = "";
 			bool b = false;
@@ -185,7 +181,7 @@ void World::LoadWorld(std::string const & filename)
 				cerr << "ERROR in save file: \"Data/Saves/" << filename << "\": entity saved as type Entity, which is a pure virtual class." << endl;
 				break;
 			case PLAYER:
-				pl = new Player(p, sz, f, vec);
+				pl = new Player(p, sz, vec);
 				player = pl;
 				entities.push_back(player);
 				break;
@@ -286,10 +282,9 @@ void World::Save(const string& filename)
 
 	cout << "saving entities...";
 	for (auto e : entities) {
-		s << "e "	<< e->getType()		<< ' '
-					<< e->getPos().x	<< ' ' << e->getPos().y		<< ' '
-					<< e->getSize().x	<< ' ' << e->getSize().y	<< ' '
-					<< e->getFlags()	<< ' ';
+		s << "e " << e->getType() << ' '
+			<< e->getPos().x << ' ' << e->getPos().y << ' '
+			<< e->getSize().x << ' ' << e->getSize().y << ' ';
 
 		for (auto & str : e->getSavedData()) { s << '"' << str << "\" "; }
 		s << endl;
@@ -356,8 +351,8 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	player->DoCollisions(entities, no_collision_id);
 	player->DoMovement(dt);
 
-	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f + item_place->getOrigin());
-	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f + item_move->getOrigin());
+	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f);
+	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f);
 
 	UpdateView();
 

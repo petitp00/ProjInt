@@ -512,7 +512,6 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 	
 		Type type = ENTITY;
 		vec2 pos(0, 0);
-		unsigned long flags = NO_FLAG;
 		int variation = 0;
 
 		if (args.size() >= 1) {
