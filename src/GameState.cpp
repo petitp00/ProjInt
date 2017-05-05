@@ -117,6 +117,7 @@ void GameState::Update(float dt)
 	if (!game.getConsole().getActive())
 		world.Update(dt, mouse_pos_in_world);
 	inventory.Update();
+	hover_info.Update();
 }
 
 void GameState::Render(sf::RenderTarget & target)
@@ -138,6 +139,9 @@ void GameState::Render(sf::RenderTarget & target)
 		target.draw(interact_bar2);
 		target.draw(interact_bar1);
 	}
+
+	if (!inventory.getActive())
+		hover_info.Render(target);
 
 	inventory.Render(target);
 
@@ -209,11 +213,43 @@ bool GameState::HandleEvent(sf::Event const & event)
 				collecting = false;
 			}
 		}
+		else if (event.type == sf::Event::MouseMoved) {
+			UpdateGUIHoverInfo();
+		}
 
 		inv_butt.HandleEvent(event);
 		tool_obj.HandleEvent(event);
 	}
 	return world.HandleEvent(event);
+}
+
+void GameState::UpdateGUIHoverInfo()
+{
+	static Entity* prev_e = nullptr;
+	static GroundTile* prev_t = nullptr;
+
+	auto e = world.FindEntityClicked(mouse_pos_in_world);
+	if (e && e != prev_e) {
+		hover_info.setString(e->getHoverInfo());
+		prev_e = e;
+		prev_t = nullptr;
+	}
+	else if (e && e == prev_e && e->getHoverInfoChanged()) {
+		hover_info.setString(e->getHoverInfo());
+		e->setHoverInfoChanged(false);
+	}
+	else if (!e) {
+		auto t = world.getGroundTileHovered(mouse_pos_in_world);
+		if (t) {
+			hover_info.setString(t->getName() + '\n');
+			prev_t = t;
+		}
+		else if (prev_e) {
+			hover_info.setString("");
+		}
+
+		prev_e = nullptr;
+	}
 }
 
 void GameState::StartNewGame(std::string const & name)

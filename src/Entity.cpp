@@ -3,6 +3,7 @@
 
 #include "Globals.h"
 
+#include <sstream>
 #include <iostream>
 using namespace std;
 
@@ -55,11 +56,45 @@ sf::FloatRect const GameObject::getCollisionBox()
 	);
 }
 
+std::string GameObject::getHoverInfo()
+{
+	stringstream str;
+
+	if (type == ROCK) {
+		str << "Roche";
+	}
+	else if (type == HUT) {
+		str << "Cabane" << '\n';
+		str << "Clic gauche pour dormir." << '\n'
+			<< "Recharge la barre d'énergie et passe la nuit.\n";
+	}
+
+	return str.str();
+}
+
 ItemObject::ItemObject(int item_id, vec2 pos, vec2 size,
 	std::vector<std::string> const & saved_data) :
 	item_id(item_id), GameObject(Type::ITEM, 0, pos, size, saved_data)
 {
 	cinfo.texture_name = Item::texture_map_file;
+}
+
+std::string ItemObject::getHoverInfo()
+{
+	stringstream str;
+
+	auto itype = Item::Manager::getItemType(item_id);
+	auto iany = Item::Manager::getAny(item_id);
+
+	str << iany->name << '\n';
+	str << iany->desc << '\n';
+
+	if (Item::IsFood(itype)) {
+		auto food = Item::Manager::getFood(item_id);
+		str << "Pourriture: " << to_string(food->spoil_level) << '%' << '\n';
+	}
+
+	return str.str();
 }
 
 TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data):
@@ -152,6 +187,30 @@ void TreeObj::setGrowthLevel(int level)
 	setCoordsInfo(cinfo);
 
 	Init();
+}
+
+std::string TreeObj::getHoverInfo()
+{
+	stringstream str;
+
+	auto drop = getDroppedItems();
+
+	if (type == APPLE_TREE) {
+		str << "Pommier" << '\n';
+		if (drop.size() > 0) {
+			str << "Donne " << to_string(drop[0].second) << " bois." << '\n';
+		}
+	}
+	else if (type == BANANA_TREE) {
+		str << "Bananier" << '\n';
+		if (drop.size() > 0) {
+			str << "Donne " << (drop[0].second) << " feuilles de bananier." << '\n';
+		}
+	}
+
+	str << "Fruits à cueillir: " << to_string(fruits) << '\n';
+
+	return str.str();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -320,4 +379,9 @@ void Player::setPos(vec2 pos)
 {
 	this->pos = pos;
 	anim_comp.Update();
+}
+
+std::string Player::getHoverInfo()
+{
+	return std::string("Joueur\n");
 }

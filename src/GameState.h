@@ -20,6 +20,7 @@ public:
 	void Render(sf::RenderTarget& target);
 
 	bool HandleEvent(sf::Event const& event);
+	void UpdateGUIHoverInfo();
 
 	void StartNewGame(std::string const& name);
 	void LoadGame(std::string const& name);
@@ -59,5 +60,6 @@ private:
 	Inventory inventory;
 	InventoryButton inv_butt;
 	EquippedToolObj tool_obj;
+	GUIHoverInfo hover_info;
 
 };

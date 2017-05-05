@@ -123,6 +123,7 @@ public:
 	// Setters
 	virtual void setPos(vec2 pos) { this->pos = pos; }
 	void setDead(bool dead) { this->dead = dead; }
+	void setHoverInfoChanged(bool b) { hover_info_changed = b; }
 
 	// Getters
 	Type		getType()	{ return type; }
@@ -131,6 +132,7 @@ public:
 	bool		getDead()	{ return dead; }
 	bool		getSolid()	{ return solid; }
 	int			getId()		{ return id; }
+	bool getHoverInfoChanged() { return hover_info_changed; }
 	virtual sf::FloatRect const getCollisionBox() { return {pos,size}; }
 
 	virtual std::vector<std::string> getSavedData();
@@ -143,6 +145,8 @@ protected:
 
 	bool dead = false;
 	bool solid = true;
+
+	bool hover_info_changed = true;
 
 	int id;
 	static int last_id;
@@ -167,6 +171,9 @@ public:
 	std::vector<std::string> getSavedData() override { return {
 		std::to_string(variation)
 	}; }
+
+	std::string getHoverInfo() override;
+
 protected:
 	sf::Sprite sprite;
 	CoordsInfo cinfo;
@@ -180,14 +187,16 @@ class ItemObject : public GameObject
 public:
 	ItemObject(int item_id, vec2 pos = vec2(0,0), vec2 size = vec2(0,0), std::vector<std::string> const& saved_data={});
 
+	sf::FloatRect const getCollisionBox() override { return {pos+size/4.f,size/2.f}; }
+	int getItemId() { return item_id; }
+
 	std::vector<std::string> getSavedData() override {
 		auto item = Item::Manager::getAny(item_id);
 		return {
 			item->name, std::to_string(variation)
 		};
 	}
-	sf::FloatRect const getCollisionBox() override { return {pos+size/4.f,size/2.f}; }
-	int getItemId() { return item_id; }
+	std::string getHoverInfo() override;
 
 private:
 	int item_id;
@@ -221,6 +230,7 @@ public:
 		std::to_string(fruits)
 	}; }
 
+	std::string getHoverInfo() override;
 
 private:
 	int growth_level = 0; // 1 to 6
@@ -264,6 +274,8 @@ public:
 	void DoMovement(float dt);
 	void setControls(Controls* controls) { this->controls = controls; }
 	void setPos(vec2 pos) override;
+
+	std::string getHoverInfo() override;
 
 private:
 	Controls* controls = nullptr;

@@ -18,10 +18,10 @@ class InvRecipeButton;
 class ButtonActionImpl;
 struct Controls;
 
-static sf::Color INV_WINDOW_COLOR(115, 106, 91);
-static sf::Color INV_ACCENT_COLOR(144, 131, 114);
-static sf::Color INV_ACCENT_COLOR2(135, 118, 96);
-static sf::Color INV_ACCENT_COLOR3(169, 145, 98);
+static sf::Color INV_WINDOW_COLOR(115, 106, 91, 200);
+static sf::Color INV_ACCENT_COLOR(144, 131, 114, 210);
+static sf::Color INV_ACCENT_COLOR2(135, 118, 96, 210);
+static sf::Color INV_ACCENT_COLOR3(169, 145, 98, 210);
 static sf::Color INV_TEXT_COLOR(47, 50, 55);
 
 enum class PageType
@@ -220,3 +220,25 @@ private:
 	vec2 size;
 };
 
+class GUIHoverInfo
+{
+public:
+	GUIHoverInfo();
+	void Update();
+	void Render(sf::RenderTarget& target);
+	void setString(const std::string& text);
+
+private:
+	std::string text;
+	sf::RectangleShape rect;
+	sf::Text text_obj;
+
+	vec2 pos;
+	vec2 origin;
+	vec2 size;
+
+	float margin;
+
+	Tweener rect_alpha_tw;
+	Tweener text_alpha_tw;
+};

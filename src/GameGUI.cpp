@@ -846,6 +846,7 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	page_buttons.clear();
 
 	window_shape.setSize({INV_WINDOW_WIDTH, INV_WINDOW_HEIGHT});
+
 	window_shape.setFillColor(INV_WINDOW_COLOR);
 
 	auto temp = new InvPageButton({0,0}, "", {0,0});
@@ -1005,7 +1006,6 @@ void Inventory::AddNewItem(Item::ItemType type)
 {
 	int item = Item::Manager::CreateItem(type);
 	AddItem(item);
-	//if (!AddItem(item)) Item::Manager::DeleteItem(item);
 	
 	Refresh();
 }
@@ -1178,6 +1178,7 @@ void EquippedToolObj::Init(Inventory * inventory)
 
 	shape.setSize({ts + 4, ts + 4});
 	shape.setPosition(pos - vec2{2.f, 2.f});
+
 	shape.setOutlineColor(INV_WINDOW_COLOR);
 	shape.setFillColor(INV_ACCENT_COLOR);
 	shape.setOutlineThickness(2);
@@ -1240,4 +1241,66 @@ void EquippedToolObj::setTool(int id)
 		tool_type = Item::getItemTypeByName(i->name);
 	}
 	Init(inventory);
+}
+
+sf::Time change_time = sf::seconds(0.25f);
+
+GUIHoverInfo::GUIHoverInfo()
+{
+	size = vec2(0, 0);
+	origin = vec2(float(WINDOW_WIDTH), 20);
+	pos = origin;
+
+	margin = 12.f;
+
+	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	text_obj.setCharacterSize(FontSize::TINY);
+
+	rect.setFillColor(INV_WINDOW_COLOR);
+
+	rect_alpha_tw.Reset(TweenType::Linear, 1, 0, sf::seconds(0.1f));
+	text_alpha_tw.Reset(TweenType::Linear, 0, 1, sf::seconds(0.1f));
+}
+
+void GUIHoverInfo::Update()
+{
+	auto tcol = INV_TEXT_COLOR;
+	tcol.a = 0;
+	text_obj.setFillColor(LerpColor(tcol, INV_TEXT_COLOR, text_alpha_tw.Tween()));
+
+	auto rcol = INV_WINDOW_COLOR;
+	rcol.a = 0;
+	rect.setFillColor(LerpColor(rcol, INV_WINDOW_COLOR, rect_alpha_tw.Tween()));
+}
+
+void GUIHoverInfo::Render(sf::RenderTarget & target)
+{
+	target.draw(rect);
+	target.draw(text_obj);
+}
+
+void GUIHoverInfo::setString(const std::string & text)
+{
+	if (text == "") {
+		this->text = text;
+		rect_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
+		text_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
+	}
+	else if (text != this->text) {
+		if (*(text.end() - 1) == '\n') {
+			this->text = text.substr(0, text.size() - 1);
+		}
+		this->text = text;
+		rect_alpha_tw.Reset(TweenType::QuartInOut, 0, 1, change_time);
+		text_alpha_tw.Reset(TweenType::QuartIn, 0, 1, change_time);
+
+		text_obj.setString(this->text);
+
+		size = vec2(text_obj.getGlobalBounds().width, text_obj.getGlobalBounds().height);
+		size += vec2(margin * 2, margin * 2 - 10);
+		pos = origin - vec2(size.x, 0);
+		rect.setPosition(pos);
+		rect.setSize(size);
+		text_obj.setPosition(pos + vec2(margin, margin));
+	}
 }

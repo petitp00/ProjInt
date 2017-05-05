@@ -81,6 +81,7 @@ public:
 	void setType(GroundType type) { this->type = type; }
 	GroundType getType() { return type; }
 	vec2 getPos() { return pos; }
+	std::string getName();
 private:
 	GroundType type;
 	vec2 pos;
@@ -98,9 +99,9 @@ public:
 
 	// Getters
 	GroundType getTileClickedType(vec2 mpos);
-	GroundTile& getTile(vec2 pos);
-	GroundTile& getTile(float x, float y);
-	GroundTile& getTileClicked(vec2 mpos);
+	GroundTile* getTile(vec2 pos);
+	GroundTile* getTile(float x, float y);
+	GroundTile* getTileClicked(vec2 mpos);
 	std::vector<GroundTile>& getTiles()		{ return tiles; }
 	int getWidth()							{ return width; }
 	int getHeight()							{ return height; }

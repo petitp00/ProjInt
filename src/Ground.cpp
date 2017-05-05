@@ -99,6 +99,20 @@ void Tileset::getUV(vector<sf::Vector3i>* vec, GroundType main_type, vector<Over
 
 GroundTile::GroundTile(GroundType type, vec2 pos) : type(type), pos(pos) { }
 
+std::string GroundTile::getName()
+{
+	switch (type)
+	{
+	case NONE: return "None";
+	case GRASS: return "Gazon";
+	case SAND: return "Sable";
+	case RIVER: return "Rivière";
+	case DRY_DIRT: return "Terre sèche";
+	case DIRT: return "Terre";
+	default: return "Missing case in GroundTile::getName()";
+	}
+}
+
 Ground::Ground() :
 	tileset("Ground.png")
 {
@@ -236,7 +250,7 @@ void Ground::Fill(vec2 mpos, GroundType type)
 		float(int(mpos.x / visual_tile_size)),
 		float(int(mpos.y / visual_tile_size))
 	};
-	GroundType target_type = getTile(tpos).getType();
+	GroundType target_type = getTile(tpos)->getType();
 	if (type == target_type) return;
 
 	std::deque<vec2> stack;
@@ -252,22 +266,22 @@ void Ground::Fill(vec2 mpos, GroundType type)
 			auto w = n.x, e = n.x;
 			while (w >= 0) {
 				w -= 1;
-				if (getTile(w, n.y).getType() != target_type) break;
+				if (getTile(w, n.y)->getType() != target_type) break;
 			}
 			while (e < width) {
 				e += 1;
-				if (getTile(e, n.y).getType() != target_type) break;
+				if (getTile(e, n.y)->getType() != target_type) break;
 			}
 
 			bool check_north = (n.y > 0);
 			bool check_south = (n.y < height);
 
 			for (float i = w+1; i != e; ++i) {
-				getTile(i, n.y).setType(type);
-				if (check_north && getTile(i, n.y - 1).getType() == target_type) {
+				getTile(i, n.y)->setType(type);
+				if (check_north && getTile(i, n.y - 1)->getType() == target_type) {
 					stack.push_back({float(i), n.y-1});
 				}
-				if (check_south && getTile(i, n.y + 1).getType() == target_type) {
+				if (check_south && getTile(i, n.y + 1)->getType() == target_type) {
 					stack.push_back({float(i), n.y+1});
 				}
 			}
@@ -292,35 +306,35 @@ void Ground::setTileClicked(vec2 mpos, GroundType type)
 	tpos.y = float(int(mpos.y / visual_tile_size));
 
 	if (tpos.x >= 0 && tpos.x < width && tpos.y >= 0 && tpos.y < height) {
-		getTile(tpos).setType(type);
+		getTile(tpos)->setType(type);
 		ReloadTileMap();
 	}
 }
 
 GroundType Ground::getTileClickedType(vec2 mpos)
 {
-	return getTileClicked(mpos).getType();
+	return getTileClicked(mpos)->getType();
 }
 
-GroundTile& Ground::getTile(vec2 pos)
+GroundTile* Ground::getTile(vec2 pos)
 {
 	uint i = uint(pos.x + pos.y*width);
 	if (i < tiles.size()) {
-		return tiles[i];
+		return &tiles[i];
 	}
-	return not_found;
+	return nullptr;
 }
 
-GroundTile& Ground::getTile(float x, float y)
+GroundTile* Ground::getTile(float x, float y)
 {
 	uint i = uint(x + y*width);
 	if (i < tiles.size()) {
-		return tiles[i];
+		return &tiles[i];
 	}
-	return not_found;
+	return nullptr;
 }
 
-GroundTile & Ground::getTileClicked(vec2 mpos)
+GroundTile* Ground::getTileClicked(vec2 mpos)
 {
 	vec2 tpos;
 	tpos.x = float(int(mpos.x / visual_tile_size));

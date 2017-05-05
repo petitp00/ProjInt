@@ -46,13 +46,13 @@ public:
 	void Render(sf::RenderTarget& target);
 	bool HandleEvent(sf::Event const& event);
 
-
 	sf::View& getGameView() { return game_view; }
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
 	bool getCanUseTool(int tool, Item::ItemType& icon);
 	bool getCanCollect(Item::ItemType& item_type);
+	GroundTile* getGroundTileHovered(vec2 mpose);
 
 	void SortEntities() { entities_need_sorting = true; }
 	void UseEquippedToolAt();

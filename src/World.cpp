@@ -524,8 +524,8 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 
 		}
 		else if (name == "Faux") {
-			GroundTile gtile = ground.getTileClicked(mouse_pos_in_world);
-			auto gtype = gtile.getType();
+			GroundTile* gtile = ground.getTileClicked(mouse_pos_in_world);
+			auto gtype = gtile->getType();
 
 			if (gtype == GroundType::GRASS) {
 				return true;
@@ -577,6 +577,11 @@ bool World::getCanCollect(Item::ItemType& item_type)
 		}
 	}
 	return false;
+}
+
+GroundTile * World::getGroundTileHovered(vec2 mpos)
+{
+	return ground.getTileClicked(mpos);
 }
 
 void World::Collect()
@@ -714,10 +719,10 @@ void World::UseEquippedToolAt()
 		}
 
 		if (tool->name == "Faux") {
-			auto& gtile = ground.getTileClicked(mouse_pos_in_world);
+			auto gtile = ground.getTileClicked(mouse_pos_in_world);
 
-			if (gtile.getType() == GroundType::GRASS) {
-				gtile.setType(GroundType::DIRT);
+			if (gtile->getType() == GroundType::GRASS) {
+				gtile->setType(GroundType::DIRT);
 				ground.ReloadTileMap();
 			}
 		}
