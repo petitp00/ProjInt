@@ -6,11 +6,21 @@
 #include <deque>
 #include <map>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
 vector<pair<unsigned long, vec2i>> ott1;
 vector<pair<GroundType, vector<vec2i>>> types;
+
+int getVariationMax(GroundType type) {
+	for (auto t : types) {
+		if (t.first == type) {
+			return t.second.size()-1;
+		}
+	}
+	return 0;
+}
 
 Tileset::Tileset(std::string filename)
 {
@@ -27,7 +37,6 @@ Tileset::Tileset(std::string filename)
 	ott1.push_back({CORNER_DOWN_RIGHT,	{6, 6}});
 
 	types.push_back({NONE,				{{0,0}}});
-	//types.push_back({GRASS,				{{1,0}, {2,0}}});
 	types.push_back({GRASS,				{{1,0}, {2,0}, {2,1}, {3,1}, {4,1}}});
 	types.push_back({SAND,				{{3,0}, {4,0}}});
 	types.push_back({RIVER,				{{5,0}}});
@@ -113,13 +122,12 @@ std::string GroundTile::getName()
 	}
 }
 
-Ground::Ground() :
-	tileset("Ground.png")
+Ground::Ground() : tileset("Ground.png")
 {
 	shader.loadFromFile("Resources/Shaders/TileShader.vert", "Resources/Shaders/TileShader.frag");
 }
 
-void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height)
+void Ground::LoadTileMap(std::vector<vector<int>> tiles, unsigned width, unsigned height)
 {
 	this->tiles.clear();
 
@@ -135,7 +143,7 @@ void Ground::LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height
 
 	for (unsigned j = 0; j != height; ++j) {
 		for (unsigned i = 0; i != width; ++i) {
-			int tile_nb = tiles[i+j*width];
+			int tile_nb = tiles[i+j*width][0];
 
 			this->tiles.emplace_back(GroundType(tile_nb), vec2(float(i), float(j)));
 
@@ -251,7 +259,7 @@ void Ground::Fill(vec2 mpos, GroundType type)
 		float(int(mpos.y / visual_tile_size))
 	};
 	GroundType target_type = getTile(tpos)->getType();
-	if (type == target_type) return;
+	if (!type || type == target_type) return;
 
 	std::deque<vec2> stack;
 	std::vector<int> to_remove;
@@ -266,15 +274,17 @@ void Ground::Fill(vec2 mpos, GroundType type)
 			auto w = n.x, e = n.x;
 			while (w >= 0) {
 				w -= 1;
-				if (getTile(w, n.y)->getType() != target_type) break;
+				auto gt = getTile(e, n.y);
+				if (!gt || gt->getType() != target_type) break;
 			}
 			while (e < width) {
 				e += 1;
-				if (getTile(e, n.y)->getType() != target_type) break;
+				auto gt = getTile(e, n.y);
+				if (!gt || gt->getType() != target_type) break;
 			}
 
 			bool check_north = (n.y > 0);
-			bool check_south = (n.y < height);
+			bool check_south = (n.y < height-1);
 
 			for (float i = w+1; i != e; ++i) {
 				getTile(i, n.y)->setType(type);
@@ -304,11 +314,29 @@ void Ground::setTileClicked(vec2 mpos, GroundType type)
 	vec2 tpos;
 	tpos.x = float(int(mpos.x / visual_tile_size));
 	tpos.y = float(int(mpos.y / visual_tile_size));
-
+	
 	if (tpos.x >= 0 && tpos.x < width && tpos.y >= 0 && tpos.y < height) {
+		int max = getVariationMax(type);
+		int var = rng::rand_int(0, max);
+
 		getTile(tpos)->setType(type);
+		getTile(tpos)->setVariation(var);
 		ReloadTileMap();
 	}
+}
+
+std::string Ground::getSaveString()
+{
+	stringstream ss;
+
+	for (auto t : tiles) {
+		ss << t.getType() << " ";
+		ss << t.getVariation() << " ";
+		ss << t.getHumidity() << " ";
+		ss << t.getFertility() << " , ";
+	}
+
+	return ss.str();
 }
 
 GroundType Ground::getTileClickedType(vec2 mpos)

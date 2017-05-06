@@ -53,21 +53,23 @@ void World::Clear()
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
-	Clear();
-	name = filename;
+	//Clear();
+	//name = filename;
 
-	const int w = 100, h = 100;
-	vector<int> t(w*h, 0);
-	for (int i = 0; i != w*h; ++i) {
-		t[i] = 0;
-	}
-	ground.LoadTileMap(t, w, h);
+	//const int w = 100, h = 100;
+	//vector<int> t(w*h, 0);
+	//for (int i = 0; i != w*h; ++i) {
+	//	t[i] = 0;
+	//}
+	//ground.LoadTileMap(t, w, h);
 
-	player = new Player();
-	player->setControls(controls);
-	entities.push_back(player);
+	//player = new Player();
+	//player->setControls(controls);
+	//entities.push_back(player);
 
-	Save();
+	//Save();
+
+	CreateNewBlank(filename);
 }
 
 void World::CreateNewBlank(const std::string & filename)
@@ -79,7 +81,7 @@ void World::CreateNewBlank(const std::string & filename)
 	player->setControls(controls);
 	entities.push_back(player);
 
-	vector<int> t(WORLD_W/visual_tile_size * WORLD_H/visual_tile_size, NONE);
+	vector<vector<int>> t(WORLD_W / visual_tile_size * WORLD_H / visual_tile_size, { NONE, 0,0,0});
 	ground.LoadTileMap(t, WORLD_W/visual_tile_size, WORLD_H/visual_tile_size);
 
 	Save();
@@ -217,13 +219,20 @@ void World::LoadWorld(std::string const & filename)
 		}
 		else if (w == "[TILE_MAP]") {
 			cout << "   done! (" << clock.restart().asSeconds() << " s)" << endl << "loading tile_map...";
-			vector<int> tiles;
+			vector<vector<int>> tiles;
+			vector<int> tinfo;
 			int width, height;
 			s >> width;
 			s >> height;
 			while (s >> w) {
 				if (w == "[END]") break;
-				tiles.push_back(stoi(w));
+				if (w == ",") { //////////////////////////// DONT FORGET TO PUT SPACES ON BOTH SIDES
+					tiles.push_back(tinfo);
+					tinfo.clear();
+				}
+				else {
+					tinfo.push_back(stoi(w));
+				}
 			}
 
 			ground.LoadTileMap(tiles, width, height);
@@ -294,7 +303,8 @@ void World::Save(const string& filename)
 	cout << "saving tilemap...";
 	s << "[TILE_MAP]" << endl;
 	s << ground.getWidth() << endl << ground.getHeight() << endl;
-	for (auto t : ground.getTiles()) { s << t.getType() << ' '; }
+	//for (auto t : ground.getTiles()) { s << t.getType() << ' '; }
+	s << ground.getSaveString();
 	s << endl << "[END]" << endl;
 	cout << " - done! (" << clock.restart().asSeconds() << " s)" << endl;
 

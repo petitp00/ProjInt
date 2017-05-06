@@ -78,24 +78,36 @@ private:
 class GroundTile {
 public:
 	GroundTile(GroundType type, vec2 pos);
+
 	void setType(GroundType type) { this->type = type; }
+	void setVariation(int var) { variation = var; }
+
+	std::string getName();
+
 	GroundType getType() { return type; }
 	vec2 getPos() { return pos; }
-	std::string getName();
+	int getVariation() { return variation; }
+	int getHumidity() { return humidity; }
+	int getFertility() { return fertility; }
+
 private:
 	GroundType type;
 	vec2 pos;
+	int variation = 0;
+	int humidity = 0; // [0, 100]
+	int fertility = 0; // [0, 100]
 };
 
 class Ground : public sf::Drawable
 {
 public:
 	Ground();
-	void LoadTileMap(std::vector<int> tiles, unsigned width, unsigned height);
+	void LoadTileMap(std::vector<std::vector<int>> tiles, unsigned width, unsigned height);
 	void ReloadTileMap();
 	void Clear();
 	void Fill(vec2 mpos, GroundType type);
 	void setTileClicked(vec2 mpos, GroundType type);
+	std::string getSaveString();
 
 	// Getters
 	GroundType getTileClickedType(vec2 mpos);
