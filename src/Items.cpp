@@ -191,7 +191,7 @@ Tool* make_tool(ItemType type, vector<string>& save_data) {
 		t->name = "Canne à pêche";
 		t->desc = "Utiliser pour pêcher des poissons dans la rivière.";
 		t->pos_in_texture_map = {1, 1};
-		t->use_speed = sf::seconds(0.1f);
+		t->use_speed = sf::seconds(0.5f);
 		return t;
 	}
 

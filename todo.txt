@@ -66,6 +66,7 @@
 	- bois - OK
 	- bac de compost
 	- cabane
+	- feu de camp
 	
 + Sons (format .wav ou .mp3, Dans le dossier Sounds, Renommés (ex. eau_canne1.wav))
 	- Menus et interface

@@ -101,6 +101,24 @@ void World::LoadWorld(std::string const & filename)
 
 	cout << "loading items & entities";
 
+	auto get_string = [&](bool expect_first_quote) {
+		str = "";
+		bool b = !expect_first_quote;
+		char c = 0;
+		while (s.get(c) && c != '\n') {
+			if (c == '"') {
+				if (!b) b = true;
+				else {
+					return str;
+				}
+			}
+			else if (b) {
+				str += c;
+			}
+		}
+		return string("get_string lambda failed");
+	};
+
 	while (s >> w) {
 		if (w == "equipped_tool") {
 			s >> w;
@@ -112,26 +130,16 @@ void World::LoadWorld(std::string const & filename)
 			s >> str;
 			id = stoi(str);
 
-			string iname;
-			s >> iname;
+			string iname = get_string(true);
 			
 			std::vector<std::string> vec;
-			str = "";
-			bool b = false;
 			char c = 0;
 			while (s.get(c) && c != '\n') {
 				if (c == '"') {
-					if (!b) b = true;
-					else {
-						b = false;
-						vec.push_back(str);
-						str = "";
-					}
-				}
-				else if (b) {
-					str += c;
+					vec.push_back(get_string(false));
 				}
 			}
+
 			int new_id = Item::Manager::CreateItem(Item::getItemTypeByName(iname), vec);
 			id_map[id] = new_id;
 		}
@@ -154,22 +162,13 @@ void World::LoadWorld(std::string const & filename)
 			sz.y = stof(str);
 
 			std::vector<std::string> vec;
-			str = "";
-			bool b = false;
 			char c = 0;
 			while (s.get(c) && c != '\n') {
 				if (c == '"') {
-					if (!b) b = true;
-					else {
-						b = false;
-						vec.push_back(str);
-						str = "";
-					}
-				}
-				else if (b) {
-					str += c;
+					vec.push_back(get_string(false));
 				}
 			}
+
 
 			Player* pl;
 			GameObject* go;
@@ -283,7 +282,7 @@ void World::Save(const string& filename)
 
 	for (int id : inventory->getItemsId()) {
 		auto ia = Item::Manager::getAny(id);
-		s << "i " << id << ' ' << ia->name << ' ';
+		s << "i " << id << " \"" << ia->name << "\" ";
 		for (auto& sv : ia->getSaveData()) { s << '"' << sv << "\" "; }
 		s << endl;
 	}
@@ -541,6 +540,14 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 				return true;
 			}
 		}
+		else if (name == "Canne à pêche") {
+			auto gtile = ground.getTileClicked(mouse_pos_in_world);
+			auto gtype = gtile->getType();
+
+			if (gtype == GroundType::RIVER) {
+				return true;
+			}
+		}
 		if (entity_hovered.size() != 0) {
 			for (auto e : entity_hovered) {
 				auto ent_type = e->getType();
@@ -747,6 +754,10 @@ void World::UseEquippedToolAt()
 					HitTree(tree, &particle_manager, this);
 				}
 			}
+		}
+
+		if (tool->name == "Canne à pêche") {
+			
 		}
 	}
 	else { // no tool equipped
