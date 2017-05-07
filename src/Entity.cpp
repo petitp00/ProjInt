@@ -111,6 +111,10 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 			fruits = min(4, atoi(saved_data[3].c_str()));
 		}
 	}
+	else {
+		fruits = -1;
+		setGrowthLevel(growth_level);
+	}
 }
 
 void TreeObj::Init()

@@ -234,7 +234,7 @@ public:
 
 private:
 	int growth_level = 0; // 1 to 6
-	int fruits = 0;
+	int fruits = -1;
 	int hp;
 };
 
