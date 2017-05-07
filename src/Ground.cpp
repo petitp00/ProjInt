@@ -258,35 +258,46 @@ void Ground::Fill(vec2 mpos, GroundType type)
 		float(int(mpos.x / visual_tile_size)),
 		float(int(mpos.y / visual_tile_size))
 	};
-	GroundType target_type = getTile(tpos)->getType();
+	auto target_tile = getTile(tpos);
+	if (!target_tile) return;
+	GroundType target_type = target_tile->getType(); // contiguous tiles of this type will be replaced
 	if (!type || type == target_type) return;
 
 	std::deque<vec2> stack;
 	std::vector<int> to_remove;
 	stack.push_back(tpos);
 
-	int i = 0;
 	while (stack.size()) {
-		auto s = stack;
-		int _i = 0;
-		for (auto n : s) {
-			to_remove.push_back(_i);
-			auto w = n.x, e = n.x;
-			while (w >= 0) {
+		int _i = 0; // keeps track of the current index in stack
+		//for (auto n : stack) {
+		for (int stack_index = 0; stack_index != stack.size(); ++stack_index) {
+			auto n = stack[stack_index];
+			to_remove.push_back(_i); // we remove every tile we check from the stack (after the looping through the stack)
+
+			// find the boundaries of the line
+			auto w = n.x;
+			auto e = n.x;
+			while (w > 0) {
 				w -= 1;
-				auto gt = getTile(e, n.y);
-				if (!gt || gt->getType() != target_type) break;
+				auto gt = getTile(w, n.y);
+				if (!gt || gt->getType() != target_type) {
+					++w;
+					break;
+				}
 			}
-			while (e < width) {
+			while (e < width-1) {
 				e += 1;
 				auto gt = getTile(e, n.y);
-				if (!gt || gt->getType() != target_type) break;
+				if (!gt || gt->getType() != target_type) {
+					--e;
+					break;
+				}
 			}
 
 			bool check_north = (n.y > 0);
 			bool check_south = (n.y < height-1);
 
-			for (float i = w+1; i != e; ++i) {
+			for (float i = w; i != e + 1; ++i) {
 				getTile(i, n.y)->setType(type);
 				if (check_north && getTile(i, n.y - 1)->getType() == target_type) {
 					stack.push_back({float(i), n.y-1});
@@ -346,6 +357,7 @@ GroundType Ground::getTileClickedType(vec2 mpos)
 
 GroundTile* Ground::getTile(vec2 pos)
 {
+	if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return nullptr;
 	uint i = uint(pos.x + pos.y*width);
 	if (i < tiles.size()) {
 		return &tiles[i];
@@ -355,6 +367,7 @@ GroundTile* Ground::getTile(vec2 pos)
 
 GroundTile* Ground::getTile(float x, float y)
 {
+	if (x < 0 || x >= width || y < 0 || y >= height) return nullptr;
 	uint i = uint(x + y*width);
 	if (i < tiles.size()) {
 		return &tiles[i];
