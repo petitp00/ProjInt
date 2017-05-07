@@ -352,7 +352,11 @@ std::string Ground::getSaveString()
 
 GroundType Ground::getTileClickedType(vec2 mpos)
 {
-	return getTileClicked(mpos)->getType();
+	auto tile_clicked = getTileClicked(mpos);
+	if (tile_clicked)
+		return tile_clicked->getType();
+	else
+		return GroundType::NONE;
 }
 
 GroundTile* Ground::getTile(vec2 pos)
