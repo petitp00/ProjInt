@@ -80,6 +80,7 @@ void Item::InitRecipes()
 {
 	recipes.push_back({ ItemType::axe, {{wood, 2}} });
 	recipes.push_back({ ItemType::hoe, {{wood, 2}} });
+	recipes.push_back({ ItemType::bowl, {{wood, 2}} });
 	recipes.push_back({ ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}} });
 	recipes.push_back({ ItemType::banana_string, {{banana_leaf, 1}} });
 	recipes.push_back({ ItemType::apple_seed, {{apple_core, 1}} });
