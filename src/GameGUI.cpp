@@ -523,8 +523,8 @@ void ToolsPage::ResetItemDescription()
 				actions_buttons.push_back(b);
 				++i;
 
-				item_desc_obj->setTextString("Description: " + si->desc + '\n' + '\n' + repair_str);
 			}
+			item_desc_obj->setTextString("Description: " + si->desc + '\n' + '\n' + "Réparer:" + '\n' + repair_str);
 		}
 	}
 	else {

@@ -101,7 +101,7 @@ void World::LoadWorld(std::string const & filename)
 
 	cout << "loading items & entities";
 
-	auto get_string = [&](bool expect_first_quote) {
+	auto get_string = [&](bool expect_first_quote = true) {
 		str = "";
 		bool b = !expect_first_quote;
 		char c = 0;
@@ -130,7 +130,7 @@ void World::LoadWorld(std::string const & filename)
 			s >> str;
 			id = stoi(str);
 
-			string iname = get_string(true);
+			string iname = get_string();
 			
 			std::vector<std::string> vec;
 			char c = 0;
@@ -363,6 +363,14 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f);
 	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f);
 
+	if (fishing) {
+		fishing_shape.setStart(player->getPos() + vec2(player->getSize().x / 2.f, 0));
+
+		if (fishing_shape.getShouldSnap()) {
+			fishing = false;
+		}
+	}
+
 	UpdateView();
 
 	if (true || entities_need_sorting) {
@@ -410,6 +418,11 @@ void World::Render(sf::RenderTarget & target)
 		if (next_item_particle_to_render != -1)
 			particle_manager.RenderItemParticlesLowerThan(target, 100000, next_item_particle_to_render);
 
+		if (fishing) {
+			//target.draw(fish_line.rect);
+			target.draw(fishing_shape);
+		}
+
 		if (item_place) item_place->Render(target);
 	}
 	else {
@@ -430,6 +443,8 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
+		if (fishing) fishing = false;
+
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
 			if (item_place) {
 				if (inv_butt && inv_butt->getOpen()) {
@@ -542,10 +557,13 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 		}
 		else if (name == "Canne à pêche") {
 			auto gtile = ground.getTileClicked(mouse_pos_in_world);
-			auto gtype = gtile->getType();
+			if (gtile) {
+				auto gtype = gtile->getType();
 
-			if (gtype == GroundType::RIVER) {
-				return true;
+				if (gtype == GroundType::RIVER) {
+					if (!fishing_shape.getWouldSnap(player->getPos() + player->getSize()/2.f, mouse_pos_in_world))
+						return true;
+				}
 			}
 		}
 		if (entity_hovered.size() != 0) {
@@ -757,7 +775,9 @@ void World::UseEquippedToolAt()
 		}
 
 		if (tool->name == "Canne à pêche") {
-			
+			fishing = true;
+			fishing_shape.setStart(player->getPos());
+			fishing_shape.setEnd(m);
 		}
 	}
 	else { // no tool equipped

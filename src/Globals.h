@@ -7,6 +7,8 @@
 #include <fstream>
 #include <iostream>
 
+#define M_PI 3.14159265358979323846
+
 using uint = unsigned int;
 using vec2 = sf::Vector2f;
 using vec2f = sf::Vector2f;
