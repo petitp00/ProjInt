@@ -5,6 +5,7 @@
 #include "Globals.h"
 #include <SFML/Graphics.hpp>
 
+class GameState;
 class GUIObject;
 class SquareButton;
 class Scrollbar;
@@ -198,7 +199,7 @@ class EquippedToolObj // on the bottom right part of the screen
 {
 public:
 	EquippedToolObj();
-	void Init(Inventory* inventory);
+	void Init(Inventory* inventory, GameState* game_state);
 
 	void Render(sf::RenderTarget& target);
 	void HandleEvent(sf::Event const& event);
@@ -209,6 +210,7 @@ public:
 
 private:
 	Inventory* inventory;
+	GameState* game_state;
 
 	int tool = -1;
 	Item::ItemType tool_type;

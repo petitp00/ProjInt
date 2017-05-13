@@ -71,6 +71,10 @@ static void equip_tool(ButtonActionImpl* impl) {
 	}
 }
 
+static void unequip_tool(ButtonActionImpl* impl) {
+	impl->game_state->UnequipTool();
+}
+
 static void put_down(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PutDownItem(impl->item);
 }
@@ -501,13 +505,20 @@ void ToolsPage::ResetItemDescription()
 		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
 		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
 
-		auto b2 = new InvActionButton("Équiper", *selected_tool, {margin_sides + margin_middle + width, margin_sides}, width);
-		b2->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
+		InvActionButton* b2;
+
+		if (*selected_tool != button_action_impl->game_state->getEquippedTool()) {
+			b2 = new InvActionButton("Équiper", *selected_tool, { margin_sides + margin_middle + width, margin_sides }, width);
+			b2->setOnClickAction(new function<void(ButtonActionImpl*)>(equip_tool), button_action_impl);
+		}
+		else {
+			b2 = new InvActionButton("Déséquiper", *selected_tool, { margin_sides + margin_middle + width, margin_sides }, width);
+			b2->setOnClickAction(new function<void(ButtonActionImpl*)>(unequip_tool), button_action_impl);
+		}
+		b2->setOrigin({ -(ox), -(oy + (height + margin_middle) * i) });
 		b2->setPos(window_tw->Tween());
-		b2->setOnClickAction(new function<void(ButtonActionImpl*)>(equip_tool), button_action_impl);
 		actions_buttons.push_back(b2);
 		++i;
-
 		height = b2->getSize().y;
 
 		if (sit != Item::ItemType::bowl) {
@@ -1160,9 +1171,10 @@ void InventoryButton::UpdateOpen()
 
 EquippedToolObj::EquippedToolObj() { }
 
-void EquippedToolObj::Init(Inventory * inventory)
+void EquippedToolObj::Init(Inventory * inventory, GameState* game_state)
 {
 	this->inventory = inventory;
+	this->game_state = game_state;
 	float scale = 2;
 	float ts = Item::items_texture_size * scale;
 	auto item = Item::Manager::getTool(tool);
@@ -1205,7 +1217,12 @@ void EquippedToolObj::HandleEvent(sf::Event const & event)
 		auto mp = vec2i(event.mouseButton.x, event.mouseButton.y);
 		if (mp.x >= pos.x && mp.x <= pos.x + size.x) {
 			if (mp.y >= pos.y && mp.y <= pos.y + size.y) {
-				
+				if (game_state) {
+					game_state->UnequipTool();
+				}
+				else {
+					cerr << "WATCH OUT: game_state is nullptr in EquippedToolObj. (line: " << __LINE__ << ")" << endl;
+				}
 			}
 		}
 	}
@@ -1240,7 +1257,7 @@ void EquippedToolObj::setTool(int id)
 		auto i = Item::Manager::getAny(id);
 		tool_type = Item::getItemTypeByName(i->name);
 	}
-	Init(inventory);
+	Init(inventory, game_state);
 }
 
 sf::Time change_time = sf::seconds(0.25f);

@@ -31,7 +31,7 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 {
 	inventory.Init(button_action_impl);
 	inv_butt.Init(&inventory);
-	tool_obj.Init(&inventory);
+	tool_obj.Init(&inventory, this);
 	world.Init(&inventory, &inv_butt, this);
 
 	interact_bar1.setFillColor(sf::Color::Yellow);
