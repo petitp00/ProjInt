@@ -285,13 +285,18 @@ void Player::Init()
 
 void Player::Update(float dt)
 {
-	if		(sf::Keyboard::isKeyPressed(controls->get("Haut"))) movement.y = -1;
-	else if (sf::Keyboard::isKeyPressed(controls->get("Bas"))) movement.y = 1;
-	else movement.y = 0;
+	if (window_active) {
+		if (sf::Keyboard::isKeyPressed(controls->get("Haut"))) movement.y = -1;
+		else if (sf::Keyboard::isKeyPressed(controls->get("Bas"))) movement.y = 1;
+		else movement.y = 0;
 
-	if		(sf::Keyboard::isKeyPressed(controls->get("Gauche"))) movement.x = -1;
-	else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) movement.x = 1;
-	else movement.x = 0;
+		if (sf::Keyboard::isKeyPressed(controls->get("Gauche"))) movement.x = -1;
+		else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) movement.x = 1;
+		else movement.x = 0;
+	}
+	else {
+		movement = vec2(0, 0);
+	}
 
 	if (movement != vec2(0, 0)) {
 		movement = normalize(movement);

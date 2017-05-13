@@ -22,6 +22,8 @@ int WINDOW_WIDTH = 1800;
 int WINDOW_HEIGHT = 900;
 #endif
 
+bool window_active = true;
+
 // forward declaration of functions
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings);
 
@@ -129,6 +131,9 @@ void Game::Start()
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { Quit(); }
+
+			if (event.type == sf::Event::GainedFocus) { window_active = true; }
+			else if (event.type == sf::Event::LostFocus) { window_active = false; }
 
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 				if (!escape_pressed) {

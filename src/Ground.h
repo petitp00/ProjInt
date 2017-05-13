@@ -6,6 +6,7 @@
 
 static const int tile_size = 32;
 static const int visual_tile_size = int(64);
+static const int RIPPLES_AMOUNT = 16;
 
 enum GroundType { 
 	NONE = 0,
@@ -98,18 +99,30 @@ private:
 	int fertility = 0; // [0, 100]
 };
 
+struct Ripple {
+	vec2 pos = { 0,0 };
+	sf::Time duration = sf::seconds(0);
+	float strength = 0; // from 0 to 1
+};
+
 class Ground : public sf::Drawable
 {
 public:
 	Ground();
 	void LoadTileMap(std::vector<std::vector<int>> tiles, unsigned width, unsigned height);
 	void ReloadTileMap();
+
+	void ReloadShader();
+
 	void Clear();
 	void Fill(vec2 mpos, GroundType type);
 	void setTileClicked(vec2 mpos, GroundType type);
-	std::string getSaveString();
+
+	void StartRipple(vec2 pos, sf::Time duration, float strength);
+	void UpdateRipples(float dt);
 
 	// Getters
+	std::string getSaveString();
 	GroundType getTileClickedType(vec2 mpos);
 	GroundTile* getTile(vec2 pos);
 	GroundTile* getTile(float x, float y);
@@ -121,8 +134,9 @@ public:
 
 private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-	mutable sf::Shader shader;
+	mutable sf::Shader shader; // mutable: can be modified in const functions
 	sf::Clock clock;
+	Ripple ripples[RIPPLES_AMOUNT];
 
 	sf::VertexArray vertices;
 	std::vector<GroundTile> tiles;

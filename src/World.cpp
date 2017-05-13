@@ -53,22 +53,6 @@ void World::Clear()
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
-	//Clear();
-	//name = filename;
-
-	//const int w = 100, h = 100;
-	//vector<int> t(w*h, 0);
-	//for (int i = 0; i != w*h; ++i) {
-	//	t[i] = 0;
-	//}
-	//ground.LoadTileMap(t, w, h);
-
-	//player = new Player();
-	//player->setControls(controls);
-	//entities.push_back(player);
-
-	//Save();
-
 	CreateNewBlank(filename);
 }
 
@@ -352,6 +336,7 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	}
 
 	particle_manager.UpdateParticles(dt);
+	ground.UpdateRipples(dt);
 
 	int no_collision_id = -1; // this entity won't have collision (because it is picked up)
 	if (item_place) no_collision_id = item_place->getId();
@@ -441,11 +426,15 @@ bool World::HandleEvent(sf::Event const & event)
 		if (event.key.code == sf::Keyboard::F6) {
 			Save();
 		}
+		else if (event.key.code == sf::Keyboard::F5) {
+			ground.ReloadShader();
+		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (fishing) fishing = false;
 
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
+			ground.StartRipple(mouse_pos_in_world, sf::seconds(1.5f), 10.f);
 			if (item_place) {
 				if (inv_butt && inv_butt->getOpen()) {
 					inventory->AddItem(item_place->getItemId());
@@ -777,6 +766,7 @@ void World::UseEquippedToolAt()
 		if (tool->name == "Canne à pêche") {
 			fishing = true;
 			fishing_shape.setStart(player->getPos());
+			ground.StartRipple(mouse_pos_in_world, sf::seconds(2.f), 2.f);
 			fishing_shape.setEnd(m);
 		}
 	}
@@ -870,3 +860,4 @@ void World::SortEntitiesImpl() // seems to be super fast for not a lot of elemen
 		return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;
 	});
 }
+

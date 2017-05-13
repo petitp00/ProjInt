@@ -23,6 +23,8 @@ extern int WINDOW_WIDTH;// = 1800;
 extern int WINDOW_HEIGHT;// = 900;
 #endif
 
+extern bool window_active;
+
 static const int WORLD_W = 1280*3;
 static const int WORLD_H = 1280*3;
 

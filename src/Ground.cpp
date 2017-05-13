@@ -125,6 +125,10 @@ std::string GroundTile::getName()
 Ground::Ground() : tileset("Ground.png")
 {
 	shader.loadFromFile("Resources/Shaders/TileShader.vert", "Resources/Shaders/TileShader.frag");
+
+	for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
+		ripples[i] = Ripple();
+	}
 }
 
 void Ground::LoadTileMap(std::vector<vector<int>> tiles, unsigned width, unsigned height)
@@ -247,6 +251,12 @@ void Ground::ReloadTileMap()
 	}
 }
 
+void Ground::ReloadShader()
+{
+	shader.loadFromFile("Resources/Shaders/TileShader.vert", "Resources/Shaders/TileShader.frag");
+	cout << "RELOAD SHADER" << endl;
+}
+
 void Ground::Clear()
 {
 	tiles.clear();
@@ -336,6 +346,48 @@ void Ground::setTileClicked(vec2 mpos, GroundType type)
 	}
 }
 
+void Ground::StartRipple(vec2 pos, sf::Time duration, float strength)
+{
+	auto find_lowest_ripple = [&]() {
+		int lowest = -1;
+		float lowest_val = 99999;
+		for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
+			auto r = ripples[i];
+			if (r.duration == sf::Time::Zero) {
+				lowest = i;
+				break;
+			}
+			auto val = r.duration.asSeconds() * 2.f + r.strength * 0.5f;
+			if (val < lowest_val) {
+				lowest_val = val;
+				lowest = i;
+			}
+		}
+
+		if (lowest != -1) {
+			return lowest;
+		}
+		else return 0;
+	};
+
+	auto& r = ripples[find_lowest_ripple()];
+	r.pos = pos;
+	r.duration = duration;
+	r.strength = strength;
+
+}
+
+void Ground::UpdateRipples(float dt)
+{
+	auto t = sf::microseconds(dt*1000.f);
+
+	for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
+		auto& r = ripples[i];
+		r.duration -= t;
+		if (r.duration < sf::Time::Zero) r.duration = sf::Time::Zero;
+	}
+}
+
 std::string Ground::getSaveString()
 {
 	stringstream ss;
@@ -399,8 +451,18 @@ void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
 	std::string unif = "time";
 	float time = clock.getElapsedTime().asSeconds();
 
+	sf::Glsl::Vec4 rips[RIPPLES_AMOUNT];
+	for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
+		auto r = ripples[i];
+		rips[i].x = r.pos.x;
+		rips[i].y = r.pos.y;
+		rips[i].z = r.duration.asMicroseconds()/1000.f;
+		rips[i].w = r.strength;
+		//cout << rips[i].z << " " << rips[i].w << endl;
+	}
+
 	shader.setUniform(unif, time);
+	shader.setUniformArray("ripples", rips, RIPPLES_AMOUNT);
 	states.shader = &shader;
 	target.draw(vertices, states);
 }
-
