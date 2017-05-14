@@ -48,6 +48,7 @@ void World::Clear()
 	entities.clear();
 	items.clear();
 	trees.clear();
+	carrot_plants.clear();
 	ground.Clear();
 }
 
@@ -876,6 +877,24 @@ void World::DeleteItemObj(int id)
 
 }
 
+void World::DeleteCarrotPlant(int id)
+{
+	for (int i = 0; i != entities.size(); ++i) {
+		if (entities[i]->getId() == id) {
+			delete entities[i];
+			entities.erase(entities.begin() + i);
+			break;
+		}
+	}
+	for (int i = 0; i != carrot_plants.size(); ++i) {
+		if (carrot_plants[i]->getId() == id) {
+			delete carrot_plants[i];
+			carrot_plants.erase(carrot_plants.begin() + i);
+			break;
+		}
+	}
+}
+
 void World::StartPlaceItem(ItemObject* item) {
 	item_place = item;
 }
@@ -898,6 +917,10 @@ void World::PlantSeed()
 	else if (it == Item::ItemType::banana_seed) {
 		auto tree = make_tree_obj(BANANA_TREE, 1, p);
 		AddTreeEnt(tree);
+	}
+	else if (it == Item::ItemType::carrot_seed) {
+		auto cp = make_carrot_plant(p - vec2(visual_tile_size/2.f, visual_tile_size/2.f));
+		AddCarrotPlant(cp);
 	}
 }
 

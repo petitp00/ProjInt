@@ -50,6 +50,7 @@ enum Type {
 	APPLE_TREE = 8,
 	BANANA_TREE = 9,
 	HUT = 10,
+	CARROT_PLANT= 11,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -64,6 +65,7 @@ static std::string getEntityTypeString(Type t) {
 	case APPLE_TREE:	return "APPLE_TREE";
 	case BANANA_TREE:	return "BANANA_TREE";
 	case HUT:			return "HUT";
+	case CARROT_PLANT:	return "CARORT_PLANT";
 	case Type::ERROR:	return "ERROR";
 	default:			return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -82,6 +84,7 @@ static std::string getEntityName(Type t) {
 	case APPLE_TREE:	return "Pommier";
 	case BANANA_TREE:	return "Bananier";
 	case HUT:			return "Cabane";
+	case CARROT_PLANT:	return "Plant de carottes";
 	default:			return "case missing in getEntityName()";
 	}
 }
@@ -96,6 +99,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "APPLE_TREE")	return APPLE_TREE;
 	if (str == "BANANA_TREE")	return BANANA_TREE;
 	if (str == "HUT")			return HUT;
+	if (str == "CARROT_PLANT")	return CARROT_PLANT;
 	return Type::ERROR;
 }
 
@@ -240,6 +244,27 @@ private:
 	bool pos_adjusted = false;
 };
 
+class CarrotPlant : public GameObject
+{
+	friend CarrotPlant* make_carrot_plant(vec2 pos, std::vector<std::string> saved_data);
+public:
+	CarrotPlant() = default;
+	CarrotPlant(vec2 pos, const std::vector<std::string>& saved_data = {});
+
+	void Init();
+	void Update(float dt) override;
+
+	void UpdateCinfo();
+	void setGrowthLevel(float growth_level);
+
+	std::vector<std::string> getSavedData() override {
+		return {std::to_string(growth_level)};
+	}
+
+private:
+	float growth_level = 0; // 0 to 100
+};
+
 class AnimationComponent
 {
 public:
@@ -370,3 +395,8 @@ static ItemObject* make_item(int id, vec2 pos = {0,0}) {
 	return i;
 }
 	
+static CarrotPlant* make_carrot_plant(vec2 pos, std::vector<std::string> saved_data = {}) {
+	auto cp = new CarrotPlant(pos, saved_data);
+	cp->Init();
+	return cp;
+}

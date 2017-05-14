@@ -155,13 +155,19 @@ public:
 	void UseEquippedToolAt();
 	void Collect();
 	void DropItemFromInventory(int id);
+
 	void AddEntity(Entity* e) { if (e) entities.push_back(e); }
 	void AddItemEnt(ItemObject* i) { if (i) entities.push_back(i); items.push_back(i); }
 	void AddTreeEnt(TreeObj* t) { if (t) entities.push_back(t); trees.push_back(t); }
+	void AddCarrotPlant(CarrotPlant* cp) { entities.push_back(cp); carrot_plants.push_back(cp); }
+
 	void DuplicateEntity(int id);
+
 	void DeleteEntity(int id);
 	void DeleteTree(int id);
 	void DeleteItemObj(int id);
+	void DeleteCarrotPlant(int id);
+
 	void StartPlaceItem(ItemObject* item);
 	void StartPlantItem(ItemObject* item);
 	void PlantSeed();
@@ -184,6 +190,7 @@ private:
 	std::vector<Entity*> entities;
 	std::vector<ItemObject*> items; // also in entities
 	std::vector<TreeObj*> trees; // also in entities
+	std::vector<CarrotPlant*> carrot_plants; // also in entities
 
 	std::vector<Entity*> entity_hovered;
 	ItemObject* item_place = nullptr;

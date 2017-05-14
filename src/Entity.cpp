@@ -199,7 +199,7 @@ void TreeObj::setGrowthLevel(int level)
 	if (type == APPLE_TREE) {
 		cinfo = getCoordsInfo("appletree" + to_string(growth_level));
 	}
-	if (type == BANANA_TREE) {
+	else if (type == BANANA_TREE) {
 		cinfo = getCoordsInfo("bananatree" + to_string(growth_level));
 	}
 
@@ -230,6 +230,45 @@ std::string TreeObj::getHoverInfo()
 	str << "Fruits à cueillir: " << to_string(fruits) << '\n';
 
 	return str.str();
+}
+
+CarrotPlant::CarrotPlant(vec2 pos, const std::vector<std::string>& saved_data) : 
+	GameObject(CARROT_PLANT, 0, pos, vec2(0,0), saved_data)
+{
+	scale = 2.f;
+
+	if (saved_data.size() != 0) {
+		growth_level = atoi(saved_data[0].c_str());
+	}
+}
+
+void CarrotPlant::Init()
+{
+	UpdateCinfo();
+
+	sprite.setTexture(ResourceManager::getTexture(cinfo.texture_name));
+	sprite.setTextureRect(cinfo.texture_rect);
+	sprite.setScale(scale, scale);
+	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height * scale);
+	sprite.setPosition(pos);
+}
+
+void CarrotPlant::Update(float dt)
+{
+}
+
+void CarrotPlant::UpdateCinfo()
+{
+	int var = 1;
+	if (growth_level >= 100) { var = 3; }
+	else if (growth_level >= 50) { var = 2; }
+	cinfo = getCoordsInfo("carrotplant" + to_string(var));
+}
+
+void CarrotPlant::setGrowthLevel(float growth_level)
+{
+	this->growth_level = growth_level;
+	Init();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
