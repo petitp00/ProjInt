@@ -79,6 +79,10 @@ static void put_down(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PutDownItem(impl->item);
 }
 
+static void plant_seed(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->PlantSeed(impl->item);
+}
+
 static void craft(ButtonActionImpl* impl) {
 	auto recipe = impl->recipe;
 	auto inv = impl->game_state->getInventory();
@@ -340,21 +344,27 @@ void ItemsPage::ResetItemDescription()
 		float ox = INV_WINDOW_WIDTH/2.f + margin_middle*2.f + margin_sides;
 		float oy = margin_sides + margin_middle + item_desc_shape.getLocalBounds().height;
 
-		auto b1 = new InvActionButton("Déposer", *selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
-		b1->setOrigin({-(ox), -(oy)});
-		b1->setPos(window_tw->Tween());
-		height = b1->getSize().y;
-		b1->setOnClickAction(new function<void(ButtonActionImpl*)>(put_down), button_action_impl);
-		actions_buttons.push_back(b1);
-		++i;
-
-		if (Item::IsFood(sit)) {
-			auto b = new InvActionButton("Manger", *selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
+		using butt_action_t = function<void(ButtonActionImpl*)>;
+		auto add_action_button = [&] (const string& text, action_t func){
+			auto b = new InvActionButton(text, *selected_item, {margin_sides + margin_middle + width, margin_sides}, width);
 			b->setOrigin({-(ox), -(oy + (height + margin_middle) * i)});
 			b->setPos(window_tw->Tween());
-			b->setOnClickAction(new function<void(ButtonActionImpl*)>(eat), button_action_impl);
+			b->setOnClickAction(func, button_action_impl);
 			actions_buttons.push_back(b);
+			if (height == 0) {
+				height = b->getSize().y;
+			}
 			++i;
+		};
+
+		add_action_button("Déposer", new butt_action_t(put_down));
+
+		if (Item::IsFood(sit)) {
+			add_action_button("Manger", new butt_action_t(eat));
+		}
+
+		if (Item::IsSeed(sit)) {
+			add_action_button("Planter", new butt_action_t(plant_seed));
 		}
 	}
 	else {
@@ -1079,6 +1089,15 @@ void Inventory::PutDownItem(int item)
 	RemoveItem(item);
 	ItemObject* i = make_item(item);
 	button_action_impl->game_state->getWorld().StartPlaceItem(i);
+	setActive(false);
+	Refresh();
+}
+
+void Inventory::PlantSeed(int id)
+{
+	RemoveItem(id);
+	ItemObject* i = make_item(id);
+	button_action_impl->game_state->getWorld().StartPlantItem(i);
 	setActive(false);
 	Refresh();
 }

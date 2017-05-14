@@ -163,6 +163,8 @@ public:
 	void DeleteTree(int id);
 	void DeleteItemObj(int id);
 	void StartPlaceItem(ItemObject* item);
+	void StartPlantItem(ItemObject* item);
+	void PlantSeed();
 	
 private:
 	void SortEntitiesImpl(); // called at beginning of Update if entities_need_sorting
@@ -186,6 +188,8 @@ private:
 	std::vector<Entity*> entity_hovered;
 	ItemObject* item_place = nullptr;
 	ItemObject* item_move = nullptr;
+	ItemObject* item_plant = nullptr;
+	bool can_plant = false;
 
 	FishingPoleShape fishing_shape;
 	bool fishing = false;

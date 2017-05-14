@@ -63,7 +63,6 @@ void main()
 		op2 = wat2(time, vert_pos.x, vert_pos.y);
 		float opt = op1 * op2;
 		opt *= 0.2;
-opt *=0;
 
 		float opt2 = 0;
 		for (int i = 0; i != 16; i++) {

@@ -103,6 +103,7 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 	scale = 2.f;
 
 	if (saved_data.size() != 0) {
+		pos_adjusted = true;
 		type = getEntityTypeFromString(saved_data[0]);
 		growth_level = atoi(saved_data[1].c_str());
 		variation = growth_level;
@@ -113,7 +114,11 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 	}
 	else {
 		fruits = -1;
-		setGrowthLevel(growth_level);
+		pos_adjusted = false;
+		if (growth_level != 0) {
+			setGrowthLevel(growth_level);
+			cout << "GROWTH LEVEL IS NOT 0. keep (line: " << __LINE__ << ")" << endl;
+		}
 	}
 }
 
@@ -122,8 +127,15 @@ void TreeObj::Init()
 	sprite.setTexture(ResourceManager::getTexture(cinfo.texture_name));
 	sprite.setTextureRect(cinfo.texture_rect);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos);
 	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height*scale);
+
+	if (!pos_adjusted) {
+		cout << "ADJUST POS FOR TREE " << id << endl;
+		pos -= vec2(size.x / 2.f, size.y);
+		pos_adjusted = true;
+	}
+
+	sprite.setPosition(pos);
 }
 
 void TreeObj::Update(float dt)

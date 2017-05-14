@@ -137,6 +137,10 @@ namespace Item
 		return (type == bowl);
 	}
 
+	static bool IsSeed(ItemType type) {
+		return (type == apple_seed || type == carrot_seed || type == banana_seed);
+	}
+
 	class Manager
 	{
 	public:

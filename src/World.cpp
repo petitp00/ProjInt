@@ -347,6 +347,18 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 
 	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f);
 	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f);
+	if (item_plant) {
+		auto gtile = ground.getTileClicked(mpw);
+		auto gtype = gtile->getType();
+
+		if (gtype == GroundType::DIRT) {
+			can_plant = true;
+			item_plant->setPos(gtile->getPos()*float(visual_tile_size) + vec2(visual_tile_size / 2.f, visual_tile_size / 2.f) - item_plant->getSize() / 2.f);
+		}
+		else {
+			can_plant = false;
+		}
+	}
 
 	if (fishing) {
 		fishing_shape.setStart(player->getPos() + vec2(player->getSize().x / 2.f, 0));
@@ -366,7 +378,6 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 
 void World::UpdateView()
 {
-
 	float vx = float(int(player->getPos().x + player->getSize().x/2.f));
 	float vy = float(int(player->getPos().y + player->getSize().y/2.f));
 	auto vs = game_view.getSize();
@@ -409,6 +420,9 @@ void World::Render(sf::RenderTarget & target)
 		}
 
 		if (item_place) item_place->Render(target);
+		if (item_plant && can_plant) {
+			item_plant->Render(target);
+		}
 	}
 	else {
 		for (auto e : entities) {
@@ -445,6 +459,12 @@ bool World::HandleEvent(sf::Event const & event)
 				}
 				item_place = nullptr;
 			}
+			else if (item_plant && can_plant) {
+				PlantSeed();
+				Item::Manager::DeleteItem(item_plant->getItemId());
+				delete item_plant;
+				item_plant = nullptr;
+			}
 			else if (entity_hovered.size() != 0) {
 				for (auto e : entity_hovered) {
 					if (e->getType() == ITEM) {
@@ -453,6 +473,12 @@ bool World::HandleEvent(sf::Event const & event)
 						break;
 					}
 				}
+			}
+		}
+		else if (event.mouseButton.button == sf::Mouse::Button::Right) {
+			if (item_plant) {
+				inventory->AddItem(item_plant->getItemId());
+				item_plant = nullptr;
 			}
 		}
 	}
@@ -512,7 +538,7 @@ ItemObject * World::FindItem(int id)
 
 bool World::getCanUseTool(int tool, Item::ItemType& icon)
 {
-	if (tool != -1 && !item_place && !item_move) {
+	if (tool != -1 && !item_place && !item_move && !item_plant) {
 		auto t = Item::Manager::getTool(tool);
 		string name = t->name;
 
@@ -852,6 +878,23 @@ void World::DeleteItemObj(int id)
 
 void World::StartPlaceItem(ItemObject* item) {
 	item_place = item;
+}
+
+void World::StartPlantItem(ItemObject * item)
+{
+	item_plant = item;
+}
+
+void World::PlantSeed()
+{
+	auto i = Item::Manager::getAny(item_plant->getItemId());
+	auto it = Item::getItemTypeByName(i->name);
+	auto p = item_plant->getPos() + item_plant->getSize() / 2.f;
+
+	if (it == Item::ItemType::apple_seed) {
+		auto tree = make_tree_obj(APPLE_TREE, 1, p);
+		AddTreeEnt(tree);
+	}
 }
 
 void World::SortEntitiesImpl() // seems to be super fast for not a lot of elements (~10µs)

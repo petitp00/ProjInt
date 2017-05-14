@@ -140,6 +140,7 @@ public:
 	void DeleteItem(int id);
 	void EatItem(int id);
 	void PutDownItem(int id);
+	void PlantSeed(int id);
 	void UnequipTool();
 	void UseEquippedTool();
 

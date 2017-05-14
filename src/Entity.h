@@ -236,6 +236,8 @@ private:
 	int growth_level = 0; // 1 to 6
 	int fruits = -1;
 	int hp;
+
+	bool pos_adjusted = false;
 };
 
 class AnimationComponent
