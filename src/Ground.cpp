@@ -357,7 +357,7 @@ void Ground::StartRipple(vec2 pos, sf::Time duration, float strength)
 				lowest = i;
 				break;
 			}
-			auto val = r.duration.asSeconds() * 2.f + r.strength * 0.5f;
+			auto val = r.duration.asSeconds() - r.start_time.asSeconds();
 			if (val < lowest_val) {
 				lowest_val = val;
 				lowest = i;
@@ -373,8 +373,8 @@ void Ground::StartRipple(vec2 pos, sf::Time duration, float strength)
 	auto& r = ripples[find_lowest_ripple()];
 	r.pos = pos;
 	r.duration = duration;
-	r.strength = strength;
-
+	r.duration = sf::seconds(5);
+	r.start_time = clock.getElapsedTime();
 }
 
 void Ground::UpdateRipples(float dt)
@@ -383,8 +383,8 @@ void Ground::UpdateRipples(float dt)
 
 	for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
 		auto& r = ripples[i];
-		r.duration -= t;
-		if (r.duration < sf::Time::Zero) r.duration = sf::Time::Zero;
+		//r.duration -= t;
+		//if (r.duration < sf::Time::Zero) r.duration = sf::Time::Zero;
 	}
 }
 
@@ -456,8 +456,8 @@ void Ground::draw(sf::RenderTarget & target, sf::RenderStates states) const
 		auto r = ripples[i];
 		rips[i].x = r.pos.x;
 		rips[i].y = r.pos.y;
-		rips[i].z = r.duration.asMicroseconds()/1000.f;
-		rips[i].w = r.strength;
+		rips[i].z = r.duration.asSeconds();
+		rips[i].w = r.start_time.asSeconds();
 		//cout << rips[i].z << " " << rips[i].w << endl;
 	}
 

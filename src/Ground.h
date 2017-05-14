@@ -102,7 +102,7 @@ private:
 struct Ripple {
 	vec2 pos = { 0,0 };
 	sf::Time duration = sf::seconds(0);
-	float strength = 0; // from 0 to 1
+	sf::Time start_time = sf::seconds(0);
 };
 
 class Ground : public sf::Drawable
