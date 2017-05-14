@@ -130,7 +130,6 @@ void TreeObj::Init()
 	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height*scale);
 
 	if (!pos_adjusted) {
-		cout << "ADJUST POS FOR TREE " << id << endl;
 		pos -= vec2(size.x / 2.f, size.y);
 		pos_adjusted = true;
 	}
@@ -179,6 +178,7 @@ void TreeObj::setGrowthLevel(int level)
 {
 	growth_level = level;
 
+
 	if (growth_level == 1 || growth_level == 2) {
 		hp = 1;
 	}
@@ -191,6 +191,9 @@ void TreeObj::setGrowthLevel(int level)
 
 	if (growth_level == 6 && fruits == -1) {
 		fruits = 4;
+	}
+	else if (fruits == -1) {
+		fruits = 0;
 	}
 
 	if (type == APPLE_TREE) {

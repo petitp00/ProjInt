@@ -895,6 +895,10 @@ void World::PlantSeed()
 		auto tree = make_tree_obj(APPLE_TREE, 1, p);
 		AddTreeEnt(tree);
 	}
+	else if (it == Item::ItemType::banana_seed) {
+		auto tree = make_tree_obj(BANANA_TREE, 1, p);
+		AddTreeEnt(tree);
+	}
 }
 
 void World::SortEntitiesImpl() // seems to be super fast for not a lot of elements (~10µs)
