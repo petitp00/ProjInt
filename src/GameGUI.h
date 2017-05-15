@@ -122,7 +122,7 @@ public:
 	Inventory(Controls* controls);
 	~Inventory();
 	void Init(ButtonActionImpl* button_action_impl);
-
+	void Clear();
 	void Update();
 	void Render(sf::RenderTarget& target);
 	bool HandleEvents(sf::Event const& event);

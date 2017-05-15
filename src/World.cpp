@@ -50,6 +50,8 @@ void World::Clear()
 	trees.clear();
 	carrot_plants.clear();
 	ground.Clear();
+
+	inventory->Clear();
 }
 
 void World::CreateAndSaveWorld(std::string const & filename)

@@ -14,7 +14,6 @@ namespace Item
 	static const std::string texture_map_file = "Textures_Icones.png";
 	static const float items_texture_size = 32.f;
 
-
 	enum ItemType {
 		none = -1,
 		banana = 0,
@@ -153,6 +152,7 @@ namespace Item
 
 		static int CreateItem(ItemType type, std::vector<std::string> save_data = std::vector<std::string>()); // returns id
 		static void DeleteItem(int id);
+		static void Clear();
 
 		static ItemType getItemType(int id);
 		static any*		getAny		(int id) { return items[id]; }

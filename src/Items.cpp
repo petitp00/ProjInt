@@ -377,6 +377,12 @@ void Manager::DeleteItem(int id)
 	}
 }
 
+void Manager::Clear() {
+	for (int i = 0; i != items.size(); ++i) {
+		delete items.begin()->second + i;
+	}
+}
+
 ItemType Item::Manager::getItemType(int id)
 {
 	auto a = getAny(id);

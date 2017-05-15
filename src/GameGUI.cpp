@@ -901,6 +901,10 @@ void Inventory::Init(ButtonActionImpl* button_action_impl)
 	Refresh();
 }
 
+void Inventory::Clear()
+{
+	items.clear();
+}
 
 void Inventory::Update()
 {
