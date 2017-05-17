@@ -261,6 +261,8 @@ public:
 		return {std::to_string(growth_level)};
 	}
 
+	std::string getHoverInfo() override;
+
 private:
 	float growth_level = 0; // 0 to 100
 };

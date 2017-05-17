@@ -245,3 +245,26 @@ private:
 	Tweener rect_alpha_tw;
 	Tweener text_alpha_tw;
 };
+
+class GUIActionInfo
+{
+public:
+	GUIActionInfo();
+	void Update();
+	void Render(sf::RenderTarget& target);
+	void setString(const std::string& text);
+
+private:
+	std::string text;
+	sf::RectangleShape rect;
+	sf::Text text_obj;
+
+	vec2 pos;
+	vec2 origin;
+	vec2 size;
+
+	float margin;
+
+	Tweener rect_alpha_tw;
+	Tweener text_alpha_tw;
+};

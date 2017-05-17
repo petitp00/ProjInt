@@ -61,5 +61,5 @@ private:
 	InventoryButton inv_butt;
 	EquippedToolObj tool_obj;
 	GUIHoverInfo hover_info;
-
+	GUIActionInfo action_info;
 };

@@ -1344,3 +1344,63 @@ void GUIHoverInfo::setString(const std::string & text)
 		text_obj.setPosition(pos + vec2(margin, margin));
 	}
 }
+
+GUIActionInfo::GUIActionInfo()
+{
+	size = vec2(0, 0);
+	origin = vec2(20, 20);
+	pos = origin;
+
+	margin = 12.f;
+
+	text_obj.setFont(ResourceManager::getFont(BASE_FONT_NAME));
+	text_obj.setCharacterSize(FontSize::TINY);
+
+	rect.setFillColor(INV_WINDOW_COLOR);
+
+	rect_alpha_tw.Reset(TweenType::Linear, 1, 0, sf::seconds(0.1f));
+	text_alpha_tw.Reset(TweenType::Linear, 0, 1, sf::seconds(0.1f));
+} 
+
+void GUIActionInfo::Update()
+{
+	auto col = INV_TEXT_COLOR;
+	col.a = 0;
+	text_obj.setFillColor(LerpColor(col, INV_TEXT_COLOR, text_alpha_tw.Tween()));
+
+	col = INV_WINDOW_COLOR;
+	col.a = 0;
+	rect.setFillColor(LerpColor(col, INV_WINDOW_COLOR, rect_alpha_tw.Tween()));
+}
+
+void GUIActionInfo::Render(sf::RenderTarget & target)
+{
+	target.draw(rect);
+	target.draw(text_obj);
+}
+
+void GUIActionInfo::setString(const std::string & text)
+{
+	if (text == "") {
+		this->text = text;
+		rect_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
+		text_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
+	}
+	else if (text != this->text) {
+		if (*(text.end() - 1) != '\n') {
+			this->text = text.substr(0, text.size() - 1);
+		}
+		this->text = text;
+		rect_alpha_tw.Reset(TweenType::QuartInOut, 0, 1, change_time);
+		text_alpha_tw.Reset(TweenType::QuartIn, 0, 1, change_time);
+
+		text_obj.setString(this->text);
+
+		size = vec2(text_obj.getGlobalBounds().width, text_obj.getGlobalBounds().height);
+		size += vec2(margin * 2, margin * 2 - 10);
+		pos = origin;
+		rect.setPosition(pos);
+		rect.setSize(size);
+		text_obj.setPosition(pos + vec2(margin, margin));
+	}
+}

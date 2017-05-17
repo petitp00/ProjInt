@@ -61,7 +61,7 @@ std::string GameObject::getHoverInfo()
 	stringstream str;
 
 	if (type == ROCK) {
-		str << "Roche";
+		str << "Roche\n";
 	}
 	else if (type == HUT) {
 		str << "Cabane" << '\n';
@@ -238,7 +238,7 @@ CarrotPlant::CarrotPlant(vec2 pos, const std::vector<std::string>& saved_data) :
 	scale = 2.f;
 
 	if (saved_data.size() != 0) {
-		growth_level = atoi(saved_data[0].c_str());
+		growth_level = float(atoi(saved_data[0].c_str()));
 	}
 }
 
@@ -269,6 +269,15 @@ void CarrotPlant::setGrowthLevel(float growth_level)
 {
 	this->growth_level = growth_level;
 	Init();
+}
+
+std::string CarrotPlant::getHoverInfo()
+{
+	stringstream ss;
+	
+	ss << "Plant de carottes" << '\n';
+
+	return ss.str();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
