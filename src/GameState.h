@@ -34,6 +34,7 @@ public:
 	bool getActive() { return active; }
 	int getEquippedTool() { return equipped_tool; }
 	void setActive(bool active) { this->active = active; }
+	void setActionInfo(ActionInfo info) { action_info.setActionInfo(info); }
 
 private:
 	bool active = false;

@@ -246,15 +246,27 @@ private:
 	Tweener text_alpha_tw;
 };
 
+enum class ActionInfo {
+	none,
+	plant,
+	place,
+	fishing,
+	collect,
+	use_tool,
+	collect_or_use_tool,
+};
+
 class GUIActionInfo
 {
 public:
 	GUIActionInfo();
 	void Update();
 	void Render(sf::RenderTarget& target);
-	void setString(const std::string& text);
+	void setActionInfo(ActionInfo info);
 
 private:
+	void setString(const std::string& text);
+
 	std::string text;
 	sf::RectangleShape rect;
 	sf::Text text_obj;

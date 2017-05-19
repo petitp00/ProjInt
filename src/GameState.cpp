@@ -106,10 +106,19 @@ void GameState::Update(float dt)
 	if (can_collect && can_use_tool) {
 		collecting_sprite.setPosition(mouse_pos - ets_size/2.f - vec2(ets_size.x * 1.f, 0));
 		equipped_tool_sprite.setPosition(mouse_pos - ets_size/2.f + vec2(ets_size.x * 1.f, 0));
+
+		//setActionInfo(ActionInfo::collect_or_use_tool);
 	}
 	else {
 		collecting_sprite.setPosition(mouse_pos - ets_size/2.f);
 		equipped_tool_sprite.setPosition(mouse_pos - ets_size/2.f);
+
+		if (can_collect) {
+			//setActionInfo(ActionInfo::collect);
+		}
+		else if (can_use_tool) {
+			//setActionInfo(ActionInfo::use_tool);
+		}
 	}
 
 	// Updates
@@ -118,6 +127,7 @@ void GameState::Update(float dt)
 		world.Update(dt, mouse_pos_in_world);
 	inventory.Update();
 	hover_info.Update();
+	action_info.Update();
 }
 
 void GameState::Render(sf::RenderTarget & target)
@@ -140,8 +150,10 @@ void GameState::Render(sf::RenderTarget & target)
 		target.draw(interact_bar1);
 	}
 
-	if (!inventory.getActive())
+	if (!inventory.getActive()) {
 		hover_info.Render(target);
+		action_info.Render(target);
+	}
 
 	inventory.Render(target);
 

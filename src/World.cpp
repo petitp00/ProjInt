@@ -448,7 +448,10 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
-		if (fishing) fishing = false;
+		if (fishing) {
+			fishing = false;
+			game_state->setActionInfo(ActionInfo::none);
+		}
 
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
 			ground.StartRipple(mouse_pos_in_world, sf::seconds(1.5f), 10.f);
@@ -461,12 +464,14 @@ bool World::HandleEvent(sf::Event const & event)
 					items.push_back(item_place);
 				}
 				item_place = nullptr;
+				game_state->setActionInfo(ActionInfo::none);
 			}
 			else if (item_plant && can_plant) {
 				PlantSeed();
 				Item::Manager::DeleteItem(item_plant->getItemId());
 				delete item_plant;
 				item_plant = nullptr;
+				game_state->setActionInfo(ActionInfo::none);
 			}
 			else if (entity_hovered.size() != 0) {
 				for (auto e : entity_hovered) {
@@ -482,6 +487,7 @@ bool World::HandleEvent(sf::Event const & event)
 			if (item_plant) {
 				inventory->AddItem(item_plant->getItemId());
 				item_plant = nullptr;
+				game_state->setActionInfo(ActionInfo::none);
 			}
 		}
 	}
@@ -797,6 +803,7 @@ void World::UseEquippedToolAt()
 			fishing_shape.setStart(player->getPos());
 			ground.StartRipple(mouse_pos_in_world, sf::seconds(2.f), 2.f);
 			fishing_shape.setEnd(m);
+			game_state->setActionInfo(ActionInfo::fishing);
 		}
 	}
 	else { // no tool equipped
@@ -899,11 +906,13 @@ void World::DeleteCarrotPlant(int id)
 
 void World::StartPlaceItem(ItemObject* item) {
 	item_place = item;
+	game_state->setActionInfo(ActionInfo::place);
 }
 
 void World::StartPlantItem(ItemObject * item)
 {
 	item_plant = item;
+	game_state->setActionInfo(ActionInfo::plant);
 }
 
 void World::PlantSeed()

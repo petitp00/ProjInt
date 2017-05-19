@@ -1327,10 +1327,12 @@ void GUIHoverInfo::setString(const std::string & text)
 		text_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
 	}
 	else if (text != this->text) {
-		if (*(text.end() - 1) == '\n') {
-			this->text = text.substr(0, text.size() - 1);
+		if (*(text.end() - 1) != '\n') {
+			this->text = text + '\n';
 		}
-		this->text = text;
+		else {
+			this->text = text;
+		}
 		rect_alpha_tw.Reset(TweenType::QuartInOut, 0, 1, change_time);
 		text_alpha_tw.Reset(TweenType::QuartIn, 0, 1, change_time);
 
@@ -1348,7 +1350,7 @@ void GUIHoverInfo::setString(const std::string & text)
 GUIActionInfo::GUIActionInfo()
 {
 	size = vec2(0, 0);
-	origin = vec2(20, 20);
+	origin = vec2(WINDOW_WIDTH/2.f, WINDOW_HEIGHT);
 	pos = origin;
 
 	margin = 12.f;
@@ -1379,6 +1381,36 @@ void GUIActionInfo::Render(sf::RenderTarget & target)
 	target.draw(text_obj);
 }
 
+void GUIActionInfo::setActionInfo(ActionInfo info)
+{
+	switch (info)
+	{
+	case ActionInfo::none:
+		setString("");
+		break;
+	case ActionInfo::plant:
+		setString("Clic gauche pour planter\nClic droit pour annuler");
+		break;
+	case ActionInfo::place:
+		setString("Clic droit pour déposer");
+		break;
+	case ActionInfo::fishing:
+		setString("Clic droit pour sortir l'appât de l'eau");
+		break;
+	case ActionInfo::collect:
+		setString("Clic gauche pour récolter");
+		break;
+	case ActionInfo::use_tool:
+		setString("Clic droit pour utiliser outil");
+		break;
+	case ActionInfo::collect_or_use_tool:
+		setString("Clic gauche pour récolter\nClic droit pour utiliser outil");
+		break;
+	default:
+		break;
+	}
+}
+
 void GUIActionInfo::setString(const std::string & text)
 {
 	if (text == "") {
@@ -1387,10 +1419,10 @@ void GUIActionInfo::setString(const std::string & text)
 		text_alpha_tw.Reset(TweenType::QuartOut, 1, 0, change_time);
 	}
 	else if (text != this->text) {
-		if (*(text.end() - 1) != '\n') {
-			this->text = text.substr(0, text.size() - 1);
-		}
 		this->text = text;
+		if (*(text.end() - 1) != '\n') {
+			this->text = text + '\n';
+		}
 		rect_alpha_tw.Reset(TweenType::QuartInOut, 0, 1, change_time);
 		text_alpha_tw.Reset(TweenType::QuartIn, 0, 1, change_time);
 
@@ -1398,7 +1430,7 @@ void GUIActionInfo::setString(const std::string & text)
 
 		size = vec2(text_obj.getGlobalBounds().width, text_obj.getGlobalBounds().height);
 		size += vec2(margin * 2, margin * 2 - 10);
-		pos = origin;
+		pos = origin - vec2(size.x/2.f, size.y);
 		rect.setPosition(pos);
 		rect.setSize(size);
 		text_obj.setPosition(pos + vec2(margin, margin));
