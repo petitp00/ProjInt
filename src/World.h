@@ -160,6 +160,7 @@ public:
 	void AddItemEnt(ItemObject* i) { if (i) entities.push_back(i); items.push_back(i); }
 	void AddTreeEnt(TreeObj* t) { if (t) entities.push_back(t); trees.push_back(t); }
 	void AddCarrotPlant(CarrotPlant* cp) { entities.push_back(cp); carrot_plants.push_back(cp); }
+	void AddCompostBox(CompostBox* cb) { entities.push_back(cb); compost_boxes.push_back(cb); }
 
 	void DuplicateEntity(int id);
 
@@ -167,9 +168,13 @@ public:
 	void DeleteTree(int id);
 	void DeleteItemObj(int id);
 	void DeleteCarrotPlant(int id);
+	void DeleteCompostBox(int id);
+
+	CompostBox* FindCompostBox(int id);
 
 	void StartPlaceItem(ItemObject* item);
 	void StartPlantItem(ItemObject* item);
+	void StartPlaceCompostBox(CompostBox* cb);
 	void PlantSeed();
 	
 private:
@@ -191,6 +196,7 @@ private:
 	std::vector<ItemObject*> items; // also in entities
 	std::vector<TreeObj*> trees; // also in entities
 	std::vector<CarrotPlant*> carrot_plants; // also in entities
+	std::vector<CompostBox*> compost_boxes; // also in entities
 
 	std::vector<Entity*> entity_hovered;
 	ItemObject* item_place = nullptr;
@@ -198,6 +204,10 @@ private:
 	ItemObject* item_plant = nullptr;
 	bool can_plant = false;
 
+	CompostBox* compost_box_place = nullptr;
+	CompostBox* compost_box_move = nullptr;
+	bool check_compost_boxes = false; // set to true when a compost box is hovered, check if we need to close it
 	FishingPoleShape fishing_shape;
 	bool fishing = false;
+
 };

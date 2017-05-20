@@ -533,6 +533,9 @@ NewEnt Type x y flags    Creates an entity of type [Type] at (x,y) with flags (a
 		if (type == APPLE_TREE || type == BANANA_TREE) {
 			impl->editor->world.AddTreeEnt(make_tree_obj(type, variation, pos));
 		}
+		else if (type == COMPOST_BOX) {
+			impl->editor->world.AddCompostBox(make_compost_box(pos));
+		}
 		else if (type == ITEM) {
 			impl->console->AddLine("cannot add item object with console");
 		}

@@ -1,0 +1,4 @@
+compostbox2
+64 192 63 31
+70 208 48 11
+Textures_Objets.png

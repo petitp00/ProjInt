@@ -49,6 +49,7 @@ void World::Clear()
 	items.clear();
 	trees.clear();
 	carrot_plants.clear();
+	compost_boxes.clear();
 	ground.Clear();
 
 	inventory->Clear();
@@ -161,6 +162,7 @@ void World::LoadWorld(std::string const & filename)
 			GameObject* go;
 			ItemObject* io;
 			TreeObj* to;
+			CompostBox* cb;
 			int id;
 
 			switch (t)
@@ -198,6 +200,10 @@ void World::LoadWorld(std::string const & filename)
 			case HUT:
 				go = make_hut(p);
 				entities.push_back(go);
+				break;
+			case COMPOST_BOX:
+				cb = make_compost_box(p, vec);
+				AddCompostBox(cb);
 				break;
 			default:
 				break;
@@ -315,16 +321,37 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 
 	entity_hovered.clear();
 
+	bool iplace_biojunk = false;
+	if (item_place) {
+		iplace_biojunk = Item::IsBioJunk(Item::Manager::getItemType(item_place->getItemId()));
+	}
+	bool imove_biojunk = false;
+	if (item_move) {
+		imove_biojunk = Item::IsBioJunk(Item::Manager::getItemType(item_move->getItemId()));
+	}
+
 	for (auto i = entities.begin(); i != entities.end();) {
 		auto e = *i;
 		if (!e->getDead()) {
 			e->Update(dt);
 			
-			if (!item_move && !item_place) {
+			if (!item_move && !item_place && !compost_box_move && !compost_box_place ||
+				(item_place && iplace_biojunk) ||
+				(item_move && imove_biojunk)) {
+
 				auto ec = e->getCollisionBox();
 				if (mpw.x >= e->getPos().x && mpw.x <= e->getPos().x + e->getSize().x &&
 					mpw.y >= e->getPos().y && mpw.y <= e->getPos().y + e->getSize().y) {
 					entity_hovered.push_back(e);
+
+					if (e->getType() == COMPOST_BOX && 
+						((item_place && iplace_biojunk) || 
+						(item_move && imove_biojunk))) {
+
+						auto cb = FindCompostBox(e->getId());
+						cb->setOpen(true);
+						check_compost_boxes = true;
+					}
 				}
 			}
 		}
@@ -338,18 +365,43 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 		++i;
 	}
 
+	if (check_compost_boxes) {
+		bool found_one = false; // if we found an hovered compost box
+		for (auto cb : compost_boxes) {
+			bool close = true; // if we need to close it
+			for (auto e : entity_hovered) {
+				if (e->getId() == cb->getId()) {
+					found_one = true;
+					close = false;
+					break;
+				}
+			}
+			if (close) {
+				cb->setOpen(false);
+			}
+		}
+
+		if (!found_one) {
+			check_compost_boxes = false;
+		}
+	}
+
 	particle_manager.UpdateParticles(dt);
 	ground.UpdateRipples(dt);
 
 	int no_collision_id = -1; // this entity won't have collision (because it is picked up)
 	if (item_place) no_collision_id = item_place->getId();
 	if (item_move) no_collision_id = item_move->getId();
+	if (compost_box_move) no_collision_id = compost_box_move->getId();
+	if (compost_box_place) no_collision_id = compost_box_place->getId();
 
 	player->DoCollisions(entities, no_collision_id);
 	player->DoMovement(dt);
 
 	if (item_place) item_place->setPos(mpw - item_place->getSize()/2.f);
 	if (item_move) item_move->setPos(mpw - item_move->getSize()/2.f);
+	if (compost_box_move) compost_box_move->setPos(mpw - compost_box_move->getSize() / 2.f);
+	if (compost_box_place) compost_box_place->setPos(mpw - compost_box_place->getSize() / 2.f);
 	if (item_plant) {
 		auto gtile = ground.getTileClicked(mpw);
 		auto gtype = gtile->getType();
@@ -368,6 +420,7 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 
 		if (fishing_shape.getShouldSnap()) {
 			fishing = false;
+			game_state->setActionInfo(ActionInfo::none);
 		}
 	}
 
@@ -456,14 +509,31 @@ bool World::HandleEvent(sf::Event const & event)
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
 			ground.StartRipple(mouse_pos_in_world, sf::seconds(1.5f), 10.f);
 			if (item_place) {
+				bool put_in_compost_box = false;
+
 				if (inv_butt && inv_butt->getOpen()) {
 					inventory->AddItem(item_place->getItemId());
 				}
-				else {
+				else if (check_compost_boxes) {
+					for (auto e : entity_hovered) {
+						if (e->getType() == COMPOST_BOX) {
+							auto cb = FindCompostBox(e->getId());
+							cb->AddBioJunk();
+							DeleteEntity(item_place->getId());
+							put_in_compost_box = true;
+							break;
+						}
+					}
+				}
+				if (!(inv_butt && inv_butt->getOpen()) && !put_in_compost_box) {
 					entities.push_back(item_place);
 					items.push_back(item_place);
 				}
 				item_place = nullptr;
+				game_state->setActionInfo(ActionInfo::none);
+			}
+			else if (compost_box_place) {
+				compost_box_place = nullptr;
 				game_state->setActionInfo(ActionInfo::none);
 			}
 			else if (item_plant && can_plant) {
@@ -477,6 +547,12 @@ bool World::HandleEvent(sf::Event const & event)
 				for (auto e : entity_hovered) {
 					if (e->getType() == ITEM) {
 						item_move = FindItem(e->getId());
+						entity_hovered.clear();
+						break;
+					}
+					else if (e->getType() == COMPOST_BOX) {
+						compost_box_move = FindCompostBox(e->getId());
+						if (compost_box_move->getNbOfBags() != 0) compost_box_move = nullptr;
 						entity_hovered.clear();
 						break;
 					}
@@ -497,7 +573,20 @@ bool World::HandleEvent(sf::Event const & event)
 				inventory->AddItem(item_move->getItemId());
 				DeleteEntity(item_move->getId());
 			}
+			if (check_compost_boxes) {
+				for (auto e : entity_hovered) {
+					if (e->getType() == COMPOST_BOX) {
+						auto cb = FindCompostBox(e->getId());
+						cb->AddBioJunk();
+						DeleteEntity(item_move->getId());
+						break;
+					}
+				}
+			}
 			item_move = nullptr;
+		}
+		else if (compost_box_move) {
+			compost_box_move = nullptr;
 		}
 	}
 	if (event.type == sf::Event::MouseMoved) {
@@ -618,10 +707,10 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 bool World::getCanCollect(Item::ItemType& item_type)
 {
 	if (item_place == nullptr && item_move == nullptr) {
+		auto m = mouse_pos_in_world;
 		for (auto t : trees) {
 			auto tp = t->getPos();
 			auto ts = t->getSize();
-			auto m = mouse_pos_in_world;
 
 			if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
 				if (t->getGrowthLevel() == 6) {
@@ -630,6 +719,16 @@ bool World::getCanCollect(Item::ItemType& item_type)
 					else if (t->getType() == BANANA_TREE)
 						item_type = Item::ItemType::banana;
 
+					return true;
+				}
+			}
+		}
+		for (auto cb : compost_boxes) {
+			if (cb->getNbOfBags() > 0) {
+				auto cp = cb->getPos();
+				auto cs = cb->getSize();
+				if (m.x > cp.x && m.x < cp.x + cs.x && m.y > cp.y && m.y < cp.y + cs.y) {
+					item_type = Item::ItemType::compost_bag;
 					return true;
 				}
 			}
@@ -684,7 +783,21 @@ void World::Collect()
 			}
 		}
 
-		
+	}
+	for (auto cb : compost_boxes) {
+		if (cb->getNbOfBags() > 0) {
+			auto cp = cb->getPos();
+			auto cs = cb->getSize();
+			if (m.x > cp.x && m.x < cp.x + cs.x && m.y > cp.y && m.y < cp.y + cs.y) {
+				vec2 pos;
+				pos.x = rng::rand_float(cp.x, cp.x+cs.x);
+				pos.y = rng::rand_float(cp.y, cp.y + 2);
+				float end_y = pos.y + cs.y/2.f;
+				particle_manager.CreateItemParticle(Item::ItemType::compost_bag, pos, end_y);
+				cb->TakeOneBag();
+				break;
+			}
+		}
 	}
 }
 
@@ -904,6 +1017,32 @@ void World::DeleteCarrotPlant(int id)
 	}
 }
 
+void World::DeleteCompostBox(int id)
+{
+	for (int i = 0; i != entities.size(); ++i) {
+		if (entities[i]->getId() == id) {
+			delete entities[i];
+			entities.erase(entities.begin() + i);
+			break;
+		}
+	}
+	for (int i = 0; i != compost_boxes.size(); ++i) {
+		if (compost_boxes[i]->getId() == id) {
+			delete compost_boxes[i];
+			compost_boxes.erase(compost_boxes.begin() + i);
+			break;
+		}
+	}
+}
+
+CompostBox * World::FindCompostBox(int id)
+{
+	for (auto cb : compost_boxes) {
+		if (cb->getId() == id) return cb;
+	}
+	return nullptr;
+}
+
 void World::StartPlaceItem(ItemObject* item) {
 	item_place = item;
 	game_state->setActionInfo(ActionInfo::place);
@@ -913,6 +1052,13 @@ void World::StartPlantItem(ItemObject * item)
 {
 	item_plant = item;
 	game_state->setActionInfo(ActionInfo::plant);
+}
+
+void World::StartPlaceCompostBox(CompostBox * cb)
+{
+	AddCompostBox(cb);
+	compost_box_place = cb;
+	game_state->setActionInfo(ActionInfo::place_compost_box);
 }
 
 void World::PlantSeed()

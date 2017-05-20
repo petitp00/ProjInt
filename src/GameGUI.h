@@ -140,6 +140,7 @@ public:
 	void DeleteItem(int id);
 	void EatItem(int id);
 	void PutDownItem(int id);
+	void PutCompostBoxDown(int id);
 	void PlantSeed(int id);
 	void UnequipTool();
 	void UseEquippedTool();
@@ -254,6 +255,7 @@ enum class ActionInfo {
 	collect,
 	use_tool,
 	collect_or_use_tool,
+	place_compost_box
 };
 
 class GUIActionInfo

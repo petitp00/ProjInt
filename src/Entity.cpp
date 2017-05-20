@@ -280,6 +280,76 @@ std::string CarrotPlant::getHoverInfo()
 	return ss.str();
 }
 
+CompostBox::CompostBox(vec2 pos, const std::vector<std::string>& saved_data) : 
+	GameObject(COMPOST_BOX, 0, pos, vec2(0,0), saved_data)
+{
+	scale = 2.f;
+	solid = true;
+
+	if (saved_data.size() != 0) {
+		nb_of_bags = float(atoi(saved_data[0].c_str()));
+		bag_progress = float(atoi(saved_data[1].c_str()));
+	}
+}
+
+void CompostBox::Init()
+{
+	UpdateCinfo();
+
+	sprite.setTexture(ResourceManager::getTexture(cinfo.texture_name));
+	sprite.setTextureRect(cinfo.texture_rect);
+	sprite.setScale(scale, scale);
+	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height * scale);
+	sprite.setPosition(pos);
+}
+
+void CompostBox::Update(float dt)
+{
+	if (bag_progress >= 100) {
+		bag_progress = 0;
+		++nb_of_bags;
+	}
+}
+
+void CompostBox::AddBioJunk()
+{
+	bag_progress += 20;
+}
+
+void CompostBox::TakeOneBag()
+{
+	nb_of_bags--;
+}
+
+void CompostBox::setOpen(bool open)
+{
+	if (this->open != open) {
+		this->open = open;
+		Init();
+	}
+}
+
+void CompostBox::UpdateCinfo()
+{
+	int var = 1;
+	if (!open) { var = 2; }
+	setCoordsInfo(getCoordsInfo("compostbox" + to_string(var)));
+	//cinfo = getCoordsInfo("compostbox" + to_string(var));
+}
+
+std::string CompostBox::getHoverInfo()
+{
+	stringstream ss;
+
+	ss << "Bac de compst" << endl;
+	ss << "Nombre de sacs: " << nb_of_bags << endl;
+	ss << "Progression du prochain sac: " << bag_progress << "%" << endl;
+	if (nb_of_bags != 0)
+		ss << "Doit être vide pour être déplacé" << endl;
+
+	return ss.str();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AnimationComponent::Update()
@@ -457,3 +527,4 @@ std::string Player::getHoverInfo()
 {
 	return std::string("Joueur\n");
 }
+

@@ -79,6 +79,10 @@ static void put_down(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PutDownItem(impl->item);
 }
 
+static void put_compost_box_down(ButtonActionImpl* impl) {
+	impl->game_state->getInventory()->PutCompostBoxDown(impl->item);
+}
+
 static void plant_seed(ButtonActionImpl* impl) {
 	impl->game_state->getInventory()->PlantSeed(impl->item);
 }
@@ -357,7 +361,12 @@ void ItemsPage::ResetItemDescription()
 			++i;
 		};
 
-		add_action_button("Déposer", new butt_action_t(put_down));
+		if (sit != Item::compost_box) {
+			add_action_button("Déposer", new butt_action_t(put_down));
+		}
+		else {
+			add_action_button("Déposer", new butt_action_t(put_compost_box_down));
+		}
 
 		if (Item::IsFood(sit)) {
 			add_action_button("Manger", new butt_action_t(eat));
@@ -366,6 +375,7 @@ void ItemsPage::ResetItemDescription()
 		if (Item::IsSeed(sit)) {
 			add_action_button("Planter", new butt_action_t(plant_seed));
 		}
+
 	}
 	else {
 		item_desc_obj->setTextString("Description: ");
@@ -1097,6 +1107,15 @@ void Inventory::PutDownItem(int item)
 	Refresh();
 }
 
+void Inventory::PutCompostBoxDown(int id)
+{
+	RemoveItem(id);
+	auto cb = make_compost_box(vec2(0, 0));
+	button_action_impl->game_state->getWorld().StartPlaceCompostBox(cb);
+	setActive(false);
+	Refresh();
+}
+
 void Inventory::PlantSeed(int id)
 {
 	RemoveItem(id);
@@ -1405,6 +1424,9 @@ void GUIActionInfo::setActionInfo(ActionInfo info)
 		break;
 	case ActionInfo::collect_or_use_tool:
 		setString("Clic gauche pour récolter\nClic droit pour utiliser outil");
+		break;
+	case ActionInfo::place_compost_box:
+		setString("Clic gauche pour placer");
 		break;
 	default:
 		break;

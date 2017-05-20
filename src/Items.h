@@ -32,6 +32,8 @@ namespace Item
 		apple_seed = 13,
 		banana_seed = 14,
 		carrot_seed = 15,
+		compost_bag = 16,
+		compost_box = 17,
 	};
 
 	using Recipe =

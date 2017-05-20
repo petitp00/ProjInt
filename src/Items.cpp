@@ -83,6 +83,7 @@ void Item::InitRecipes()
 	recipes.push_back({ ItemType::bowl, {{wood, 2}} });
 	recipes.push_back({ ItemType::fishing_pole, {{wood, 1}, {banana_string, 1}} });
 	recipes.push_back({ ItemType::banana_string, {{banana_leaf, 1}} });
+	recipes.push_back({ ItemType::compost_box, {{wood, 3}} });
 	recipes.push_back({ ItemType::apple_seed, {{apple_core, 1}} });
 	recipes.push_back({ ItemType::banana_seed, {{banana_peel, 1}} });
 	recipes.push_back({ ItemType::carrot_seed, {{carrot_top, 1}} });
@@ -254,6 +255,18 @@ any* make_any(ItemType type, vector<string>& save_data) {
 		a->pos_in_texture_map = {5, 1};
 		return a;
 	}
+	if (type == compost_bag) {
+		a->name = "Sac de compost";
+		a->desc = "Bon engrais pour la terre";
+		a->pos_in_texture_map = {7, 1};
+		return a;
+	}
+	if (type == compost_box) {
+		a->name = "Bac de compost";
+		a->desc = "Utilisé pour faire du compost";
+		a->pos_in_texture_map = {8, 1};
+		return a;
+	}
 
 	a->name = "Probably forgot to return in make_any";
 	return a;
@@ -277,6 +290,8 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	if (name == "Graine de pommier")	return apple_seed;
 	if (name == "Graine de bananier")	return banana_seed;
 	if (name == "Graine de carotte")	return carrot_seed;
+	if (name == "Sac de compost")		return compost_bag;
+	if (name == "Bac de compost")		return compost_box;
 
 	cerr << "item name \"" << name << "\" is not valid." << endl;
 	return ItemType(-1);

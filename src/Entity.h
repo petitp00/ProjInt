@@ -51,6 +51,7 @@ enum Type {
 	BANANA_TREE = 9,
 	HUT = 10,
 	CARROT_PLANT= 11,
+	COMPOST_BOX = 12,
 };
 
 static std::string getEntityTypeString(Type t) {
@@ -66,6 +67,7 @@ static std::string getEntityTypeString(Type t) {
 	case BANANA_TREE:	return "BANANA_TREE";
 	case HUT:			return "HUT";
 	case CARROT_PLANT:	return "CARORT_PLANT";
+	case COMPOST_BOX:	return "COMPOST_BOX";
 	case Type::ERROR:	return "ERROR";
 	default:			return "UNKNOWN. (Maybe you forgot to add it to getEntityTypeString() ?";
 	}
@@ -85,6 +87,7 @@ static std::string getEntityName(Type t) {
 	case BANANA_TREE:	return "Bananier";
 	case HUT:			return "Cabane";
 	case CARROT_PLANT:	return "Plant de carottes";
+	case COMPOST_BOX:	return "Bac de compost";
 	default:			return "case missing in getEntityName()";
 	}
 }
@@ -100,6 +103,7 @@ static Type getEntityTypeFromString(const std::string& str) {
 	if (str == "BANANA_TREE")	return BANANA_TREE;
 	if (str == "HUT")			return HUT;
 	if (str == "CARROT_PLANT")	return CARROT_PLANT;
+	if (str == "COMPOST_BOX")	return COMPOST_BOX;
 	return Type::ERROR;
 }
 
@@ -267,6 +271,34 @@ private:
 	float growth_level = 0; // 0 to 100
 };
 
+class CompostBox : public GameObject
+{
+	friend CompostBox* make_compost_box(vec2 pos, std::vector<std::string> saved_data);
+public:
+	CompostBox() = default;
+	CompostBox(vec2 pos, const std::vector<std::string>& saved_data = {});
+
+	void Init();
+	void Update(float dt) override;
+
+	void AddBioJunk();
+	void TakeOneBag();
+	void setOpen(bool open);
+	void UpdateCinfo();
+
+	std::vector<std::string> getSavedData() override {
+		return { std::to_string(nb_of_bags), std::to_string(bag_progress) };
+	}
+
+	std::string getHoverInfo() override;
+	int getNbOfBags() { return nb_of_bags; }
+
+private:
+	int nb_of_bags = 0;
+	float bag_progress = 0; // to 100
+	bool open = false;
+};
+
 class AnimationComponent
 {
 public:
@@ -401,4 +433,10 @@ static CarrotPlant* make_carrot_plant(vec2 pos, std::vector<std::string> saved_d
 	auto cp = new CarrotPlant(pos, saved_data);
 	cp->Init();
 	return cp;
+}
+
+static CompostBox* make_compost_box(vec2 pos, std::vector<std::string> saved_data = {}) {
+	auto cb = new CompostBox(pos, saved_data);
+	cb->Init();
+	return cb;
 }
