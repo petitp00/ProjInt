@@ -1369,7 +1369,7 @@ void GUIHoverInfo::setString(const std::string & text)
 GUIActionInfo::GUIActionInfo()
 {
 	size = vec2(0, 0);
-	origin = vec2(WINDOW_WIDTH/2.f, WINDOW_HEIGHT);
+	origin = vec2(WINDOW_WIDTH/2.f, float(WINDOW_HEIGHT));
 	pos = origin;
 
 	margin = 12.f;
@@ -1456,5 +1456,187 @@ void GUIActionInfo::setString(const std::string & text)
 		rect.setPosition(pos);
 		rect.setSize(size);
 		text_obj.setPosition(pos + vec2(margin, margin));
+	}
+}
+
+void StatusBar::Render(sf::RenderTarget & target)
+{
+	target.draw(rect1);
+	target.draw(rect2);
+}
+
+void StatusBar::setVal(float val)
+{
+	rect2.setSize(vec2(max_width * val / max_val, height));
+	rect1.setSize(vec2(max_width, height));
+}
+
+void StatusBar::InitColors()
+{
+	rect1.setFillColor(color2);
+	rect1.setOutlineColor(color3);
+	rect1.setOutlineThickness(2);
+
+	rect2.setFillColor(color1);
+
+	rect2.setSize(vec2(max_width * 0 / max_val, height));
+	rect1.setSize(vec2(max_width, height));
+}
+
+void StatusValues::Init(GUIStatusBars* bars)
+{
+	this->bars = bars;
+	set(StatusType::health, 100.f);
+	set(StatusType::energy, 100.f);
+	set(StatusType::hunger, 100.f);
+	set(StatusType::thirst, 100.f);
+}
+
+float StatusValues::get(StatusType stype)
+{
+	return values[stype];
+}
+
+void StatusValues::set(StatusType stype, float val)
+{
+	values[stype] = val;
+	if (bars)
+		bars->setVal(stype, val);
+	else
+		cerr << "WARNING: bars is not set in StatusValues (line: " << __LINE__ << ")";
+}
+
+void GUIStatusBars::Init()
+{
+	health_bar.color1 = sf::Color(189, 30, 30);
+	health_bar.color2 = sf::Color(70, 12, 12);
+	health_bar.InitColors();
+
+	energy_bar.color1 = sf::Color(93, 179, 70);
+	energy_bar.color2 = sf::Color(24, 58, 56);
+	energy_bar.InitColors();
+
+	hunger_bar.color1 = sf::Color(159, 88, 43);
+	hunger_bar.color2 = sf::Color(95, 53, 26);
+	hunger_bar.InitColors();
+
+	thirst_bar.color1 = sf::Color(48, 131, 180);
+	thirst_bar.color2 = sf::Color(25, 63, 87);
+	thirst_bar.InitColors();
+
+	float margin = 10;
+	int i = 0;
+
+	health_bar.rect1.setPosition(margin, margin+(margin+health_bar.height)*i);
+	health_bar.rect2.setPosition(margin, margin+(margin+health_bar.height)*i);
+	++i;
+	energy_bar.rect1.setPosition(margin, margin+(margin+health_bar.height)*i);
+	energy_bar.rect2.setPosition(margin, margin+(margin+health_bar.height)*i);
+	++i;
+	hunger_bar.rect1.setPosition(margin, margin+(margin+health_bar.height)*i);
+	hunger_bar.rect2.setPosition(margin, margin+(margin+health_bar.height)*i);
+	++i;
+	thirst_bar.rect1.setPosition(margin, margin+(margin+health_bar.height)*i);
+	thirst_bar.rect2.setPosition(margin, margin+(margin+health_bar.height)*i);
+	++i;
+
+	triangle.setPointCount(3);
+	triangle.setRotation(270);
+	triangle.setRadius(8);
+	triangle.setOrigin(8, 8);
+	triangle.setFillColor(INV_WINDOW_COLOR);
+
+	rect.setFillColor(INV_WINDOW_COLOR);
+
+	float h = thirst_bar.rect1.getPosition().y
+		+ thirst_bar.rect1.getSize().y
+		- health_bar.rect1.getPosition().y;
+	rect.setSize(vec2(120,h));
+
+	float x = health_bar.rect1.getPosition().x + health_bar.max_width + 8 * 2 + 4;
+	rect.setPosition(x, margin);
+
+	tbox = new TextBox("Énergie", vec2(x + 8, margin + 8), 120 - 2 * 8, BASE_FONT_NAME, INV_TEXT_COLOR, FontSize::TINY);
+}
+
+void GUIStatusBars::Render(sf::RenderTarget & target)
+{
+	health_bar.Render(target);
+	energy_bar.Render(target);
+	hunger_bar.Render(target);
+	thirst_bar.Render(target);
+
+	if (display_info) {
+		target.draw(triangle);
+		target.draw(rect);
+		tbox->Render(target, target);
+	}
+}
+
+void GUIStatusBars::Update(vec2 mouse_pos)
+{
+	auto m = mouse_pos;
+	auto is_mouse_in_bar = [m](StatusBar& bar) {
+		auto bp = bar.rect1.getPosition();
+		auto bs = bar.rect1.getSize();
+
+		if (m.x > bp.x && m.x < bp.x + bs.x) {
+			if (m.y > bp.y && m.y < bp.y + bs.y) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	StatusBar* sb = nullptr;
+	std::string text;
+
+	if (is_mouse_in_bar(health_bar)) {
+		sb = &health_bar;
+		text = "Vie";
+	}
+	else if (is_mouse_in_bar(energy_bar)) {
+		sb = &energy_bar;
+		text = "Énergie";
+	}
+	else if (is_mouse_in_bar(hunger_bar)) {
+		sb = &hunger_bar;
+		text = "Faim";
+	}
+	else if (is_mouse_in_bar(thirst_bar)) {
+		sb = &thirst_bar;
+		text = "Soif";
+	}
+
+	if (sb) {
+		display_info = true;
+		
+		auto pos = sb->rect1.getPosition() + vec2(sb->rect1.getSize().x + 16, sb->rect1.getSize().y / 2.f);
+		triangle.setPosition(pos);
+
+		tbox->setTextString(text);
+	}
+	else {
+		display_info = false;
+	}
+}
+
+void GUIStatusBars::setVal(StatusType stype, float val)
+{
+	switch (stype)
+	{
+	case StatusType::health:
+		health_bar.setVal(val);
+		break;
+	case StatusType::energy:
+		energy_bar.setVal(val);
+		break;
+	case StatusType::hunger:
+		hunger_bar.setVal(val);
+		break;
+	case StatusType::thirst:
+		thirst_bar.setVal(val);
+		break;
 	}
 }

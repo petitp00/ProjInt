@@ -282,3 +282,60 @@ private:
 	Tweener rect_alpha_tw;
 	Tweener text_alpha_tw;
 };
+
+struct StatusBar
+{
+	void Render(sf::RenderTarget& target);
+
+	float max_val = 100;
+	void setVal(float val);
+
+	float max_width = 200;
+	float height = 14;
+
+	sf::RectangleShape rect1; // bg
+	sf::RectangleShape rect2; // the one that changes
+
+	sf::Color color1; // main color
+	sf::Color color2; // bg color
+	sf::Color color3 = sf::Color(51, 51, 51); // outline color
+	void InitColors();
+};
+
+enum class StatusType {
+	health = 0,
+	energy = 1,
+	hunger = 2,
+	thirst = 3,
+};
+
+class GUIStatusBars;
+struct StatusValues {
+	void Init(GUIStatusBars* bars);
+
+	float get(StatusType stype);
+	void set(StatusType stype, float val);
+
+	std::map<StatusType, float> values;
+	GUIStatusBars* bars = nullptr;
+};
+
+class GUIStatusBars
+{
+public:
+	void Init();
+	void Render(sf::RenderTarget& target);
+	void Update(vec2 mouse_pos);
+	void setVal(StatusType stype, float val);
+
+private:
+	StatusBar health_bar;
+	StatusBar energy_bar;
+	StatusBar hunger_bar;
+	StatusBar thirst_bar;
+	
+	bool display_info = false;
+	sf::RectangleShape rect;
+	sf::CircleShape triangle;
+	TextBox* tbox;
+};

@@ -102,5 +102,5 @@
 + Feu et cuisson de poissons
 + Pêche
 + Pourissement de la nourriture
-+ Compost
++ Compost - ok
 + Probablement d'autres choses

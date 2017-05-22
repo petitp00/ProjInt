@@ -40,6 +40,8 @@ void GameState::Init(ButtonActionImpl * button_action_impl)
 	equipped_tool_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
 	collecting_sprite.setTexture(ResourceManager::getTexture(Item::texture_map_file));
 
+	gui_status_bars.Init();
+	status_values.Init(&gui_status_bars);
 }
 
 void GameState::Update(float dt)
@@ -120,6 +122,7 @@ void GameState::Update(float dt)
 	UpdateGUIHoverInfo();
 	hover_info.Update();
 	action_info.Update();
+	gui_status_bars.Update(mouse_pos);
 }
 
 void GameState::Render(sf::RenderTarget & target)
@@ -146,6 +149,7 @@ void GameState::Render(sf::RenderTarget & target)
 		hover_info.Render(target);
 		action_info.Render(target);
 	}
+	gui_status_bars.Render(target);
 
 	inventory.Render(target);
 

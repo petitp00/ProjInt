@@ -334,7 +334,6 @@ void CompostBox::UpdateCinfo()
 	int var = 1;
 	if (!open) { var = 2; }
 	setCoordsInfo(getCoordsInfo("compostbox" + to_string(var)));
-	//cinfo = getCoordsInfo("compostbox" + to_string(var));
 }
 
 std::string CompostBox::getHoverInfo()

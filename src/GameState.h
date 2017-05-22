@@ -63,4 +63,6 @@ private:
 	EquippedToolObj tool_obj;
 	GUIHoverInfo hover_info;
 	GUIActionInfo action_info;
+	GUIStatusBars gui_status_bars;
+	StatusValues status_values;
 };
