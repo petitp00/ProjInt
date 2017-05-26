@@ -427,7 +427,14 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	}
 
 	if (fishing) {
-		fishing_shape.setStart(player->getPos() + vec2(player->getSize().x / 2.f, 0));
+		fishing_shape.setStart(player->getPos() + vec2(-14, -30));
+
+		if (fishing_clock.getElapsedTime() >= sf::seconds(3.f)) {
+			fishing = false;
+			vec2 veloc = fishing_shape.getEnd() - fishing_shape.getStart();
+			veloc = vec2(0, 0);
+			particle_manager.CreateItemParticle(Item::ItemType::fish, fishing_shape.getEnd(), fishing_shape.getEnd().y + 50);
+		}
 
 		if (fishing_shape.getShouldSnap()) {
 			fishing = false;
@@ -942,6 +949,7 @@ void World::UseEquippedToolAt()
 
 		if (tool->name == "Canne à pêche") {
 			fishing = true;
+			fishing_clock.restart();
 			fishing_shape.setStart(player->getPos());
 			ground.StartRipple(mouse_pos_in_world, sf::seconds(2.f), 2.f);
 			fishing_shape.setEnd(m);
@@ -1115,12 +1123,7 @@ void World::SortEntitiesImpl() // seems to be super fast for not a lot of elemen
 	sort(entities.begin(), entities.end(), [](auto a, auto b) {
 		auto abox = a->getCollisionBox();
 		auto bbox = b->getCollisionBox();
-		auto ap = vec2(abox.left, abox.top);
-		auto as = vec2(abox.width, abox.height);
-		auto bp = vec2(bbox.left, bbox.top);
-		auto bs = vec2(bbox.width, bbox.height);
-		return ap.y + as.y < bp.y + bs.y;
-		//return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;
+		return abox.top + abox.height < bbox.top + bbox.height;
 	});
 }
 

@@ -38,6 +38,9 @@ public:
 		UpdateVertices();
 	}
 
+	vec2 getStart() { return start; }
+	vec2 getEnd() { return end; }
+
 	bool getShouldSnap() {
 		float dist = sqrt(pow(start.x - end.x, 2) + pow(start.y - end.y, 2));
 		return dist > max_dist;
@@ -214,5 +217,6 @@ private:
 
 	FishingPoleShape fishing_shape;
 	bool fishing = false;
+	sf::Clock fishing_clock;
 
 };

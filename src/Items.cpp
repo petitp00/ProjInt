@@ -135,6 +135,14 @@ Food* make_food(ItemType type, vector<string>& save_data) {
 		f->desc = "Légume. Mangeable. Laisse un bout et des graines.";
 		f->pos_in_texture_map = {4,0};
 		f->junk_created = carrot_top;
+		return f;
+	}
+	if (type == fish) {
+		f->name = "Poisson";
+		f->desc = "Fraichement pêché.";
+		f->pos_in_texture_map = {15, 0};
+		f->junk_created = fish_bones;
+		return f;
 	}
 
 	f->name == "Item was not a Food";
@@ -161,6 +169,11 @@ BioJunk* make_bio_junk(ItemType type, vector<string>& save_data) {
 	if (type == carrot_top) {
 		bj->name = "Bout de carotte";
 		bj->pos_in_texture_map = {5, 0};
+		return bj;
+	}
+	if (type == fish_bones) {
+		bj->name = "Os de poisson";
+		bj->pos_in_texture_map = { 0, 1 };
 		return bj;
 	}
 
@@ -292,6 +305,8 @@ ItemType Item::getItemTypeByName(const std::string& name)
 	if (name == "Graine de carotte")	return carrot_seed;
 	if (name == "Sac de compost")		return compost_bag;
 	if (name == "Bac de compost")		return compost_box;
+	if (name == "Poisson")				return fish;
+	if (name == "Os de poisson")		return fish_bones;
 
 	cerr << "item name \"" << name << "\" is not valid." << endl;
 	return ItemType(-1);

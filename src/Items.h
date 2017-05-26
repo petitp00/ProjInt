@@ -34,6 +34,8 @@ namespace Item
 		carrot_seed = 15,
 		compost_bag = 16,
 		compost_box = 17,
+		fish = 18,
+		fish_bones = 19,
 	};
 
 	using Recipe =
@@ -123,11 +125,11 @@ namespace Item
 	// maybe because the functions are inlined?
 
 	static bool IsFood(ItemType type) {
-		return (type == banana || type == apple || type == carrot);
+		return (type == banana || type == apple || type == carrot || type == fish);
 	}
 
 	static bool IsBioJunk(ItemType type) {
-		return (type == banana_peel || type == apple_core || type == carrot_top);
+		return (type == banana_peel || type == apple_core || type == carrot_top || type == fish_bones);
 	}
 
 	static bool IsTool(ItemType type) {
