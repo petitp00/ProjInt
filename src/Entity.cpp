@@ -351,39 +351,90 @@ std::string CompostBox::getHoverInfo()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimationComponent::Update()
+
+void AnimComp::Init()
 {
+	state = AnimState::IDLE;
+	last_state = AnimState::WALKING;
+	dir = AnimDir::DOWN;
+	last_dir = AnimDir::UP;
+
+	relative_origin = vec2(15, 61);
+
+	texture = &ResourceManager::getTexture("Textures_Character.png");
+	sprite.setTexture(*texture);
+	//sprite.setOrigin(relative_origin * scale);
 	sprite.setPosition(*entity_pos);
-	if (clock.getElapsedTime() > frame_time) {
-		clock.restart();
-		if (frame < nb_of_frames-1) {
-			++frame;
-		}
-		else {
-			frame = 0;
-		}
-		sprite.setTextureRect({vec2i{int(frame*frame_size.x),0}, vec2i(frame_size)});
-		if (flip) {
-			sprite.setOrigin(frame_size.x - entity_box_texture_pos.x, entity_box_texture_pos.y);
-			sprite.setScale(-scale.x, scale.y);
-		}
-		else {
-			sprite.setOrigin(entity_box_texture_pos);
-			sprite.setScale(scale.x, scale.y);
-		}
-	}
+	sprite.setTextureRect(sf::IntRect(vec2i(0,0), vec2i(frame_width, frame_height)));
+	sprite.setScale(scale, scale);
+
+	frame_time = sf::seconds(0.1f);
 }
 
-void AnimationComponent::Init()
+void AnimComp::Update()
 {
-	sprite.setTexture(*tileset);
-	sprite.setOrigin(entity_box_texture_pos);
-	sprite.setPosition(*entity_pos);
+	sprite.setPosition(*entity_pos - relative_origin*scale);
 
-	frame_size.x = sprite.getLocalBounds().width / float(nb_of_frames);
-	frame_size.y = sprite.getLocalBounds().height;
-	sprite.setTextureRect({vec2i{0,0}, vec2i(frame_size)});
-	sprite.setScale(scale);
+	if (state != last_state) {
+		last_state = state;
+
+		frame = 0;
+	}
+	if (dir != last_dir) {
+		last_dir = dir;
+
+		frame = 0;
+		if (state == AnimState::IDLE) {
+			max_frame = 0;
+			frame_y = 0;
+			if (dir == AnimDir::UP) {
+				frame_x = 2;
+			}
+			else if (dir == AnimDir::DOWN) {
+				frame_x = 1;
+			}
+			else if (dir == AnimDir::LEFT) {
+				frame_x = 0;
+			}
+			else if (dir == AnimDir::RIGHT) {
+				frame_x = 0;
+			}
+		}
+		else if (state == AnimState::WALKING) {
+			if (dir == AnimDir::UP) {
+				max_frame = 5;
+				frame_y = 8;
+			}
+			else if (dir == AnimDir::DOWN) {
+				max_frame = 5;
+				frame_y = 6;
+			}
+			else if (dir == AnimDir::LEFT) {
+				max_frame = 7;
+				frame_y = 3;
+			}
+			else if (dir == AnimDir::RIGHT) {
+				max_frame = 7;
+				frame_y = 3;
+			}
+		}
+	}
+
+	if (state == AnimState::WALKING) {
+		if (clock.getElapsedTime() >= frame_time) {
+			clock.restart();
+			if (frame != max_frame - 1) ++frame;
+			else frame = 0;
+		}
+	}
+
+	if (dir == AnimDir::LEFT) {
+		sprite.setTextureRect(sf::IntRect((frame_x + frame) * frame_width + frame_width, frame_y * frame_height, -frame_width, frame_height*2));
+	}
+	else {
+		sprite.setTextureRect(sf::IntRect((frame_x + frame) * frame_width, frame_y * frame_height, frame_width, frame_height*2));
+	}
+
 }
 
 Player::Player() : Entity()
@@ -405,49 +456,63 @@ void Player::Init()
 
 	size= vec2(36, 36) * scale;
 
-	anim_comp.tileset = &ResourceManager::getTexture("Placeholders/player.png");
-	anim_comp.scale = vec2(scale, scale);
-	anim_comp.nb_of_frames = 4;
-	anim_comp.entity_pos = &pos;
-	anim_comp.entity_box_texture_pos ={20,58};
-	anim_comp.frame_time = sf::seconds(0.1f);
-
-	anim_comp.Init();
+	anim.entity_pos = &pos;
+	anim.Init();
 }
 
 void Player::Update(float dt)
 {
 	if (window_active) {
-		if (sf::Keyboard::isKeyPressed(controls->get("Haut"))) movement.y = -1;
-		else if (sf::Keyboard::isKeyPressed(controls->get("Bas"))) movement.y = 1;
-		else movement.y = 0;
+		if (sf::Keyboard::isKeyPressed(controls->get("Haut"))) {
+			movement.y = -1;
+			anim.state = AnimState::WALKING;
+			anim.dir = AnimDir::UP;
+		}
+		else if (sf::Keyboard::isKeyPressed(controls->get("Bas"))) {
+			movement.y = 1;
+			anim.state = AnimState::WALKING;
+			anim.dir = AnimDir::DOWN;
+		}
+		else {
+			movement.y = 0;
+			anim.state = AnimState::IDLE;
+		}
 
-		if (sf::Keyboard::isKeyPressed(controls->get("Gauche"))) movement.x = -1;
-		else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) movement.x = 1;
-		else movement.x = 0;
+		if (sf::Keyboard::isKeyPressed(controls->get("Gauche"))) {
+			movement.x = -1;
+			anim.state = AnimState::WALKING;
+			anim.dir = AnimDir::LEFT;
+		}
+		else if (sf::Keyboard::isKeyPressed(controls->get("Droite"))) {
+			movement.x = 1;
+			anim.state = AnimState::WALKING;
+			anim.dir = AnimDir::RIGHT;
+		}
+		else {
+			movement.x = 0;
+			anim.state = AnimState::IDLE;
+		}
 	}
 	else {
 		movement = vec2(0, 0);
+			anim.state = AnimState::IDLE;
 	}
 
 	if (movement != vec2(0, 0)) {
 		movement = normalize(movement);
 		movement.y *= 0.92f;
-		anim_comp.Update();
+		anim.state = AnimState::WALKING;
+	}
+	else {
+		anim.state = AnimState::IDLE;
 	}
 
-	if (movement.x > 0) {
-		anim_comp.flip = false;
-	}
-	else if (movement.x < 0) {
-		anim_comp.flip = true;
-	}
-
+	anim.Update();
 }
 
 void Player::Render(sf::RenderTarget & target)
 {
-	target.draw(anim_comp.sprite);
+	target.draw(anim.sprite);
 }
 
 void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
@@ -460,36 +525,38 @@ void Player::DoCollisions(std::vector<Entity*>& entities, int entity_move_id)
 
 			float tolerance = 10;
 
-			vec2 d(8, 8);
-			auto p = pos + d;
-			auto s = size - d;
+			auto p = vec2(getCollisionBox().left, getCollisionBox().top);
+			auto s = vec2(getCollisionBox().width, getCollisionBox().height);
 
-			if (movement.x != 0 && p.y + s.y > epos.y && p.y < epos.y + esize.y) {
-				if (p.x + s.x >= epos.x && p.x + s.x <= epos.x + tolerance
-				 && p.x <= epos.x && movement.x > 0) {
-					pos.x = epos.x - s.x - d.x;
-					movement.x = 0;
-				}
-				else if (p.x <= epos.x + esize.x && p.x >= epos.x + esize.x - tolerance
-					  && p.x + s.x >= epos.x + esize.x && movement.x < 0) {
-					pos.x = epos.x + esize.x - d.x;
-					movement.x = 0;
+			if (movement.x != 0) {
+				if (p.y + s.y > epos.y && p.y < epos.y + esize.y) {
+					if (p.x + s.x >= epos.x && p.x + s.x <= epos.x + tolerance
+						&& p.x <= epos.x && movement.x > 0) {
+						pos.x = epos.x - s.x*0.5f;
+						movement.x = 0;
+					}
+					else if (p.x <= epos.x + esize.x && p.x >= epos.x + esize.x - tolerance
+						&& p.x + s.x >= epos.x + esize.x && movement.x < 0) {
+						pos.x = epos.x + esize.x + s.x*0.5f;
+						movement.x = 0;
+					}
 				}
 			}
 
-			if (movement.y != 0 && p.x + s.x > epos.x && p.x < epos.x + esize.x) {
-				if (p.y + s.y >= epos.y && p.y + s.y <= epos.y + tolerance
-				 && p.y <= epos.y && movement.y > 0) {
-					pos.y = epos.y - s.y - d.y;
-					movement.y = 0;
-				}
-				else if (p.y <= epos.y + esize.y && p.y >= epos.y + esize.y - tolerance
-					  && p.y + s.y >= epos.y + esize.y && movement.y < 0) {
-					pos.y = epos.y + esize.y - d.y;
-					movement.y = 0;
+			if (movement.y != 0 ) {
+				if (p.x + s.x > epos.x && p.x < epos.x + esize.x) {
+					if (p.y + s.y >= epos.y && p.y + s.y <= epos.y + tolerance
+					 && p.y <= epos.y && movement.y > 0) {
+						pos.y = epos.y;
+						movement.y = 0;
+					}
+					else if (p.y <= epos.y + esize.y && p.y >= epos.y + esize.y - tolerance
+						  && p.y + s.y >= epos.y + esize.y && movement.y < 0) {
+						pos.y = epos.y + esize.y + s.y;
+						movement.y = 0;
+					}
 				}
 			}
-
 		}
 	}
 
@@ -519,11 +586,15 @@ void Player::DoMovement(float dt)
 void Player::setPos(vec2 pos)
 {
 	this->pos = pos;
-	anim_comp.Update();
 }
 
 std::string Player::getHoverInfo()
 {
 	return std::string("Joueur\n");
+}
+
+sf::FloatRect const Player::getCollisionBox()
+{
+	return sf::FloatRect(pos.x - 7*anim.scale, pos.y - 13*anim.scale, (7*anim.scale)*2, 13*anim.scale);
 }
 

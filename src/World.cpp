@@ -17,14 +17,18 @@ vec2 mouse_pos_in_world(-1, -1);
 World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
-	game_view.setSize(WINDOW_WIDTH*0.85f, WINDOW_HEIGHT*0.85f);
+	float scale = 0.75f;
+	game_view.setSize(WINDOW_WIDTH*scale, WINDOW_HEIGHT*scale);
 }
 
 World::World(Controls* controls) :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)})),
 	controls(controls), inventory(inventory)
 {
-
+	float scale = 0.75100f;
+	vec2 viewsize = vec2(float(WINDOW_WIDTH), float(WINDOW_HEIGHT));
+	game_view.reset(sf::FloatRect({0,0}, viewsize));
+	game_view.setSize(viewsize * scale);
 }
 World::~World()
 {
@@ -443,7 +447,7 @@ void World::UpdateView()
 	if (vy - vs.y/2.f <= 0)			vy = vs.y/2.f;
 	if (vy + vs.y/2.f >= WORLD_H)	vy = WORLD_H - vs.y/2.f;
 	
-	game_view.setCenter(vx, vy);
+	game_view.setCenter(int(vx), int(vy));
 }
 
 void World::Render(sf::RenderTarget & target)

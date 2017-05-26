@@ -299,27 +299,47 @@ private:
 	bool open = false;
 };
 
-class AnimationComponent
+enum class AnimState
 {
-public:
-	void Update();
+	IDLE,
+	WALKING,
+};
+
+enum class AnimDir
+{
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
+
+struct AnimComp
+{
 	void Init();
+	void Update();
 
-	vec2* entity_pos; // not the same as the sprite's pos
-	vec2 entity_box_texture_pos; // where the collision box of the entity starts in the texture
-	vec2 frame_size;
-	vec2 scale;
+	AnimState state, last_state;
+	AnimDir dir, last_dir;
+
+	vec2* entity_pos;
+	vec2 relative_origin;
+
 	sf::Sprite sprite;
-	sf::Texture* tileset;
+	sf::Texture* texture;
+
 	sf::Time frame_time;
+	int frame;
+	int max_frame;
+	float frame_x;
+	float frame_y;
 
-	int nb_of_frames;
-	int frame = 0;
-
-	bool flip = false;
+	const float scale = 2.f;
+	const float frame_width = 32.f;
+	const float frame_height = 32.f;
 
 private:
 	sf::Clock clock;
+	vec2 frame_pos;
 };
 
 class Player : public Entity
@@ -337,11 +357,11 @@ public:
 	void setPos(vec2 pos) override;
 
 	std::string getHoverInfo() override;
+	sf::FloatRect const getCollisionBox() override;
 
 private:
 	Controls* controls = nullptr;
-
-	AnimationComponent anim_comp;
+	AnimComp anim;
 
 	vec2 movement;
 	float walk_speed = 0.3f;
