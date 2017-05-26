@@ -1112,8 +1112,15 @@ void World::PlantSeed()
 
 void World::SortEntitiesImpl() // seems to be super fast for not a lot of elements (~10µs)
 {
-	sort(entities.begin(), entities.end(), [](auto e1, auto e2) {
-		return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;
+	sort(entities.begin(), entities.end(), [](auto a, auto b) {
+		auto abox = a->getCollisionBox();
+		auto bbox = b->getCollisionBox();
+		auto ap = vec2(abox.left, abox.top);
+		auto as = vec2(abox.width, abox.height);
+		auto bp = vec2(bbox.left, bbox.top);
+		auto bs = vec2(bbox.width, bbox.height);
+		return ap.y + as.y < bp.y + bs.y;
+		//return e1->getPos().y + e1->getSize().y < e2->getPos().y + e2->getSize().y;
 	});
 }
 
