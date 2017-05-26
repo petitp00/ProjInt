@@ -363,7 +363,6 @@ void AnimComp::Init()
 
 	texture = &ResourceManager::getTexture("Textures_Character.png");
 	sprite.setTexture(*texture);
-	//sprite.setOrigin(relative_origin * scale);
 	sprite.setPosition(*entity_pos);
 	sprite.setTextureRect(sf::IntRect(vec2i(0,0), vec2i(frame_width, frame_height)));
 	sprite.setScale(scale, scale);
@@ -375,13 +374,9 @@ void AnimComp::Update()
 {
 	sprite.setPosition(*entity_pos - relative_origin*scale);
 
-	if (state != last_state) {
-		last_state = state;
-
-		frame = 0;
-	}
-	if (dir != last_dir) {
+	if (dir != last_dir || state != last_state) {
 		last_dir = dir;
+		last_state = state;
 
 		frame = 0;
 		if (state == AnimState::IDLE) {
@@ -495,7 +490,7 @@ void Player::Update(float dt)
 	}
 	else {
 		movement = vec2(0, 0);
-			anim.state = AnimState::IDLE;
+		anim.state = AnimState::IDLE;
 	}
 
 	if (movement != vec2(0, 0)) {
