@@ -102,15 +102,17 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 {
 	scale = 2.f;
 
+	root_pos = pos;
+
 	if (saved_data.size() != 0) {
 		pos_adjusted = true;
 		type = getEntityTypeFromString(saved_data[0]);
 		growth_level = atoi(saved_data[1].c_str());
 		variation = growth_level;
-		if (saved_data.size() >= 3) {
-			hp = atoi(saved_data[2].c_str());
-			fruits = min(4, atoi(saved_data[3].c_str()));
-		}
+		hp = atoi(saved_data[2].c_str());
+		fruits = min(4, atoi(saved_data[3].c_str()));
+		root_pos.x = atoi(saved_data[4].c_str());
+		root_pos.y = atoi(saved_data[5].c_str());
 	}
 	else {
 		fruits = -1;
@@ -130,7 +132,7 @@ void TreeObj::Init()
 	size = vec2(cinfo.texture_rect.width * scale, cinfo.texture_rect.height*scale);
 
 	if (!pos_adjusted) {
-		pos -= vec2(size.x / 2.f, size.y);
+		pos = root_pos - vec2(size.x / 2.f, size.y);
 		pos_adjusted = true;
 	}
 
@@ -174,10 +176,15 @@ void TreeObj::TakeOneFruit()
 	}
 }
 
+void TreeObj::GrowOneLevel()
+{
+	setGrowthLevel(min(6, getGrowthLevel() + 1));
+}
+
 void TreeObj::setGrowthLevel(int level)
 {
 	growth_level = level;
-
+	pos_adjusted = false;
 
 	if (growth_level == 1 || growth_level == 2) {
 		hp = 1;
@@ -189,7 +196,7 @@ void TreeObj::setGrowthLevel(int level)
 		hp = 3;
 	}
 
-	if (growth_level == 6 && fruits == -1) {
+	if (growth_level == 6 && (true || fruits == -1)) {
 		fruits = 4;
 	}
 	else if (fruits == -1) {
@@ -206,6 +213,14 @@ void TreeObj::setGrowthLevel(int level)
 	setCoordsInfo(cinfo);
 
 	Init();
+}
+
+void TreeObj::setPos(vec2 pos)
+{
+	GameObject::setPos(pos);
+#ifdef EDITOR_MODE
+	root_pos = pos;
+#endif
 }
 
 std::string TreeObj::getHoverInfo()
@@ -262,12 +277,21 @@ void CarrotPlant::UpdateCinfo()
 	int var = 1;
 	if (growth_level >= 100) { var = 3; }
 	else if (growth_level >= 50) { var = 2; }
+	cout << "var: " << var << endl;
 	cinfo = getCoordsInfo("carrotplant" + to_string(var));
+}
+
+void CarrotPlant::GrowOneLevel()
+{
+	setGrowthLevel(growth_level + 50);
 }
 
 void CarrotPlant::setGrowthLevel(float growth_level)
 {
-	this->growth_level = growth_level;
+	if (growth_level != -111) {
+		cout << "GROWTH LEVEL: " << growth_level << endl;
+		this->growth_level = growth_level;
+	}
 	Init();
 }
 
@@ -396,6 +420,7 @@ void AnimComp::Update()
 			}
 		}
 		else if (state == AnimState::WALKING) {
+			frame_x = 0;
 			if (dir == AnimDir::UP) {
 				max_frame = 5;
 				frame_y = 8;

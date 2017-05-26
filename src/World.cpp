@@ -174,6 +174,7 @@ void World::LoadWorld(std::string const & filename)
 			ItemObject* io;
 			TreeObj* to;
 			CompostBox* cb;
+			CarrotPlant* cp;
 			int id;
 
 			switch (t)
@@ -215,6 +216,10 @@ void World::LoadWorld(std::string const & filename)
 			case COMPOST_BOX:
 				cb = make_compost_box(p, vec);
 				AddCompostBox(cb);
+				break;
+			case CARROT_PLANT:
+				cp = make_carrot_plant(p, vec);
+				AddCarrotPlant(cp);
 				break;
 			default:
 				break;
@@ -670,6 +675,34 @@ ItemObject * World::FindItem(int id)
 	return nullptr;
 }
 
+TreeObj * World::FindTree(int id)
+{
+	for (auto t : trees) {
+		if (t->getId() == id) {
+			return t;
+		}
+	}
+	return nullptr;
+}
+
+CarrotPlant * World::FindCarrotPlant(int id)
+{
+	for (auto cp : carrot_plants) {
+		if (cp->getId() == id) {
+			return cp;
+		}
+	}
+	return nullptr;
+}
+
+CompostBox * World::FindCompostBox(int id)
+{
+	for (auto cb : compost_boxes) {
+		if (cb->getId() == id) return cb;
+	}
+	return nullptr;
+}
+
 bool World::getCanUseTool(int tool, Item::ItemType& icon)
 {
 	if (tool != -1 && !item_place && !item_move && !item_plant) {
@@ -693,8 +726,26 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
 					return true;
 				}
-			}
 
+				if (entity_hovered.size() != 0) {
+					for (auto e : entity_hovered) {
+						auto ent_type = e->getType();
+
+						if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) {
+							auto tree = FindTree(e->getId());
+							if (tree->getGrowthLevel() < 6) {
+								return true;
+							}
+						}
+						else if (ent_type == CARROT_PLANT) {
+							auto cp = FindCarrotPlant(e->getId());
+							if (cp->getGrowthLevel() < 100) {
+								return true;
+							}
+						}
+					}
+				}
+			}
 		}
 		else if (name == "Faux") {
 			GroundTile* gtile = ground.getTileClicked(mouse_pos_in_world);
@@ -769,6 +820,17 @@ bool World::getCanCollect(Item::ItemType& item_type)
 				}
 			}
 		}
+		for (auto e : entity_hovered) {
+			auto ent_type = e->getType();
+			if (ent_type == CARROT_PLANT) {
+				auto cp = FindCarrotPlant(e->getId());
+				if (cp->getGrowthLevel() >= 100) {
+					item_type = Item::ItemType::carrot;
+					return true;
+				}
+			}
+		}
+
 	}
 	return false;
 }
@@ -833,6 +895,21 @@ void World::Collect()
 				cb->TakeOneBag();
 				break;
 			}
+		}
+	}
+	for (auto e : entity_hovered) {
+		auto ent_type = e->getType();
+		if (ent_type == CARROT_PLANT) {
+			auto cp = FindCarrotPlant(e->getId());
+			vec2 pos;
+			pos.x = rng::rand_float(cp->getPos().x, cp->getPos().x+cp->getSize().x);
+			pos.y = rng::rand_float(cp->getPos().y, cp->getPos().y + 2);
+			float end_y = pos.y + cp->getSize().y/2.f;
+			particle_manager.CreateItemParticle(Item::ItemType::carrot, pos, end_y);
+			particle_manager.CreateItemParticle(Item::ItemType::carrot, pos, end_y);
+			particle_manager.CreateItemParticle(Item::ItemType::carrot, pos, end_y);
+			DeleteCarrotPlant(e->getId());
+			break;
 		}
 	}
 }
@@ -921,6 +998,28 @@ void World::UseEquippedToolAt()
 					--b->water_level;
 					// DRINKING
 				}
+
+				if (entity_hovered.size() != 0) {
+					for (auto e : entity_hovered) {
+						auto ent_type = e->getType();
+
+						if (ent_type == APPLE_TREE || ent_type == BANANA_TREE) {
+							auto tree = FindTree(e->getId());
+							if (tree->getGrowthLevel() < 6) {
+								tree->GrowOneLevel();
+								--b->water_level;
+							}
+						}
+						else if (ent_type == CARROT_PLANT) {
+							auto cp = FindCarrotPlant(e->getId());
+							if (cp->getGrowthLevel() < 100) {
+								cp->GrowOneLevel();
+								--b->water_level;
+							}
+						}
+					}
+				}
+
 			}
 
 			b->UpdatePosInTextureMap();
@@ -1070,14 +1169,6 @@ void World::DeleteCompostBox(int id)
 			break;
 		}
 	}
-}
-
-CompostBox * World::FindCompostBox(int id)
-{
-	for (auto cb : compost_boxes) {
-		if (cb->getId() == id) return cb;
-	}
-	return nullptr;
 }
 
 void World::StartPlaceItem(ItemObject* item) {

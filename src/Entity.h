@@ -229,13 +229,16 @@ public:
 	int getFruitsAmount() { return fruits; }
 	void TakeOneFruit();// { --fruits; }
 	void setFruitAmount(int amount) {fruits = amount;}
+	void GrowOneLevel();
 	void setGrowthLevel(int level);
+	void setPos(vec2 pos) override;
 
 	std::vector<std::string> getSavedData() override { return {
 		std::to_string(int(type)),
 		std::to_string(growth_level),
 		std::to_string(hp),
-		std::to_string(fruits)
+		std::to_string(fruits),
+		std::to_string(root_pos.x), std::to_string(root_pos.y)
 	}; }
 
 	std::string getHoverInfo() override;
@@ -244,6 +247,8 @@ private:
 	int growth_level = 0; // 1 to 6
 	int fruits = -1;
 	int hp;
+
+	vec2 root_pos;
 
 	bool pos_adjusted = false;
 };
@@ -259,7 +264,11 @@ public:
 	void Update(float dt) override;
 
 	void UpdateCinfo();
+	void GrowOneLevel();
 	void setGrowthLevel(float growth_level);
+	float getGrowthLevel() { return growth_level; }
+
+	sf::FloatRect const getCollisionBox() override { return sf::FloatRect(-100, -100, 0, 0); }
 
 	std::vector<std::string> getSavedData() override {
 		return {std::to_string(growth_level)};

@@ -150,6 +150,9 @@ public:
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
+	TreeObj* FindTree(int id);
+	CarrotPlant* FindCarrotPlant(int id);
+	CompostBox* FindCompostBox(int id);
 	bool getCanUseTool(int tool, Item::ItemType& icon);
 	bool getCanCollect(Item::ItemType& item_type);
 	GroundTile* getGroundTileHovered(vec2 mpose);
@@ -172,8 +175,6 @@ public:
 	void DeleteItemObj(int id);
 	void DeleteCarrotPlant(int id);
 	void DeleteCompostBox(int id);
-
-	CompostBox* FindCompostBox(int id);
 
 	void StartPlaceItem(ItemObject* item);
 	void StartPlantItem(ItemObject* item);
