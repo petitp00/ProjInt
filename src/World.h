@@ -143,7 +143,7 @@ public:
 	void Render(sf::RenderTarget& target);
 	bool HandleEvent(sf::Event const& event);
 
-	sf::View& getGameView() { return game_view; }
+	sf::View getGameView();
 	Entity* FindEntityClicked(vec2 mpos);
 	Entity* getEntity(int id);
 	ItemObject* FindItem(int id);
@@ -188,6 +188,8 @@ private:
 	std::string name;
 
 	sf::View game_view;
+	sf::RenderTexture render_texture;
+	sf::Sprite render_sprite;
 
 	Ground ground;
 	Particle::Manager particle_manager;
@@ -206,7 +208,10 @@ private:
 
 	CompostBox* compost_box_place = nullptr;
 	CompostBox* compost_box_move = nullptr;
-	bool check_compost_boxes = false; // set to true when a compost box is hovered, check if we need to close it
+	
+	// set to true when a compost box is hovered, check if we need to close it
+	bool check_compost_boxes = false;
+
 	FishingPoleShape fishing_shape;
 	bool fishing = false;
 

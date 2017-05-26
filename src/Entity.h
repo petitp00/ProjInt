@@ -76,7 +76,7 @@ static std::string getEntityTypeString(Type t) {
 static std::string getEntityName(Type t) {
 	switch (t)
 	{
-	case ERROR:			return "Erreur";
+	case Type::ERROR:	return "Erreur";
 	case ENTITY:		return "Entité";
 	case PLAYER:		return "Joueur";
 	case GAME_OBJECT:	return "GameObject";

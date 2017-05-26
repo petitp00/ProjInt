@@ -14,22 +14,29 @@ using namespace std;
 vec2 mouse_pos = {-1, -1};
 vec2 mouse_pos_in_world(-1, -1);
 
+vec2 game_view_size = vec2(float(WINDOW_WIDTH), float(WINDOW_HEIGHT));
+float zoom = 0.75f;
+//float zoom = 1.0f;
+
 World::World() :
 	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)}))
 {
-	float scale = 0.75f;
-	game_view.setSize(WINDOW_WIDTH*scale, WINDOW_HEIGHT*scale);
+	//float scale = 0.75f;
+	//game_view.setSize(WINDOW_WIDTH*scale, WINDOW_HEIGHT*scale);
 }
 
 World::World(Controls* controls) :
-	game_view(sf::FloatRect({0,0}, {float(WINDOW_WIDTH), float(WINDOW_HEIGHT)})),
+	game_view(sf::FloatRect({0,0}, game_view_size)),
 	controls(controls), inventory(inventory)
 {
-	float scale = 0.75100f;
-	vec2 viewsize = vec2(float(WINDOW_WIDTH), float(WINDOW_HEIGHT));
-	game_view.reset(sf::FloatRect({0,0}, viewsize));
-	game_view.setSize(viewsize * scale);
+	render_texture.create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	render_sprite.setTexture(render_texture.getTexture());
+	auto ww = WINDOW_WIDTH;
+	auto wh = WINDOW_HEIGHT;
+	render_sprite.setTextureRect(sf::IntRect((ww-ww*zoom)*0.5, (wh-wh*zoom)*0.5, ww*zoom, wh*zoom));
+	render_sprite.setScale(ww/float(ww*zoom), wh/float(wh*zoom));
 }
+
 World::~World()
 {
 	Clear();
@@ -448,47 +455,58 @@ void World::UpdateView()
 	if (vy + vs.y/2.f >= WORLD_H)	vy = WORLD_H - vs.y/2.f;
 	
 	game_view.setCenter(int(vx), int(vy));
+	//game_view.setCenter(vx, vy);
 }
 
 void World::Render(sf::RenderTarget & target)
 {
+
+	sf::RenderTarget* targ = &target;
+
 #ifndef EDITOR_MODE
-	target.setView(game_view);
+	render_texture.clear();
+	targ = &render_texture;
+	targ->setView(game_view);
 #endif
 
-	target.draw(ground);
+	targ->draw(ground);
 	if (player) {
 		int next_sprite_particle_to_render = 0;
 		int next_item_particle_to_render = 0;
 		for (auto e : entities) {
 			if (next_sprite_particle_to_render != -1)
-				next_sprite_particle_to_render = particle_manager.RenderSpriteParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_sprite_particle_to_render);
+				next_sprite_particle_to_render = particle_manager.RenderSpriteParticlesLowerThan(*targ, e->getPos().y + e->getSize().y, next_sprite_particle_to_render);
 			if (next_item_particle_to_render != -1)
-				next_item_particle_to_render = particle_manager.RenderItemParticlesLowerThan(target, e->getPos().y + e->getSize().y, next_item_particle_to_render);
-			e->Render(target);
+				next_item_particle_to_render = particle_manager.RenderItemParticlesLowerThan(*targ, e->getPos().y + e->getSize().y, next_item_particle_to_render);
+			e->Render(*targ);
 		}
 
 		// render the remaining particles
 		if (next_sprite_particle_to_render != -1)
-			particle_manager.RenderSpriteParticlesLowerThan(target, 100000, next_sprite_particle_to_render);
+			particle_manager.RenderSpriteParticlesLowerThan(*targ, 100000, next_sprite_particle_to_render);
 		if (next_item_particle_to_render != -1)
-			particle_manager.RenderItemParticlesLowerThan(target, 100000, next_item_particle_to_render);
+			particle_manager.RenderItemParticlesLowerThan(*targ, 100000, next_item_particle_to_render);
 
 		if (fishing) {
 			//target.draw(fish_line.rect);
-			target.draw(fishing_shape);
+			targ->draw(fishing_shape);
 		}
 
-		if (item_place) item_place->Render(target);
+		if (item_place) item_place->Render(*targ);
 		if (item_plant && can_plant) {
-			item_plant->Render(target);
+			item_plant->Render(*targ);
 		}
 	}
 	else {
 		for (auto e : entities) {
-			e->Render(target);
+			e->Render(*targ);
 		}
 	}
+
+#ifndef EDITOR_MODE
+	render_texture.display();
+	target.draw(render_sprite);
+#endif
 }
 
 vec2i drag_mouse_pos;
@@ -598,6 +616,13 @@ bool World::HandleEvent(sf::Event const & event)
 	}
 
 	return false;
+}
+
+sf::View World::getGameView()
+{
+	sf::View ret = game_view;
+	ret.setSize(WINDOW_WIDTH*zoom, WINDOW_HEIGHT*zoom);
+	return ret;
 }
 
 Entity * World::FindEntityClicked(vec2 mpos)

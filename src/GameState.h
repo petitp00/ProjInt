@@ -36,6 +36,8 @@ public:
 	void setActive(bool active) { this->active = active; }
 	void setActionInfo(ActionInfo info) { action_info.setActionInfo(info); }
 
+	sf::RenderWindow* getWindow() { return &game.getWindow(); }
+
 private:
 	bool active = false;
 
