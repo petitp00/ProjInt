@@ -28,6 +28,7 @@ int main()
 
 	cout << "Deleting resources ..." << endl;
 	ResourceManager::ClearAll();
+	SoundManager::Clear();
 	cout << "Done!" << endl;
 
 	return 0;

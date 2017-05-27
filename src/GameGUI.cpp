@@ -8,6 +8,8 @@
 using namespace std;
 
 static void eat(ButtonActionImpl* impl) {
+	SoundManager::Play("appleBite2.wav");
+
 	auto item = Item::Manager::getAny(impl->item);
 	if (Item::IsFood(Item::getItemTypeByName(item->name))) {
 		auto food = Item::Manager::getFood(impl->item);

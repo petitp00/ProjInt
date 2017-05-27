@@ -114,6 +114,7 @@ void Particle::Manager::UpdateParticles(float dt)
 			else {
 				item = i->existing_id;
 			}
+			SoundManager::Play("pop.wav");
 			world->AddItemEnt(make_item(item, i->pos));
 			i = item_particles.erase(i);
 			continue;

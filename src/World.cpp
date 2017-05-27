@@ -541,7 +541,8 @@ bool World::HandleEvent(sf::Event const & event)
 		}
 
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
-			ground.StartRipple(mouse_pos_in_world, sf::seconds(1.5f), 10.f);
+			if (ground.getTileClickedType(mouse_pos_in_world) == RIVER)
+				ground.StartRipple(mouse_pos_in_world, sf::seconds(1.5f), 10.f);
 			if (item_place) {
 				bool put_in_compost_box = false;
 
@@ -931,6 +932,7 @@ void World::DropItemFromInventory(int id)
 
 void HitTree(TreeObj* tree, Particle::Manager* particle_manager, World* world)
 {
+	SoundManager::Play("woodChop.wav");
 	auto tp = tree->getPos();
 	auto ts = tree->getSize();
 	// Create leaf particles
@@ -987,6 +989,7 @@ void World::UseEquippedToolAt()
 
 			if (gtype == GroundType::RIVER) {
 				if (b->water_level < 4) {
+					SoundManager::Play("waterSplouch2.wav");
 					b->water_level = 4;
 				}
 			}

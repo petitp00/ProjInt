@@ -52,8 +52,12 @@ static void return_to_last_state(ButtonActionImpl* impl) {
 }
 
 // AUDIO STUFF //
-static void toggle_mute_checkbox(ButtonActionImpl* impl) { }
-static void change_volume(ButtonActionImpl* impl) { }
+static void toggle_mute_checkbox(ButtonActionImpl* impl) {
+	SoundManager::setMute(*impl->mute_active_ref);
+}
+static void change_volume(ButtonActionImpl* impl) {
+	SoundManager::setVolume(*impl->volume_slider_ref);
+}
 
 // CONTROLS STUFF //
 static void reset_default_controls(ButtonActionImpl* impl) {
@@ -448,6 +452,8 @@ void MenuState::InitAudioMenu()
 	button_action_impl->volume_slider_ref = volume_slider->getValueRef();
 	volume_slider->setOnClickAction(new std::function<void(ButtonActionImpl*)>(change_volume), button_action_impl);
 	audio_menu.AddGUIObject(volume_slider);
+
+	SoundManager::setVolume(*button_action_impl->volume_slider_ref);
 
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
 	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);

@@ -89,7 +89,7 @@ Game::Game()
 	menu_state->setActive(true);
 	state_machine.PushState(State::MainMenu);
 
-	console = new ConsoleNamespace::Console(*this, *menu_state, *game_state); // !!!!!!!!!!!!!! clears the console !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	console = new ConsoleNamespace::Console(*this, *menu_state, *game_state);
 
 }
 
@@ -118,6 +118,9 @@ void Game::Start()
 
 	sf::Clock dt_clock;
 	float dt = 0;
+
+	SoundManager::setVolume(75);
+	SoundManager::setRelativeVolume("woodChop.wav", -0.5f);
 
 	while (window.isOpen()) {
 		if (refresh_clock.getElapsedTime() >= refresh) {

@@ -196,6 +196,7 @@ void TextButton::Render(sf::RenderTarget & target, sf::RenderTarget& tooltip_ren
 }
 
 bool TextButton::onClick(vec2i mouse_pos) {
+	SoundManager::Play("click1.wav");
 	onHoverOut();
 	if (action) {
 		(*action)(button_action_impl);
@@ -288,6 +289,7 @@ void SquareButton::setPos(vec2 pos)
 
 bool SquareButton::onClick(vec2i mouse_pos)
 {
+	SoundManager::Play("click1.wav");
 	if (action) {
 		(*action)(button_action_impl);
 		return true;
@@ -325,6 +327,7 @@ ControlsTextButton::ControlsTextButton(std::string const & text_string, vec2 pos
 }
 
 bool ControlsTextButton::onClick(vec2i mouse_pos) {
+	SoundManager::Play("click1.wav");
 	if (!active) {
 		active = true;
 		return true;
@@ -346,6 +349,7 @@ bool ControlsTextButton::onHoverOut() {
 
 bool ControlsTextButton::onKeyType(sf::Event::KeyEvent e)
 {
+	SoundManager::Play("click2.wav");
 	text_string = getKeyString(e.code);
 	this->key = e.code;
 	setActive(false);
@@ -377,6 +381,7 @@ WorldSelectButton::WorldSelectButton(std::string const & text_string, vec2 pos, 
 
 bool WorldSelectButton::onClick(vec2i mouse_pos)
 {
+	SoundManager::Play("click1.wav");
 	onHoverOut();
 	if (action) {
 		button_action_impl->load_world_name = world_name;
@@ -476,6 +481,7 @@ void Checkbox::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_rend
 }
 
 bool Checkbox::onClick(vec2i mouse_pos) {
+	SoundManager::Play("click1.wav");
 	active = !active;
 	if (!active) text_obj.setString("");
 	else text_obj.setString("X");
@@ -531,6 +537,7 @@ void Slider::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_render
 }
 
 bool Slider::onClick(vec2i mouse_pos) {
+	SoundManager::Play("click1.wav");
 	GUIObject::onClick(mouse_pos);
 	return true;
 }
@@ -601,6 +608,7 @@ void Scrollbar::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip_ren
 }
 
 bool Scrollbar::onClick(vec2i mouse_pos) {
+	SoundManager::Play("click1.wav");
 	GUIObject::onClick(mouse_pos);
 	return true;
 }
@@ -896,6 +904,7 @@ void TextInputBox::UpdateClickDrag(vec2i mouse_pos)
 bool TextInputBox::onKeyType(sf::Event::KeyEvent e)
 {
 	if (active) {
+	SoundManager::Play("click2.wav");
 		char c = getKeyChar(e);
 		if (c != 0) {
 			text_string.insert(cursor_pos, {c});
@@ -1007,6 +1016,7 @@ void InvItemButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 
 bool InvItemButton::onClick(vec2i mouse_pos)
 {
+	SoundManager::Play("click1.wav");
 	onHoverOut();
 	setSelected(true);
 	if (action) {
@@ -1176,6 +1186,7 @@ void InvRecipeButton::setCraftable(bool craftable)
 
 bool InvRecipeButton::onClick(vec2i pos)
 {
+	SoundManager::Play("click1.wav");
 	button_action_impl->recipe = recipe;
 	return InvItemButton::onClick(pos);
 }
@@ -1213,6 +1224,7 @@ InvActionButton::InvActionButton(std::string const & text_string, int item, vec2
 
 bool InvActionButton::onClick(vec2i mouse_pos)
 {
+	SoundManager::Play("click1.wav");
 	onHoverOut();
 	if (action) {
 		button_action_impl->item = item;
@@ -1253,6 +1265,7 @@ void InvPageButton::Render(sf::RenderTarget & target, sf::RenderTarget & tooltip
 
 bool InvPageButton::onClick(vec2i mouse_pos)
 {
+	SoundManager::Play("click1.wav");
 	onHoverOut();
 	setSelected(true);
 	if (action) {

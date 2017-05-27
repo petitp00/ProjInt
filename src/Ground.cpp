@@ -348,6 +348,7 @@ void Ground::setTileClicked(vec2 mpos, GroundType type)
 
 void Ground::StartRipple(vec2 pos, sf::Time duration, float strength)
 {
+	SoundManager::Play("waterSplouch.wav");
 	auto find_lowest_ripple = [&]() {
 		int lowest = -1;
 		float lowest_val = 99999;

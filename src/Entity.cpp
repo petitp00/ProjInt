@@ -11,13 +11,13 @@ int Entity::last_id = 0;
 
 std::vector<std::string> Entity::getSavedData()
 {
-	cout << "Warning: Entity::getSavedData() called." << endl;
+	//cout << "Warning: Entity::getSavedData() called." << endl;
 	return std::vector<std::string>();
 }
 
 std::string Entity::getHoverInfo()
 {
-	cout << "Warning: Entity::getHoverInfo() called." << endl;
+	//cout << "Warning: Entity::getHoverInfo() called." << endl;
 	return std::string();
 }
 
@@ -277,7 +277,6 @@ void CarrotPlant::UpdateCinfo()
 	int var = 1;
 	if (growth_level >= 100) { var = 3; }
 	else if (growth_level >= 50) { var = 2; }
-	cout << "var: " << var << endl;
 	cinfo = getCoordsInfo("carrotplant" + to_string(var));
 }
 
@@ -289,7 +288,6 @@ void CarrotPlant::GrowOneLevel()
 void CarrotPlant::setGrowthLevel(float growth_level)
 {
 	if (growth_level != -111) {
-		cout << "GROWTH LEVEL: " << growth_level << endl;
 		this->growth_level = growth_level;
 	}
 	Init();
