@@ -157,13 +157,13 @@ void GameState::Render(sf::RenderTarget & target)
 
 bool GameState::HandleEvent(sf::Event const & event)
 {
-	mouse_pos_in_world = game.getWindow().mapPixelToCoords(sf::Mouse::getPosition(game.getWindow()), world.getGameView());
-	mouse_pos = vec2(sf::Mouse::getPosition(game.getWindow()));
+	mouse_pos = game.getMousePos();
+	mouse_pos_in_world = game.getTarget().mapPixelToCoords(vec2i(mouse_pos), world.getGameView());
 
 	if (game.getConsole().getActive()) {
 		if (event.type == sf::Event::MouseButtonPressed) {
 			if (event.mouseButton.button == sf::Mouse::Middle) {
-				auto p = game.getWindow().mapPixelToCoords(sf::Mouse::getPosition(game.getWindow()), world.getGameView());
+				auto p = game.getTarget().mapPixelToCoords(vec2i(mouse_pos), world.getGameView());
 				auto e = world.FindEntityClicked(p);
 				if (e) {
 					game.getConsole().PrintInfo("Entity clicked");
@@ -176,7 +176,7 @@ bool GameState::HandleEvent(sf::Event const & event)
 	else if (inventory.getActive()) {
 		if (event.type == sf::Event::MouseButtonPressed) {
 			if (event.mouseButton.button == sf::Mouse::Left) {
-				if (!inventory.IsMouseIn(sf::Mouse::getPosition(game.getWindow()))) {
+				if (!inventory.IsMouseIn(vec2i(mouse_pos))) {
 					//inventory.setActive(false);
 				}
 			}

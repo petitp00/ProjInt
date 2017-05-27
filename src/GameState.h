@@ -42,8 +42,6 @@ public:
 	void Drink();
 	void Sleep();
 
-	sf::RenderWindow* getWindow() { return &game.getWindow(); }
-
 private:
 	bool active = false;
 

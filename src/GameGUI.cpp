@@ -7,6 +7,8 @@
 #include <iostream>
 using namespace std;
 
+static vec2 mouse_pos = { -1, -1 };
+
 static void eat(ButtonActionImpl* impl) {
 	SoundManager::Play("appleBite2.wav");
 
@@ -258,6 +260,7 @@ bool ItemsPage::HandleEvents(sf::Event const & event)
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		mouse = vec2i(mouse_pos);
 
 		int old_item = *selected_item;
 		*selected_item = -1;
@@ -438,6 +441,7 @@ bool ToolsPage::HandleEvents(sf::Event const & event)
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		mouse = vec2i(mouse_pos);
 
 		auto old_selected = *selected_tool;
 		*selected_tool = -1;
@@ -677,6 +681,7 @@ bool CraftPage::HandleEvents(sf::Event const & event)
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		mouse = vec2i(mouse_pos);
 
 		auto old_selected = *selected_recipe;
 		*selected_recipe = Item::no_recipe;
@@ -923,6 +928,7 @@ void Inventory::Clear()
 
 void Inventory::Update()
 {
+	mouse_pos = button_action_impl->game->getMousePos();
 	if (active) {
 		window_shape.setPosition(window_tw.Tween());
 		if (go_up_then_not_active && window_tw.getEnded()) {
@@ -968,6 +974,7 @@ bool Inventory::HandleEvents(sf::Event const & event)
 	}
 	else if (event.type == sf::Event::MouseButtonPressed) {
 		vec2i mouse = {event.mouseMove.x, event.mouseMove.y};
+		mouse = vec2i(mouse_pos);
 		for (auto o : page_buttons) {
 			if (o->getHovered()) {
 				for (auto o2 : page_buttons) o2->setSelected(false);
@@ -1191,6 +1198,7 @@ void InventoryButton::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::MouseMoved) {
 		vec2 mouse = vec2(float(event.mouseMove.x), float(event.mouseMove.y));
+		mouse = mouse_pos;
 
 		if (mouse.x >= pos.x && mouse.x <= pos.x + size.x && mouse.y >= pos.y && mouse.y <= pos.y + size.y) {
 			if (!open) {
@@ -1262,6 +1270,7 @@ void EquippedToolObj::HandleEvent(sf::Event const & event)
 {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		auto mp = vec2i(event.mouseButton.x, event.mouseButton.y);
+		mp = vec2i(mouse_pos);
 		if (mp.x >= pos.x && mp.x <= pos.x + size.x) {
 			if (mp.y >= pos.y && mp.y <= pos.y + size.y) {
 				if (game_state) {

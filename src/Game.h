@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
@@ -64,15 +66,23 @@ public:
 
 	void ToggleFpsCounter();
 
+	sf::RenderTarget& getTarget() { return render_texture; }
 	sf::RenderWindow& getWindow() { return window; }
+	vec2 getMousePos();
 	ConsoleNamespace::Console& getConsole() { return *console; }
 	Controls& getControls() { return game_settings.controls; }
 	State getActiveState() { return state_machine.getActiveState(); }
 	GameState& getGameState() { return *game_state; }
+	bool getSmallMode() { return small_mode; }
 
 private:
 	GameSettings game_settings;
 	sf::RenderWindow window;
+
+	bool small_mode = false;
+	
+	sf::RenderTexture render_texture;
+	sf::Sprite render_sprite;
 
 	ConsoleNamespace::Console* console;
 

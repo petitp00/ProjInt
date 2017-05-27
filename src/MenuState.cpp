@@ -269,19 +269,20 @@ void MenuState::Render(sf::RenderTarget & target)
 
 bool MenuState::HandleEvents(sf::Event const & event)
 {
+	vec2 mouse_pos = button_action_impl->game->getMousePos();
 	if (event.type == sf::Event::KeyPressed) {
 		return active_page->KeyPressedEvent(event.key);
 	}
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left)
-			return active_page->MousePressedEvent(event.mouseButton.x, event.mouseButton.y);
+			return active_page->MousePressedEvent(mouse_pos.x, mouse_pos.y);
 	}
 	if (event.type == sf::Event::MouseButtonReleased) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left)
-			return active_page->MouseReleasedEvent(event.mouseButton.x, event.mouseButton.y);
+			return active_page->MouseReleasedEvent(mouse_pos.x, mouse_pos.y);
 	}
 	if (event.type == sf::Event::MouseMoved) {
-		return active_page->MouseMovedEvent(event.mouseMove.x, event.mouseMove.y);
+		return active_page->MouseMovedEvent(mouse_pos.x, mouse_pos.y);
 	}
 	if (event.type == sf::Event::MouseWheelScrolled) {
 		return active_page->MouseWheelScrolledEvent(event.mouseWheelScroll.delta);

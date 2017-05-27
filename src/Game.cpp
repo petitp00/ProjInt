@@ -24,6 +24,9 @@ int WINDOW_HEIGHT = 900;
 
 bool window_active = true;
 
+int real_ww = 1280;
+int real_wh = 720;
+
 // forward declaration of functions
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings);
 
@@ -71,6 +74,9 @@ void Controls::SaveUserControls()
 Game::Game()
 {
 	CreateWindowWithSettings(window, game_settings);
+
+	render_texture.create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	render_sprite.setTexture(render_texture.getTexture());
 
 	game_settings.controls.LoadUserControls();
 
@@ -173,9 +179,37 @@ void Game::Start()
 				else if (event.key.code == game_settings.controls.get("Console")) {
 					console->setActive(true);
 				}
+				else if (event.key.code == sf::Keyboard::F11) {
+					game_settings.Fullscreen = true;
+				}
 				else {
 					//cout << event.key.code << endl;
 				}
+			}
+			else if (event.type == sf::Event::Resized) {
+				float ww = WINDOW_WIDTH;
+				float wh = WINDOW_HEIGHT;
+				real_ww = event.size.width;
+				real_wh = event.size.height;
+
+				if (real_ww < ww || real_wh < wh) {
+					real_ww = ww * 0.5f;
+					real_wh = wh * 0.5f;
+					small_mode = true;
+				}
+				else {
+					real_ww = ww;
+					real_wh = wh;
+					small_mode = false;
+				}
+				
+				window.setSize(sf::Vector2u(real_ww, real_wh));
+
+				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+				window.setView(sf::View(visibleArea));
+
+				render_sprite.setPosition(0, 0);
+				render_sprite.setScale(real_ww/ww, real_wh/wh); // new/old
 			}
 		}
 
@@ -191,14 +225,17 @@ void Game::Start()
 		// Renders
 		window.clear(sf::Color::White);
 
-		if (menu_state->getActive()) { menu_state->Render(window); }
-		if (game_state->getActive()) { game_state->Render(window); }
-		window.setView(window.getDefaultView());
-		if (console->getActive()) { console->Render(window); }
+		if (menu_state->getActive()) { menu_state->Render(render_texture); }
+		if (game_state->getActive()) { game_state->Render(render_texture); }
+		render_texture.setView(render_texture.getDefaultView());
+		if (console->getActive()) { console->Render(render_texture); }
 
-		window.setView(window.getDefaultView());
+		render_texture.setView(render_texture.getDefaultView());
 		if (show_fps_counter)
-			window.draw(fps_counter_text);
+			render_texture.draw(fps_counter_text);
+		render_texture.display();
+
+		window.draw(render_sprite);
 		window.display();
 
 		dt = dt_clock.restart().asMicroseconds() / 1000.f;
@@ -236,6 +273,13 @@ void Game::ToggleFpsCounter()
 	show_fps_counter = !show_fps_counter;
 }
 
+vec2 Game::getMousePos()
+{
+	vec2 res = vec2(sf::Mouse::getPosition(window));
+	if (small_mode) res *= 2.f;
+	return res;
+}
+
 void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& settings)
 {
 	sf::ContextSettings ctx_settings;
@@ -245,7 +289,7 @@ void CreateWindowWithSettings(sf::RenderWindow& window, GameSettings const& sett
 	sf::VideoMode video_mode;
 
 	if (!settings.Fullscreen) {
-		style = sf::Style::Close;
+		style = sf::Style::Close | sf::Style::Resize;
 		video_mode = sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 	else {
