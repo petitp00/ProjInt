@@ -290,3 +290,25 @@ void GameState::UnequipTool()
 	can_use_tool = false;
 	using_tool = false;
 }
+
+void GameState::DoAction()
+{
+	status_values.set(StatusType::energy, status_values.get(StatusType::energy) - 15);
+	status_values.set(StatusType::hunger, status_values.get(StatusType::hunger) - 8);
+	status_values.set(StatusType::thirst, status_values.get(StatusType::thirst) - 8);
+}
+
+void GameState::Eat()
+{
+	status_values.set(StatusType::hunger, status_values.get(StatusType::hunger) + 18);
+}
+
+void GameState::Drink()
+{
+	status_values.set(StatusType::thirst, status_values.get(StatusType::thirst) + 18);
+}
+
+void GameState::Sleep()
+{
+	status_values.set(StatusType::energy, status_values.get(StatusType::energy) + 100);
+}

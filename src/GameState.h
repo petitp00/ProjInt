@@ -36,6 +36,12 @@ public:
 	void setActive(bool active) { this->active = active; }
 	void setActionInfo(ActionInfo info) { action_info.setActionInfo(info); }
 
+	// for status values
+	void DoAction();
+	void Eat();
+	void Drink();
+	void Sleep();
+
 	sf::RenderWindow* getWindow() { return &game.getWindow(); }
 
 private:

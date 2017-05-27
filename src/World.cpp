@@ -49,6 +49,10 @@ void World::Init(Inventory* inventory, InventoryButton* inv_butt, GameState* gam
 	this->game_state= game_state;
 
 	particle_manager.Init(this);
+
+	sleep_time = sf::seconds(1.5f);
+	sleep_overlay.setSize(game_view_size);
+	sleep_overlay.setFillColor(sf::Color::Transparent);
 }
 
 void World::Clear()
@@ -453,6 +457,14 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 		SortEntitiesImpl();
 		entities_need_sorting = false;
 	}
+
+	if (sleeping) {
+		float a = 255.f/2.f + -(255.f/2.f) * cos(2*M_PI/sleep_time.asMilliseconds() * (sleep_clock.getElapsedTime().asMilliseconds()));
+		if (sleep_clock.getElapsedTime() >= sleep_time) {
+			sleeping = false;
+		}
+		sleep_overlay.setFillColor(sf::Color(0, 0, 0, a));
+	}
 }
 
 void World::UpdateView()
@@ -519,6 +531,10 @@ void World::Render(sf::RenderTarget & target)
 	render_texture.display();
 	target.draw(render_sprite);
 #endif
+
+	if (sleeping) {
+		target.draw(sleep_overlay);
+	}
 }
 
 vec2i drag_mouse_pos;
@@ -590,6 +606,9 @@ bool World::HandleEvent(sf::Event const & event)
 						if (compost_box_move->getNbOfBags() != 0) compost_box_move = nullptr;
 						entity_hovered.clear();
 						break;
+					}
+					else if (e->getType() == HUT) {
+						StartSleep();
 					}
 				}
 			}
@@ -724,7 +743,8 @@ bool World::getCanUseTool(int tool, Item::ItemType& icon)
 				auto pp = player->getPos();
 				auto ps = player->getSize();
 				auto m = mouse_pos_in_world;
-				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
+				//if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
+				if (m.x > pp.x - ps.x && m.x < pp.x + ps.x && m.y > pp.y - ps.y * 2 && m.y < pp.y) {
 					return true;
 				}
 
@@ -844,6 +864,8 @@ GroundTile * World::getGroundTileHovered(vec2 mpos)
 void World::Collect()
 {
 	auto m = mouse_pos_in_world;
+
+	game_state->DoAction();
 
 	for (auto t : trees) {
 		auto tp = t->getPos();
@@ -997,8 +1019,9 @@ void World::UseEquippedToolAt()
 			if (b->water_level > 0) {
 				auto pp = player->getPos();
 				auto ps = player->getSize();
-				if (m.x > pp.x && m.x < pp.x + ps.x && m.y > pp.y && m.y < pp.y + ps.y) {
+				if (m.x > pp.x - ps.x && m.x < pp.x + ps.x && m.y > pp.y - ps.y * 2 && m.y < pp.y) {
 					--b->water_level;
+					game_state->Drink();
 					// DRINKING
 				}
 
@@ -1219,5 +1242,12 @@ void World::SortEntitiesImpl() // seems to be super fast for not a lot of elemen
 		auto bbox = b->getCollisionBox();
 		return abox.top + abox.height < bbox.top + bbox.height;
 	});
+}
+
+void World::StartSleep()
+{
+	game_state->Sleep();
+	sleeping = true;
+	sleep_clock.restart();
 }
 

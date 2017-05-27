@@ -10,6 +10,8 @@ using namespace std;
 static void eat(ButtonActionImpl* impl) {
 	SoundManager::Play("appleBite2.wav");
 
+	impl->game_state->Eat();
+
 	auto item = Item::Manager::getAny(impl->item);
 	if (Item::IsFood(Item::getItemTypeByName(item->name))) {
 		auto food = Item::Manager::getFood(impl->item);
@@ -27,6 +29,7 @@ static void use_tool(ButtonActionImpl* impl) {
 		auto tool_type = Item::getItemTypeByName(tool->name);
 
 		if (tool_type != Item::ItemType::bowl) {
+			impl->game_state->DoAction();
 			tool->durability += 5;
 			if (tool->durability == 100) {
 				impl->game_state->getInventory()->UnequipTool();
@@ -1501,6 +1504,7 @@ float StatusValues::get(StatusType stype)
 
 void StatusValues::set(StatusType stype, float val)
 {
+	val = max(0.f, min(100.f, val));
 	values[stype] = val;
 	if (bars)
 		bars->setVal(stype, val);

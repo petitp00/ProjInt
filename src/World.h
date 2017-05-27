@@ -195,6 +195,12 @@ private:
 	sf::RenderTexture render_texture;
 	sf::Sprite render_sprite;
 
+	sf::RectangleShape sleep_overlay;
+	bool sleeping = false;
+	void StartSleep();
+	sf::Clock sleep_clock;
+	sf::Time sleep_time;
+
 	Ground ground;
 	Particle::Manager particle_manager;
 	Player* player = nullptr;
