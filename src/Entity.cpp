@@ -121,6 +121,8 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 			setGrowthLevel(growth_level);
 			cout << "GROWTH LEVEL IS NOT 0. keep (line: " << __LINE__ << ")" << endl;
 		}
+
+		cout << "ROOT IS NOT SAVED !!!!!!!" << endl;
 	}
 }
 
@@ -219,7 +221,7 @@ void TreeObj::setPos(vec2 pos)
 {
 	GameObject::setPos(pos);
 #ifdef EDITOR_MODE
-	root_pos = pos;
+	root_pos = pos + vec2(size.x / 2.f, size.y);
 #endif
 }
 
@@ -297,7 +299,7 @@ std::string CarrotPlant::getHoverInfo()
 {
 	stringstream ss;
 	
-	ss << "Plant de carottes" << '\n';
+	ss << "Plant de carottes" << '\n' << "Doit être arrosé" << '\n' << "Donne 3 carottes lorsque poussé compètement" << '\n';
 
 	return ss.str();
 }

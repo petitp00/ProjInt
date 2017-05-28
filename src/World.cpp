@@ -72,7 +72,10 @@ void World::Clear()
 
 void World::CreateAndSaveWorld(std::string const & filename)
 {
-	CreateNewBlank(filename);
+	//CreateNewBlank(filename);
+	LoadWorld("NewWorld/base");
+	name = filename;
+	Save();
 }
 
 void World::CreateNewBlank(const std::string & filename)
