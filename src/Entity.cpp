@@ -122,7 +122,6 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 			cout << "GROWTH LEVEL IS NOT 0. keep (line: " << __LINE__ << ")" << endl;
 		}
 
-		cout << "ROOT IS NOT SAVED !!!!!!!" << endl;
 	}
 }
 

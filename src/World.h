@@ -185,6 +185,9 @@ private:
 	void SortEntitiesImpl(); // called at beginning of Update if entities_need_sorting
 	bool entities_need_sorting = false;
 
+	sf::Clock save_clock;
+	sf::Time save_time = sf::seconds(5.f);
+
 	Controls* controls = nullptr;
 	Inventory* inventory = nullptr;
 	GameState* game_state = nullptr;

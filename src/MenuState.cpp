@@ -402,6 +402,11 @@ void MenuState::InitInfoMenu()
 	auto title = new TextBox("Informations", {100, 80}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::BIG);
 	info_menu.AddGUIObject(title);
 
+	auto text1 = new TextBox("Programmation: Philippe Petit", {100, 250}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
+	info_menu.AddGUIObject(text1);
+	auto text2 = new TextBox("Dessins: Mallaury Lina-Campion", {100, 250 + 75}, float(WINDOW_WIDTH), BASE_FONT_NAME, sf::Color::Black, FontSize::NORMAL);
+	info_menu.AddGUIObject(text2);
+
 	auto return_button = new TextButton("Retour", {float(WINDOW_WIDTH - 220), float(WINDOW_HEIGHT - 100)}, 0);
 	return_button->setOnClickAction(new std::function<void(ButtonActionImpl*)>(return_to_last_state), button_action_impl);
 	info_menu.AddGUIObject(return_button);

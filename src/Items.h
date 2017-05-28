@@ -59,7 +59,7 @@ namespace Item
 		vec2i pos_in_texture_map;
 
 		virtual std::vector<std::string> getSaveData() {
-			std::cerr << "Using Item::any::getSaveData(), probably an error" << std::endl;
+			//std::cerr << "Using Item::any::getSaveData(), probably an error" << std::endl;
 			return {};
 		}
 

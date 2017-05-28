@@ -342,6 +342,11 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	::mouse_pos_in_world = mouse_pos_in_world;
 	auto mpw = mouse_pos_in_world;
 
+	if (save_clock.getElapsedTime() >= save_time) {
+		save_clock.restart();
+		Save();
+	}
+
 	entity_hovered.clear();
 
 	bool iplace_biojunk = false;
@@ -1089,6 +1094,7 @@ void World::UseEquippedToolAt()
 			auto tp = tree->getPos();
 			auto ts = tree->getSize();
 			if (m.x > tp.x && m.x < tp.x + ts.x && m.y > tp.y && m.y < tp.y + ts.y) {
+				game_state->DoAction();
 				tree->Hit();
 				HitTree(tree, &particle_manager, this);
 			}
