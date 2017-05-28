@@ -33,8 +33,8 @@ World::World(Controls* controls) :
 	render_sprite.setTexture(render_texture.getTexture());
 	auto ww = WINDOW_WIDTH;
 	auto wh = WINDOW_HEIGHT;
-	render_sprite.setTextureRect(sf::IntRect((ww-ww*zoom)*0.5, (wh-wh*zoom)*0.5, ww*zoom, wh*zoom));
-	render_sprite.setScale(ww/float(ww*zoom), wh/float(wh*zoom));
+	render_sprite.setTextureRect(sf::IntRect(int((ww-ww*zoom)*0.5), int((wh-wh*zoom)*0.5), int(ww*zoom), int(wh*zoom)));
+	render_sprite.setScale(float(ww/float(ww*zoom)), float(wh/float(wh*zoom)));
 }
 
 World::~World()
@@ -459,7 +459,7 @@ void World::Update(float dt, vec2 mouse_pos_in_world)
 	}
 
 	if (sleeping) {
-		float a = 255.f/2.f + -(255.f/2.f) * cos(2*M_PI/sleep_time.asMilliseconds() * (sleep_clock.getElapsedTime().asMilliseconds()));
+		int a = int(255.f/2.f + -(255.f/2.f) * cos(2*M_PI/sleep_time.asMilliseconds() * (sleep_clock.getElapsedTime().asMilliseconds())));
 		if (sleep_clock.getElapsedTime() >= sleep_time) {
 			sleeping = false;
 		}
@@ -478,8 +478,8 @@ void World::UpdateView()
 	if (vy - vs.y/2.f <= 0)			vy = vs.y/2.f;
 	if (vy + vs.y/2.f >= WORLD_H)	vy = WORLD_H - vs.y/2.f;
 	
-	game_view.setCenter(int(vx), int(vy));
-	//game_view.setCenter(vx, vy);
+	//game_view.setCenter(int(vx), int(vy));
+	game_view.setCenter(vx, vy);
 }
 
 void World::Render(sf::RenderTarget & target)

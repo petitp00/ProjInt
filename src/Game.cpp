@@ -187,25 +187,25 @@ void Game::Start()
 				}
 			}
 			else if (event.type == sf::Event::Resized) {
-				float ww = WINDOW_WIDTH;
-				float wh = WINDOW_HEIGHT;
+				float ww = float(WINDOW_WIDTH);
+				float wh = float(WINDOW_HEIGHT);
 				real_ww = event.size.width;
 				real_wh = event.size.height;
 
 				if (real_ww < ww || real_wh < wh) {
-					real_ww = ww * 0.5f;
-					real_wh = wh * 0.5f;
+					real_ww = int(ww * 0.5f);
+					real_wh = int(wh * 0.5f);
 					small_mode = true;
 				}
 				else {
-					real_ww = ww;
-					real_wh = wh;
+					real_ww = int(ww);
+					real_wh = int(wh);
 					small_mode = false;
 				}
 				
 				window.setSize(sf::Vector2u(real_ww, real_wh));
 
-				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+				sf::FloatRect visibleArea(0, 0, float(event.size.width), float(event.size.height));
 				window.setView(sf::View(visibleArea));
 
 				render_sprite.setPosition(0, 0);

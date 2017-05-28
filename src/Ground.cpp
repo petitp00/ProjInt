@@ -380,7 +380,7 @@ void Ground::StartRipple(vec2 pos, sf::Time duration, float strength)
 
 void Ground::UpdateRipples(float dt)
 {
-	auto t = sf::microseconds(dt*1000.f);
+	auto t = sf::microseconds(int(dt*1000.f));
 
 	for (int i = 0; i != RIPPLES_AMOUNT; ++i) {
 		auto& r = ripples[i];

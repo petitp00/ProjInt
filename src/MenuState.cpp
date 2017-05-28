@@ -269,7 +269,7 @@ void MenuState::Render(sf::RenderTarget & target)
 
 bool MenuState::HandleEvents(sf::Event const & event)
 {
-	vec2 mouse_pos = button_action_impl->game->getMousePos();
+	vec2i mouse_pos = vec2i(button_action_impl->game->getMousePos());
 	if (event.type == sf::Event::KeyPressed) {
 		return active_page->KeyPressedEvent(event.key);
 	}

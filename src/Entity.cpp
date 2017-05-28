@@ -111,8 +111,8 @@ TreeObj::TreeObj(Type type, vec2 pos, const std::vector<std::string>& saved_data
 		variation = growth_level;
 		hp = atoi(saved_data[2].c_str());
 		fruits = min(4, atoi(saved_data[3].c_str()));
-		root_pos.x = atoi(saved_data[4].c_str());
-		root_pos.y = atoi(saved_data[5].c_str());
+		root_pos.x = float(atoi(saved_data[4].c_str()));
+		root_pos.y = float(atoi(saved_data[5].c_str()));
 	}
 	else {
 		fruits = -1;
@@ -309,7 +309,7 @@ CompostBox::CompostBox(vec2 pos, const std::vector<std::string>& saved_data) :
 	solid = true;
 
 	if (saved_data.size() != 0) {
-		nb_of_bags = float(atoi(saved_data[0].c_str()));
+		nb_of_bags = atoi(saved_data[0].c_str());
 		bag_progress = float(atoi(saved_data[1].c_str()));
 	}
 }
@@ -386,7 +386,7 @@ void AnimComp::Init()
 	texture = &ResourceManager::getTexture("Textures_Character.png");
 	sprite.setTexture(*texture);
 	sprite.setPosition(*entity_pos);
-	sprite.setTextureRect(sf::IntRect(vec2i(0,0), vec2i(frame_width, frame_height)));
+	sprite.setTextureRect(sf::IntRect(vec2i(0,0), vec2i(int(frame_width), int(frame_height))));
 	sprite.setScale(scale, scale);
 
 	frame_time = sf::seconds(0.1f);
@@ -447,10 +447,10 @@ void AnimComp::Update()
 	}
 
 	if (dir == AnimDir::LEFT) {
-		sprite.setTextureRect(sf::IntRect((frame_x + frame) * frame_width + frame_width, frame_y * frame_height, -frame_width, frame_height*2));
+		sprite.setTextureRect(sf::IntRect(int((frame_x + frame) * frame_width + frame_width), int(frame_y * frame_height), int(-frame_width), int(frame_height*2)));
 	}
 	else {
-		sprite.setTextureRect(sf::IntRect((frame_x + frame) * frame_width, frame_y * frame_height, frame_width, frame_height*2));
+		sprite.setTextureRect(sf::IntRect(int((frame_x + frame) * frame_width), int(frame_y * frame_height), int(frame_width), int(frame_height*2)));
 	}
 
 }
